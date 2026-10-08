@@ -1,0 +1,461 @@
+body {
+  min-width: 320px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.3rem 5%;
+  border-bottom: 1px solid var(--color-line);
+}
+.brand {
+  font: 800 2rem var(--font-display);
+}
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 2rem 5%;
+}
+h1 {
+  font-size: 2.6rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+h2 {
+  font-size: 1.7rem;
+  font-weight: 800;
+  margin-block: 2rem 1rem;
+}
+h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.welcome {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  background: var(--color-brand);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.welcome > div {
+  padding: 2rem;
+  align-self: center;
+}
+.welcome img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.flowers,
+.receipts {
+  list-style: none;
+  padding: 0;
+}
+.flowers li,
+.receipts li {
+  border-bottom: 1px solid var(--color-line);
+  padding-block: 1.2rem;
+}
+.flowers label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 72px;
+  cursor: pointer;
+}
+.flowers input {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.shop {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+.price {
+  margin-left: auto;
+  white-space: nowrap;
+}
+.basket {
+  padding: 1.5rem;
+  margin-top: 2rem;
+  background: var(--color-brand);
+  border-radius: 12px;
+}
+.basket .button {
+  margin-top: 1rem;
+}
+.quiet {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+.error {
+  color: var(--color-error);
+  margin-block: 0.7rem;
+}
+.notice {
+  background: #fff0ee;
+  color: #842323;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.checkout {
+  max-width: 820px;
+  margin: auto;
+}
+.checkout p {
+  margin-block: 0.8rem;
+}
+.total {
+  font-size: 1.4rem;
+}
+.payment-code {
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+.payment-code h2 {
+  margin-top: 0;
+}
+.payment-code svg {
+  background: white;
+  max-width: 100%;
+  height: auto;
+  padding: 12px;
+}
+.payment-code a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+}
+.receipts strong {
+  letter-spacing: 0.08em;
+}
+.setup {
+  max-width: 680px;
+}
+.customer-login {
+  margin-top: 1.5rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--color-line);
+}
+.customer-login summary {
+  min-height: 48px;
+  padding-block: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.customer-login form {
+  max-width: 500px;
+  margin-block: 1rem;
+}
+.customer-login label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.customer-login input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.7rem;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+.otp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+.customer-session {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: var(--color-brand);
+}
+.setup label {
+  display: block;
+  margin-top: 1.2rem;
+}
+.setup input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.7rem;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+footer {
+  text-align: center;
+  padding: 2rem 5%;
+  color: var(--color-muted);
+}
+.gift-advisor {
+  margin-block: 1.5rem;
+  border-bottom: 1px solid var(--color-line);
+  padding-bottom: 1rem;
+}
+.gift-advisor summary {
+  min-height: 48px;
+  padding-block: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.gift-advisor > p {
+  max-width: 65ch;
+}
+.gift-advisor fieldset {
+  border: 0;
+  padding: 0;
+  margin: 1.5rem 0;
+  min-width: 0;
+}
+.advisor-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+}
+.advisor-fields label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.advisor-fields :is(input, select) {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.7rem;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  color: var(--color-ink);
+  background: white;
+}
+.advisor-results {
+  padding: 0;
+  list-style: none;
+}
+.advisor-results li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.5fr);
+  gap: 1.5rem;
+  padding-block: 1.5rem;
+  border-top: 1px solid var(--color-line);
+}
+.advisor-results h3 {
+  margin: 0 0 0.5rem;
+}
+.advisor-results p {
+  margin-block: 0.7rem;
+  overflow-wrap: anywhere;
+}
+.advisor-results .button {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.gift-message {
+  background: var(--color-brand);
+  padding: 0.8rem;
+  border-radius: 12px;
+}
+@media (max-width: 650px) {
+  .advisor-fields,
+  .advisor-results li {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .welcome {
+    grid-template-columns: 1fr;
+  }
+  .welcome img {
+    height: 150px;
+  }
+  .welcome > div {
+    padding: 1.4rem;
+  }
+  h1 {
+    font-size: 2rem;
+  }
+  header {
+    flex-wrap: wrap;
+  }
+  .flowers label {
+    flex-wrap: wrap;
+  }
+  .price {
+    margin-left: 44px;
+  }
+}
+
+.receipt-id {
+  overflow-wrap: anywhere;
+}
+.customer-account h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+.customer-account > .button {
+  margin-block: 1rem;
+}
+.customer-history {
+  list-style: none;
+  padding: 0;
+}
+.customer-history li {
+  border-top: 1px solid var(--color-line);
+  padding-block: 1.5rem;
+  overflow-wrap: anywhere;
+}
+.customer-history h2 {
+  font-size: 1.4rem;
+}
+.customer-history dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+}
+.customer-history dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.customer-erasure {
+  margin-top: 2rem;
+  padding-block: 1.5rem;
+  border-top: 1px solid var(--color-line);
+}
+.erasure-confirm {
+  display: flex;
+  align-items: start;
+  gap: 0.8rem;
+  padding-block: 1rem;
+  cursor: pointer;
+}
+.erasure-confirm input {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 0.3rem;
+}
+.receipts a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+.point-redemption {
+  margin-block: 1.5rem;
+  padding-block: 1rem;
+  border-block: 1px solid var(--color-line);
+}
+.point-redemption h2 {
+  font-size: 1.4rem;
+  margin-top: 0;
+}
+.point-redemption label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.point-redemption input {
+  display: block;
+  width: min(100%, 20rem);
+  min-height: 52px;
+  padding: 0.7rem;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  color: var(--color-ink);
+  background: white;
+}
+.point-redemption #points-help {
+  margin-top: 1rem;
+  max-width: 65ch;
+}
+.gift-message-editor {
+  margin-block: 1.5rem;
+}
+.gift-message-editor h2 {
+  font-size: 1.4rem;
+}
+.gift-message-editor label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.gift-message-editor textarea {
+  display: block;
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  padding: 0.8rem;
+  color: var(--color-ink);
+  background: white;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+.gift-message-editor #ecard-count {
+  margin-top: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+.pickup-recovery {
+  max-width: 760px;
+  margin-inline: auto;
+}
+.pickup-recovery h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+.pickup-recovery label {
+  display: block;
+  margin-top: 1.2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+.pickup-recovery input {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  padding: 0.7rem;
+  color: var(--color-ink);
+  background: white;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+.pickup-recovery .button {
+  margin-top: 1rem;
+}
+.pickup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+#pickup-open {
+  margin-block: 1rem;
+}
+.accessories {
+  list-style: none;
+  padding: 0;
+}
+.accessories li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 0.45fr);
+  gap: 1rem;
+  padding-block: 1.2rem;
+  border-bottom: 1px solid var(--color-line);
+}
+.accessories h3 {
+  margin-top: 0;
+}
+.accessories label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.accessories input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.7rem;
+  color: var(--color-ink);
+  background: white;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+@media (max-width: 650px) {
+  .accessories li {
+    grid-template-columns: 1fr;
+  }
+}

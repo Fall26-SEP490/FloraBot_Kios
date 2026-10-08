@@ -1,0 +1,8 @@
+node_modules
+dist
+.astro
+pnpm-lock.yaml
+packages/contracts/src/generated
+packages/contracts/openapi.json
+playwright-report
+test-results

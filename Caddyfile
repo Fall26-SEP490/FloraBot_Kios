@@ -1,0 +1,8 @@
+:80 {
+  handle_path /kiosk/* {
+    root * /srv/kiosk
+    header Cache-Control no-cache
+    try_files {path} /index.html
+    file_server
+  }
+}

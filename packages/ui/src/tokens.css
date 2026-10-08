@@ -1,0 +1,147 @@
+@import 'tailwindcss';
+@theme {
+  --color-canvas: oklch(1 0 0);
+  --color-ink: #204b2e;
+  --color-brand: #eaf5e6;
+  --color-muted: #45654a;
+  --color-line: #64816b;
+  --color-divider: #b8cbb2;
+  --color-surface-soft: #f0f7e9;
+  --color-action-hover: #346d41;
+  --color-on-ink: #fff;
+  --color-error: oklch(0.43 0.17 28);
+  --font-body: 'Be Vietnam Pro', sans-serif;
+  --font-display: 'Nunito', sans-serif;
+}
+:root {
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.65;
+  font-synthesis: none;
+  scroll-padding-top: 6rem;
+  accent-color: var(--color-ink);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+::selection {
+  background: var(--color-ink);
+  color: white;
+}
+input,
+select,
+textarea {
+  caret-color: var(--color-ink);
+}
+* {
+  scrollbar-color: var(--color-line) white;
+  scrollbar-width: thin;
+}
+a {
+  text-underline-offset: 0.2em;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 4px white;
+}
+h1,
+h2,
+h3 {
+  line-height: 1.04;
+  text-wrap: balance;
+  font-weight: 600;
+}
+h1,
+h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+p {
+  max-width: 70ch;
+}
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  min-height: 52px;
+  min-width: 44px;
+  padding: 0.7rem 1.25rem;
+  border: 1px solid var(--color-ink);
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1.5;
+}
+.button-primary {
+  background: var(--color-ink);
+  color: white;
+}
+.button-primary:hover {
+  background: var(--color-action-hover);
+}
+.button-outline {
+  background: transparent;
+  color: var(--color-ink);
+}
+.button-outline:hover {
+  background: white;
+}
+.button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -6rem;
+  padding: 0.75rem 1rem;
+  z-index: 1000;
+  background: white;
+  color: black;
+}
+.skip-link:focus {
+  top: 1rem;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
