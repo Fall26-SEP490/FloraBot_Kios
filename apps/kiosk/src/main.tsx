@@ -30,8 +30,9 @@ import CustomerAccount from './CustomerAccount';
 import PointRedemption from './PointRedemption';
 import GiftMessage from './GiftMessage';
 import PickupRecovery from './PickupRecovery';
-import AccessoryPicker from './AccessoryPicker';
 import GiftAdvisor from './GiftAdvisor';
+import BouquetImage, { getBouquetImageUrl } from './BouquetImage';
+import PreviewMode from './PreviewMode';
 import '@fontsource/nunito/vietnamese-800.css';
 import '@fontsource/nunito/latin-800.css';
 import '@fontsource/be-vietnam-pro/vietnamese-400.css';
@@ -40,6 +41,7 @@ import '@fontsource/be-vietnam-pro/vietnamese-600.css';
 import '@fontsource/be-vietnam-pro/latin-600.css';
 import '@florabot/ui/tokens.css';
 import './style.css';
+import './tablet.css';
 
 void i18n.use(initReactI18next).init({
   lng: 'vi',
@@ -92,7 +94,13 @@ const stateNames: Record<string, string> = {
   DISPUTED: 'Đang xử lý phản ánh',
 };
 
-function Setup({ onReady }: { onReady: (device: Device) => void }) {
+function Setup({
+  onReady,
+  onPreview,
+}: {
+  onReady: (device: Device) => void;
+  onPreview: () => void;
+}) {
   const form = useForm<Device>({ resolver: zodResolver(setupSchema) });
   const connect = useMutation({
     mutationFn: async (device: Device) => {
@@ -105,39 +113,129 @@ function Setup({ onReady }: { onReady: (device: Device) => void }) {
     },
   });
   return (
-    <main id="main" className="setup">
-      <h1>Kết nối tủ FloraBot</h1>
-      <p>Dành cho nhân viên thiết lập thiết bị trước khi đón khách.</p>
-      <form noValidate onSubmit={form.handleSubmit((value) => connect.mutate(value))}>
-        <label htmlFor="device-id">Mã kiosk</label>
-        <input
-          id="device-id"
-          {...form.register('id')}
-          aria-invalid={!!form.formState.errors.id}
-          aria-describedby="device-id-error"
-        />
-        <p id="device-id-error" className="error">
-          {form.formState.errors.id?.message}
-        </p>
-        <label htmlFor="device-key">Khóa thiết bị</label>
-        <input
-          id="device-key"
-          type="password"
-          autoComplete="off"
-          {...form.register('key')}
-          aria-invalid={!!form.formState.errors.key}
-          aria-describedby="device-key-error"
-        />
-        <p id="device-key-error" className="error">
-          {form.formState.errors.key?.message}
-        </p>
-        <p role="alert" className="error">
-          {connect.error?.message}
-        </p>
-        <Button type="submit" disabled={connect.isPending}>
-          {connect.isPending ? 'Đang kết nối…' : 'Kết nối tủ'}
-        </Button>
-      </form>
+    <main id="main" className="setup setup-container">
+      <div className="setup-grid">
+        {/* Left column: Branded Welcome & Preview trigger */}
+        <section className="setup-welcome-col" aria-labelledby="welcome-hero-title">
+          <div className="setup-brand-row">
+            <strong className="brand">FloraBot</strong>
+            <span className="setup-version-pill">Kiosk Tablet UI</span>
+          </div>
+          <h2 id="welcome-hero-title" className="setup-hero-title">
+            Hệ thống Tủ Hoa Thông Minh FloraBot
+          </h2>
+          <p className="setup-hero-desc">
+            Phân phối hoa nghệ thuật tự động 24/7. Trải nghiệm chạm tiện lợi trên màn hình máy tính
+            bảng: mua hoa tại chỗ nhanh chóng hoặc nhận đơn đặt trước an toàn.
+          </p>
+
+          <div className="setup-highlights-list">
+            <div className="setup-highlight-item">
+              <span className="setup-highlight-icon" aria-hidden="true">
+                🌸
+              </span>
+              <div>
+                <strong>100% Hoa nhân tạo cao cấp</strong>
+                <p className="quiet">
+                  Hoa lụa và hoa sáp bền đẹp, an toàn, không lo hoa héo hay dị ứng phấn hoa.
+                </p>
+              </div>
+            </div>
+            <div className="setup-highlight-item">
+              <span className="setup-highlight-icon" aria-hidden="true">
+                ⚡
+              </span>
+              <div>
+                <strong>Mua tại chỗ không cần đăng nhập</strong>
+                <p className="quiet">
+                  Chạm chọn hoa có sẵn tại từng ô tủ và thanh toán ngay tức thì.
+                </p>
+              </div>
+            </div>
+            <div className="setup-highlight-item">
+              <span className="setup-highlight-icon" aria-hidden="true">
+                📦
+              </span>
+              <div>
+                <strong>Nhận đơn đặt trước bằng mã PIN / QR</strong>
+                <p className="quiet">
+                  Nhập mã PIN hoặc quét mã QR trên màn hình cảm ứng để mở ô nhận hoa kèm phụ kiện.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="setup-preview-card">
+            <h3>Chưa kết nối tủ hoặc muốn xem thử giao diện?</h3>
+            <p>
+              Trải nghiệm đầy đủ danh mục hoa lụa, giỏ hàng tablet và quy trình nhận hoa với dữ liệu
+              minh họa mà không cần thiết bị thật.
+            </p>
+            <Button
+              id="preview-open"
+              type="button"
+              variant="outline"
+              className="setup-preview-button"
+              onClick={onPreview}
+            >
+              Xem giao diện mẫu
+            </Button>
+            <p className="preview-help-text">
+              Chế độ xem mẫu độc lập: Không gọi API backend, không trừ tiền và không mở chốt tủ
+              thật.
+            </p>
+          </div>
+        </section>
+
+        {/* Right column: Staff-only Device Setup Form */}
+        <section className="setup-form-col" aria-labelledby="staff-setup-title">
+          <div className="staff-indicator-pill" role="note">
+            🔒 Dành riêng cho nhân viên kỹ thuật
+          </div>
+          <h1 id="staff-setup-title">Kết nối tủ FloraBot</h1>
+          <p className="setup-staff-subtitle">
+            Dành cho nhân viên thiết lập thiết bị trước khi đón khách. Nhập mã kiosk và khóa thiết
+            bị được cấp để kích hoạt vận hành.
+          </p>
+          <form noValidate onSubmit={form.handleSubmit((value) => connect.mutate(value))}>
+            <label htmlFor="device-id">Mã kiosk</label>
+            <input
+              id="device-id"
+              placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+              {...form.register('id')}
+              aria-invalid={!!form.formState.errors.id}
+              aria-describedby="device-id-error"
+            />
+            <p id="device-id-error" className="error">
+              {form.formState.errors.id?.message}
+            </p>
+            <label htmlFor="device-key">Khóa thiết bị</label>
+            <input
+              id="device-key"
+              type="password"
+              autoComplete="off"
+              placeholder="Khóa bí mật thiết bị"
+              {...form.register('key')}
+              aria-invalid={!!form.formState.errors.key}
+              aria-describedby="device-key-error"
+            />
+            <p id="device-key-error" className="error">
+              {form.formState.errors.key?.message}
+            </p>
+            <p role="alert" className="error">
+              {connect.error?.message}
+            </p>
+            <Button type="submit" disabled={connect.isPending}>
+              {connect.isPending ? 'Đang kết nối…' : 'Kết nối tủ'}
+            </Button>
+          </form>
+
+          <p className="quiet setup-privacy-note">
+            Ghi chú bảo mật: Khóa thiết bị được bảo mật trong phiên làm việc của trình duyệt
+            (sessionStorage). Khi kết nối thành công, kiosk sẽ hoạt động với API thật.
+          </p>
+        </section>
+      </div>
     </main>
   );
 }
@@ -156,8 +254,8 @@ function Shopping({
   const { t } = useTranslation();
   const [online, setOnline] = useState(navigator.onLine);
   const [selected, setSelected] = useState<string[]>([]);
-  const [accessoriesOpen, setAccessoriesOpen] = useState(false);
-  const [accessoryQuantities, setAccessoryQuantities] = useState<Record<string, string>>({});
+  const [accessoriesOpen] = useState(false);
+  const [accessoryQuantities] = useState<Record<string, string>>({});
   const [checkoutId, setCheckoutId] = useState<string>();
   const [now, setNow] = useState(() => Date.now());
   const [idleSoon, setIdleSoon] = useState(false);
@@ -394,11 +492,11 @@ function Shopping({
                 <h1>{t('title')}</h1>
                 <p>{t('intro')}</p>
               </div>
-              <img
-                src={`${import.meta.env.BASE_URL}flowers.avif`}
-                width="480"
-                height="320"
-                alt=""
+              <BouquetImage
+                src={`${import.meta.env.BASE_URL}images/demo-pastel-bouquet.png`}
+                width={480}
+                height={320}
+                alt="Minh họa hoa nhân tạo FloraBot"
               />
             </section>
             {!customer && (
@@ -466,8 +564,12 @@ function Shopping({
                 </div>
               )}
               {catalog.data?.length === 0 && <p>Tủ chưa có hoa sẵn sàng. Bạn ghé lại sau nhé.</p>}
+              <div className="artificial-flower-pill-notice" role="note">
+                🌸 <strong>100% Hoa nhân tạo cao cấp:</strong> Hoa lụa & hoa sáp nghệ thuật bền đẹp
+                dài lâu, không cần làm lạnh. Phụ kiện đi kèm chỉ áp dụng cho đơn đặt trước.
+              </div>
               <ul className="flowers">
-                {catalog.data?.map((item) => (
+                {catalog.data?.map((item, idx) => (
                   <li key={item.bouquetId}>
                     <label>
                       <input
@@ -482,10 +584,20 @@ function Shopping({
                           )
                         }
                       />
-                      <span>
+                      <BouquetImage
+                        src={getBouquetImageUrl(item.name, idx)}
+                        alt={`Ảnh minh họa ${item.name}`}
+                        className="flower-thumb-image"
+                        width={120}
+                        height={120}
+                      />
+                      <span className="flower-item-details">
                         <strong>{item.name}</strong>
                         <span className="shop">
                           {item.shopName} · Ô {item.slotCode}
+                        </span>
+                        <span className="illustration-caption">
+                          Hình ảnh minh họa kiểu dáng · Hoa nhân tạo thực tế tại ô {item.slotCode}
                         </span>
                       </span>
                       <strong className="price">{money(item.price)}</strong>
@@ -499,23 +611,13 @@ function Shopping({
                 </p>
               )}
             </section>
-            <AccessoryPicker
-              items={accessories.data}
-              quantities={accessoryQuantities}
-              opened={accessoriesOpen}
-              loading={accessories.isPending}
-              error={accessories.error?.message}
-              disabled={!online || buy.isPending || uncertain}
-              invalid={!accessoryValid}
-              onOpen={() => {
-                if (accessoriesOpen) void accessories.refetch();
-                else setAccessoriesOpen(true);
-              }}
-              onChange={(id, value) =>
-                setAccessoryQuantities((values) => ({ ...values, [id]: value }))
-              }
-              onClear={() => setAccessoryQuantities({})}
-            />
+            <section className="accessory-picker" aria-labelledby="preorder-accessories-title">
+              <h2 id="preorder-accessories-title">Phụ kiện đi kèm đơn đặt trước</h2>
+              <p>
+                Phụ kiện được shop chuẩn bị cùng bó hoa đặt trước. Kiosk không bán phụ kiện riêng
+                hoặc thêm phụ kiện vào đơn mua ngay.
+              </p>
+            </section>
             <section className="basket" aria-label="Giỏ hoa">
               <p>
                 {selected.length} bó đã chọn
@@ -695,6 +797,7 @@ function App() {
       return null;
     }
   });
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [visit, setVisit] = useState(0);
   const [notice, setNotice] = useState('');
   const reset = React.useCallback(() => {
@@ -710,6 +813,11 @@ function App() {
     },
     [reset],
   );
+
+  if (previewOpen) {
+    return <PreviewMode onExit={() => setPreviewOpen(false)} />;
+  }
+
   return device ? (
     <Shopping
       key={visit}
@@ -719,7 +827,7 @@ function App() {
       onPrivacyFinish={privacyFinish}
     />
   ) : (
-    <Setup onReady={setDevice} />
+    <Setup onReady={setDevice} onPreview={() => setPreviewOpen(true)} />
   );
 }
 const root = createRootRoute({

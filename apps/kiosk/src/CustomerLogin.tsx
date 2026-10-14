@@ -33,6 +33,11 @@ export default function CustomerLogin({
     const timer = window.setInterval(() => setCooldown((value) => Math.max(0, value - 1)), 1000);
     return () => clearInterval(timer);
   }, []);
+  useEffect(() => {
+    if (phone) {
+      document.getElementById('customer-code')?.focus();
+    }
+  }, [phone]);
   const send = useMutation({
     mutationFn: async (value: string) => {
       await request(device, '/otp/request', { phone: value });
@@ -42,7 +47,10 @@ export default function CustomerLogin({
       setPhone(value);
       setCooldown(60);
       codeForm.reset();
-      requestAnimationFrame(() => codeForm.setFocus('code'));
+      requestAnimationFrame(() => {
+        codeForm.setFocus('code');
+        document.getElementById('customer-code')?.focus();
+      });
     },
   });
   const verify = useMutation({
