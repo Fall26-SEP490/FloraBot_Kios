@@ -132,7 +132,40 @@
 .setup-staff-subtitle {
   font-size: 0.95rem;
   color: var(--color-muted);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.setup-guidance-callout {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #166534;
+  margin-bottom: 1.25rem;
+}
+.setup-guidance-callout strong {
+  color: #14532d;
+}
+.setup-guidance-callout p {
+  margin: 0.35rem 0 0;
+  color: #166534;
+}
+.setup-guidance-callout code {
+  background: #dcfce7;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: #14532d;
+}
+.setup-field-hint {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  margin-top: 0.2rem;
+  margin-bottom: 0.35rem;
+  line-height: 1.4;
 }
 .setup-form-col label {
   display: block;

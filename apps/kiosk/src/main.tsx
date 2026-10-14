@@ -18,6 +18,7 @@ import { Button } from '@florabot/ui';
 import type { components } from '../../../packages/contracts/src/generated/api';
 import {
   ApiError,
+  mapSetupError,
   queryClient,
   request,
   type Checkout,
@@ -64,11 +65,16 @@ void i18n.use(initReactI18next).init({
 const setupSchema = z.object({
   id: z
     .string()
+    .trim()
     .regex(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      'Nhập mã kiosk hợp lệ.',
+      'Nhập mã kiosk hợp lệ (định dạng UUID, ví dụ: 40000000-0000-0000-0000-000000000001).',
     ),
-  key: z.string().min(8, 'Khóa thiết bị cần ít nhất 8 ký tự.').max(256),
+  key: z
+    .string()
+    .trim()
+    .min(8, 'Khóa thiết bị (API key) cần ít nhất 8 ký tự.')
+    .max(256, 'Khóa thiết bị (API key) không được vượt quá 256 ký tự.'),
 });
 const money = (amount: string | number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(amount));
@@ -104,8 +110,16 @@ function Setup({
   const form = useForm<Device>({ resolver: zodResolver(setupSchema) });
   const connect = useMutation({
     mutationFn: async (device: Device) => {
-      await request(device, '/catalog/items');
-      return device;
+      const trimmedDevice: Device = {
+        id: device.id.trim(),
+        key: device.key.trim(),
+      };
+      try {
+        await request(trimmedDevice, '/catalog/items');
+        return trimmedDevice;
+      } catch (error) {
+        throw new Error(mapSetupError(error));
+      }
     },
     onSuccess: (device) => {
       sessionStorage.setItem('florabot-device', JSON.stringify(device));
@@ -194,34 +208,61 @@ function Setup({
           </div>
           <h1 id="staff-setup-title">Kết nối tủ FloraBot</h1>
           <p className="setup-staff-subtitle">
-            Dành cho nhân viên thiết lập thiết bị trước khi đón khách. Nhập mã kiosk và khóa thiết
-            bị được cấp để kích hoạt vận hành.
+            Dành cho nhân viên thiết lập thiết bị trước khi đón khách. Nhập mã kiosk (UUID) và khóa
+            thiết bị (API key) được cấp để xác thực kết nối qua API.
           </p>
-          <form noValidate onSubmit={form.handleSubmit((value) => connect.mutate(value))}>
-            <label htmlFor="device-id">Mã kiosk</label>
+
+          <div className="setup-guidance-callout" role="note">
+            <strong>Lưu ý cho nhân viên kỹ thuật:</strong>
+            <p>
+              Mã kiosk là chuỗi định danh duy nhất (UUID/id). Mã hiển thị như{' '}
+              <code>K-DEMO-SIM</code> chỉ là nhãn nhận diện dán trên tủ (display code/label), tuyệt
+              đối <strong>không phải</strong> khóa bí mật (API key/apiKey). Việc kết nối chỉ xác thực
+              giao tiếp API và đồng bộ danh mục, không tự động kích hoạt phần cứng chốt khóa tủ.
+            </p>
+          </div>
+
+          <form
+            noValidate
+            onSubmit={form.handleSubmit((value) => {
+              connect.mutate({
+                id: value.id.trim(),
+                key: value.key.trim(),
+              });
+            })}
+          >
+            <label htmlFor="device-id">Mã kiosk (UUID / ID)</label>
+            <p id="device-id-hint" className="setup-field-hint">
+              Chuỗi UUID 36 ký tự định danh kiosk (ví dụ: 40000000-0000-0000-0000-000000000001).
+            </p>
             <input
               id="device-id"
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
               {...form.register('id')}
               aria-invalid={!!form.formState.errors.id}
-              aria-describedby="device-id-error"
+              aria-describedby="device-id-hint device-id-error"
             />
             <p id="device-id-error" className="error">
               {form.formState.errors.id?.message}
             </p>
-            <label htmlFor="device-key">Khóa thiết bị</label>
+
+            <label htmlFor="device-key">Khóa thiết bị (API key / apiKey)</label>
+            <p id="device-key-hint" className="setup-field-hint">
+              Khóa API key bí mật được cấp cho thiết bị (không dùng mã nhãn dán như K-DEMO-SIM).
+            </p>
             <input
               id="device-key"
               type="password"
               autoComplete="off"
-              placeholder="Khóa bí mật thiết bị"
+              placeholder="Khóa bí mật API key"
               {...form.register('key')}
               aria-invalid={!!form.formState.errors.key}
-              aria-describedby="device-key-error"
+              aria-describedby="device-key-hint device-key-error"
             />
             <p id="device-key-error" className="error">
               {form.formState.errors.key?.message}
             </p>
+
             <p role="alert" className="error">
               {connect.error?.message}
             </p>
@@ -563,7 +604,9 @@ function Shopping({
                   </Button>
                 </div>
               )}
-              {catalog.data?.length === 0 && <p>Tủ chưa có hoa sẵn sàng. Bạn ghé lại sau nhé.</p>}
+              {catalog.data?.length === 0 && (
+                <p role="status">Tủ chưa có hoa sẵn sàng. Bạn ghé lại sau nhé.</p>
+              )}
               <div className="artificial-flower-pill-notice" role="note">
                 🌸 <strong>100% Hoa nhân tạo cao cấp:</strong> Hoa lụa & hoa sáp nghệ thuật bền đẹp
                 dài lâu, không cần làm lạnh. Phụ kiện đi kèm chỉ áp dụng cho đơn đặt trước.

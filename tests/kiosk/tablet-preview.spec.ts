@@ -280,6 +280,160 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await expect(page.locator('.preview-ribbon')).toHaveCount(0);
   });
 
+  test('Setup error 401 returns actionable help distinguishing display code from secret API key and never leaks credential', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+
+    // Mock API 401 response with generic problem title and sensitive backend detail
+    await page.route('**/catalog/items', (route) => {
+      return route.fulfill({
+        status: 401,
+        json: {
+          title: 'Unauthorized',
+          status: 401,
+          detail: 'Invalid credential provided for K-DEMO-SIM: internal-raw-secret-key',
+        },
+      });
+    });
+
+    await page.goto('/');
+    // Staff enters UUID and accidentally uses display code K-DEMO-SIM as key
+    await page.getByLabel('Mã kiosk').fill('40000000-0000-0000-0000-000000000001');
+    await page.getByLabel('Khóa thiết bị').fill('K-DEMO-SIM');
+    await page.getByRole('button', { name: 'Kết nối tủ' }).click();
+
+    // Verify actionable local-safe 401 error message
+    const alert = page.getByRole('alert');
+    await expect(alert).toBeVisible();
+    await expect(alert).toContainText('Mã kiosk (UUID) hoặc khóa thiết bị (API key) chưa chính xác');
+    await expect(alert).toContainText('K-DEMO-SIM chỉ là nhãn tủ, không phải khóa bí mật');
+
+    // CRITICAL: Ensure raw backend detail containing internal secret/credential is NEVER echoed in alert
+    await expect(alert).not.toContainText('internal-raw-secret-key');
+
+    // Ensure we remain safely on Setup screen without fallback to mock
+    await expect(page.getByRole('heading', { name: 'Kết nối tủ FloraBot' })).toBeVisible();
+    await expect(page.locator('.preview-ribbon')).toHaveCount(0);
+  });
+
+  test('Setup handles network failure with distinct connection error message', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+
+    // Mock network failure
+    await page.route('**/catalog/items', (route) => route.abort('failed'));
+
+    await page.goto('/');
+    await page.getByLabel('Mã kiosk').fill('40000000-0000-0000-0000-000000000001');
+    await page.getByLabel('Khóa thiết bị').fill('secret-kiosk-key');
+    await page.getByRole('button', { name: 'Kết nối tủ' }).click();
+
+    // Verify distinct network error message
+    const alert = page.getByRole('alert');
+    await expect(alert).toBeVisible();
+    await expect(alert).toContainText('Không thể kết nối đến máy chủ. Vui lòng kiểm tra đường truyền mạng');
+
+    // Remains on setup screen
+    await expect(page.getByRole('heading', { name: 'Kết nối tủ FloraBot' })).toBeVisible();
+    await expect(page.locator('.preview-ribbon')).toHaveCount(0);
+  });
+
+  test('Setup handles rate limit 429 with distinct rate limit message', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+
+    // Mock 429 Too Many Requests
+    await page.route('**/catalog/items', (route) => {
+      return route.fulfill({
+        status: 429,
+        json: { title: 'Too Many Requests', status: 429 },
+      });
+    });
+
+    await page.goto('/');
+    await page.getByLabel('Mã kiosk').fill('40000000-0000-0000-0000-000000000001');
+    await page.getByLabel('Khóa thiết bị').fill('secret-kiosk-key');
+    await page.getByRole('button', { name: 'Kết nối tủ' }).click();
+
+    // Verify distinct 429 message
+    const alert = page.getByRole('alert');
+    await expect(alert).toBeVisible();
+    await expect(alert).toContainText('429');
+    await expect(alert).toContainText('giới hạn số lần kết nối');
+
+    // Remains on setup screen
+    await expect(page.getByRole('heading', { name: 'Kết nối tủ FloraBot' })).toBeVisible();
+    await expect(page.locator('.preview-ribbon')).toHaveCount(0);
+  });
+
+  test('Setup trims accidental surrounding whitespace from UUID and secret key before API request and session save', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+
+    let requestedUrl = '';
+    let sentKeyHeader = '';
+
+    await page.route('**/catalog/items', (route) => {
+      requestedUrl = route.request().url();
+      sentKeyHeader = route.request().headers()['x-kiosk-key'] || '';
+      return route.fulfill({ json: [] });
+    });
+
+    await page.goto('/');
+    // Enter UUID and key with leading and trailing whitespace
+    await page.getByLabel('Mã kiosk').fill('   40000000-0000-0000-0000-000000000001   ');
+    await page.getByLabel('Khóa thiết bị').fill('   trimmed-api-key-12345   ');
+    await page.getByRole('button', { name: 'Kết nối tủ' }).click();
+
+    // Verify that the API was called with trimmed values
+    await expect.poll(() => requestedUrl).toContain('/api/kiosks/40000000-0000-0000-0000-000000000001/catalog/items');
+    expect(requestedUrl).not.toContain('%20');
+    expect(sentKeyHeader).toBe('trimmed-api-key-12345');
+
+    // Verify sessionStorage has trimmed values without spaces
+    const saved = await page.evaluate(() => sessionStorage.getItem('florabot-device'));
+    expect(saved).not.toBeNull();
+    const parsed = JSON.parse(saved!);
+    expect(parsed.id).toBe('40000000-0000-0000-0000-000000000001');
+    expect(parsed.key).toBe('trimmed-api-key-12345');
+
+    // Real mode entered
+    await expect(page.getByRole('heading', { name: 'Một bó hoa, một ngày vui.' })).toBeVisible();
+  });
+
+  test('Setup with successful real API empty catalogue saves device session and enters real shopping mode with truthful no-inventory status', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+
+    await page.route('**/catalog/items', (route) => {
+      expect(route.request().headers()['x-kiosk-key']).toBe('valid-secret-kiosk-key');
+      return route.fulfill({ json: [] });
+    });
+
+    await page.goto('/');
+    await page.getByLabel('Mã kiosk').fill('40000000-0000-0000-0000-000000000001');
+    await page.getByLabel('Khóa thiết bị').fill('valid-secret-kiosk-key');
+    await page.getByRole('button', { name: 'Kết nối tủ' }).click();
+
+    // Verify sessionStorage was populated
+    const saved = await page.evaluate(() => sessionStorage.getItem('florabot-device'));
+    expect(saved).not.toBeNull();
+
+    // Real mode is active
+    await expect(page.getByRole('heading', { name: 'Một bó hoa, một ngày vui.' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Kết thúc lượt mua' })).toBeVisible();
+
+    // Truthful no-inventory message is displayed
+    await expect(page.getByText('Tủ chưa có hoa sẵn sàng. Bạn ghé lại sau nhé.')).toBeVisible();
+
+    // No fake mock preview ribbon
+    await expect(page.locator('.preview-ribbon')).toHaveCount(0);
+
+    // Buy button is disabled because there are no flowers in the catalogue
+    await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
+  });
+
   test('BouquetImage gracefully displays inline SVG fallback on error and recovers when src changes', async ({
     page,
   }) => {
