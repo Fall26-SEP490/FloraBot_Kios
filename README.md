@@ -19,7 +19,7 @@ Contract snapshots are not automatically synchronized with FE or BE. Review and 
 
 ## UI preview without IoT
 
-When no device is provisioned, the app opens the preview. `?preview=1` explicitly opens it even if a device session exists; `?setup=1` opens device setup. The preview includes flower selection, basket/message, payment layout and pickup screens. Sample photos/prices are labelled, and all transitions stay in memory. It never creates an order/payment, sends a device command, uses a device key or claims a physical pickup. Enter `DEMO2026` to view the final screen.
+When no device is provisioned, the app opens device setup, preserving the tablet setup and preview from `main`. “Xem giao diện mẫu” opens that isolated tablet preview; “Xem mẫu và danh mục website” opens the flower catalog preview. `?preview=1` opens the catalog preview directly even if a device session exists; `?setup=1` opens the normal setup/device journey. The catalog preview includes flower selection, basket/message, payment layout and pickup screens. Sample photos/prices are labelled, and all transitions stay in memory. It never creates an order/payment, sends a device command, uses a device key or claims a physical pickup. Enter `DEMO2026` to view the final screen.
 
 The optional “Danh mục API” source reads only public `GET /api/shop/catalog` and `GET /api/kiosks`, omitting cookies. It shows the first web-catalog page, not physical WALK_IN inventory; API emptiness/errors never silently become sample inventory. The real device journey remains separately protected by provisioning and its existing backend policies.
 

@@ -1,6 +1,25 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+test('Tablet setup can open the catalog preview and return without contacting devices', async ({
+  page,
+}) => {
+  const calls: string[] = [];
+  await page.route('**/api/**', async (route) => {
+    calls.push(route.request().url());
+    await route.abort();
+  });
+  await page.goto('/?setup=1');
+  await expect(page.getByRole('button', { name: 'Xem giao diện mẫu', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Xem mẫu và danh mục website', exact: true }).click();
+  await expect(page.getByRole('heading', { name: /Hôm nay, bạn muốn/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Về màn thiết lập thiết bị', exact: true }).click();
+  await expect(
+    page.getByRole('heading', { name: 'Kết nối tủ FloraBot', exact: true }),
+  ).toBeVisible();
+  expect(calls).toEqual([]);
+});
+
 for (const width of [390, 1200]) {
   test(`Preview shopping journey never sends a command or payment at ${width}`, async ({
     page,
