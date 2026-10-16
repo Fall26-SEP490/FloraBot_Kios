@@ -32,6 +32,7 @@ import GiftMessage from './GiftMessage';
 import PickupRecovery from './PickupRecovery';
 import AccessoryPicker from './AccessoryPicker';
 import GiftAdvisor from './GiftAdvisor';
+import KioskPreview from './KioskPreview';
 import '@fontsource/nunito/vietnamese-800.css';
 import '@fontsource/nunito/latin-800.css';
 import '@fontsource/be-vietnam-pro/vietnamese-400.css';
@@ -92,7 +93,13 @@ const stateNames: Record<string, string> = {
   DISPUTED: 'Đang xử lý phản ánh',
 };
 
-function Setup({ onReady }: { onReady: (device: Device) => void }) {
+function Setup({
+  onReady,
+  onPreview,
+}: {
+  onReady: (device: Device) => void;
+  onPreview: () => void;
+}) {
   const form = useForm<Device>({ resolver: zodResolver(setupSchema) });
   const connect = useMutation({
     mutationFn: async (device: Device) => {
@@ -108,6 +115,9 @@ function Setup({ onReady }: { onReady: (device: Device) => void }) {
     <main id="main" className="setup">
       <h1>Kết nối tủ FloraBot</h1>
       <p>Dành cho nhân viên thiết lập thiết bị trước khi đón khách.</p>
+      <Button variant="outline" type="button" onClick={onPreview}>
+        Xem thử giao diện, không cần thiết bị IoT
+      </Button>
       <form noValidate onSubmit={form.handleSubmit((value) => connect.mutate(value))}>
         <label htmlFor="device-id">Mã kiosk</label>
         <input
@@ -696,6 +706,10 @@ function App() {
     }
   });
   const [visit, setVisit] = useState(0);
+  const [preview, setPreview] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('preview') === '1' || (!device && params.get('setup') !== '1');
+  });
   const [notice, setNotice] = useState('');
   const reset = React.useCallback(() => {
     queryClient.clear();
@@ -710,6 +724,7 @@ function App() {
     },
     [reset],
   );
+  if (preview) return <KioskPreview onSetup={() => setPreview(false)} />;
   return device ? (
     <Shopping
       key={visit}
@@ -719,7 +734,7 @@ function App() {
       onPrivacyFinish={privacyFinish}
     />
   ) : (
-    <Setup onReady={setDevice} />
+    <Setup onReady={setDevice} onPreview={() => setPreview(true)} />
   );
 }
 const root = createRootRoute({
