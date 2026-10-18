@@ -103,8 +103,7 @@ export function VirtualCabinetPanel({
     <section className="virtual-cabinet__slots-section" aria-label="Danh sách ô tủ 2D">
       <div className="virtual-cabinet-fallback-notice" role="status">
         <p className="fallback-text">
-          Chế độ danh sách 2D. Bạn có thể bấm nút <strong>2D / 3D</strong> ở góc trên để quay lại mô
-          hình 3D.
+          Chế độ danh sách 2D. Bấm nút <strong>2D / 3D</strong> ở góc trên để quay lại mô hình 3D.
         </p>
       </div>
       <div className="virtual-cabinet__body">
@@ -134,11 +133,11 @@ export function VirtualCabinetPanel({
       className="virtual-cabinet virtual-cabinet-simulator"
       aria-labelledby="virtual-cabinet-title"
     >
-      {/* 1. Header with simulation pill and connection status */}
+      {/* 1. Single-line Header with clean non-wrapping badges */}
       <div className="virtual-cabinet__heading">
         <div>
           <span className="virtual-cabinet__eyebrow">MÔ PHỎNG THIẾT BỊ 3D</span>
-          <h2 id="virtual-cabinet-title">Tủ hoa thông minh FloraBot</h2>
+          <h2 id="virtual-cabinet-title">Tủ hoa FloraBot</h2>
         </div>
         <div className="virtual-cabinet__badges">
           <button
@@ -147,7 +146,7 @@ export function VirtualCabinetPanel({
             onClick={() => setUse3DMode((v) => !v)}
             title="Chuyển đổi giữa chế độ 3D và 2D"
           >
-            {use3DMode ? 'Chế độ 3D' : 'Chế độ 2D'}
+            {use3DMode ? '3D' : '2D'}
           </button>
           <span
             className={`virtual-cabinet__connection virtual-cabinet__connection--${kioskStatus.toLowerCase()}`}
@@ -189,7 +188,7 @@ export function VirtualCabinetPanel({
         fallback2DContent
       )}
 
-      {/* 3. Compact Quick-Select Slot Tabs + Active Slot Inspector */}
+      {/* 3. Compact Quick-Select Slot Tabs */}
       <div className="virtual-cabinet__slot-tabs" role="tablist" aria-label="Chọn nhanh ô tủ">
         {slots.map((slot) => {
           const isSelected = selectedSlotCode === slot.code;
@@ -260,7 +259,7 @@ export function VirtualCabinetPanel({
         </div>
       )}
 
-      {/* 6. Testing & Simulation Controls + Event Log inside compact collapsible drawers */}
+      {/* 6. Testing & Simulation Controls + Event Log inside compact collapsible drawer */}
       <details className="virtual-cabinet__controls">
         <summary>🛠️ Bảng điều khiển giả lập & Nhật ký ({events.length})</summary>
         <div className="virtual-cabinet__control-grid">

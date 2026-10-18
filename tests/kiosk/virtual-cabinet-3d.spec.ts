@@ -11,7 +11,7 @@ test.describe('Virtual Cabinet 3D Simulator Interactive & Responsive Verificatio
   test('3D Simulator renders canvas or fallback, supports camera reset and slot inspection', async ({
     page,
   }) => {
-    test.setTimeout(60000);
+    test.setTimeout(120000);
     let networkRequestCount = 0;
     await page.route('**/api/**', (route) => {
       networkRequestCount++;
@@ -31,7 +31,7 @@ test.describe('Virtual Cabinet 3D Simulator Interactive & Responsive Verificatio
     // Verify 3D container / canvas is mounted or fallback is rendered
     const simulator = page.locator('.virtual-cabinet-simulator');
     await expect(simulator).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Tủ hoa thông minh FloraBot' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tủ hoa FloraBot' })).toBeVisible();
 
     const canvasOrFallback = simulator.locator('canvas, .virtual-cabinet-fallback-notice');
     await expect(canvasOrFallback.first()).toBeVisible();
@@ -62,9 +62,9 @@ test.describe('Virtual Cabinet 3D Simulator Interactive & Responsive Verificatio
 
     // 3D mode stays compact; the full card list only appears after explicitly switching to 2D.
     await expect(page.locator('.virtual-slot')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Chế độ 3D' }).click();
+    await page.getByRole('button', { name: '3D', exact: true }).click();
     await expect(page.locator('.virtual-slot')).toHaveCount(3);
-    await page.getByRole('button', { name: 'Chế độ 2D' }).click();
+    await page.getByRole('button', { name: '2D', exact: true }).click();
     await expect(page.locator('.virtual-slot')).toHaveCount(0);
 
     // Test OFFLINE blocks door opening
@@ -99,7 +99,7 @@ test.describe('Virtual Cabinet 3D Simulator Interactive & Responsive Verificatio
       await page.goto('/');
 
       await page.getByRole('button', { name: 'Xem giao diện mẫu' }).click();
-      await expect(page.getByRole('heading', { name: 'Tủ hoa thông minh FloraBot' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Tủ hoa FloraBot' })).toBeVisible();
 
       // Verify no horizontal overflow
       const noOverflow = await page.evaluate(

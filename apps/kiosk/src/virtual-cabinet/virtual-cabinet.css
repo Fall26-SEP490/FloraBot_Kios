@@ -20,12 +20,31 @@
   min-width: 0;
 }
 
-.preview-workspace .preview-catalogue-section,
-.preview-workspace .simulated-checkout-section,
-.preview-workspace .preview-pickup-section {
+.preview-workspace .preview-catalogue-section {
   width: 100%;
   max-width: none;
   margin-inline: 0;
+}
+
+.preview-workspace--task {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+}
+
+.preview-workspace--task .simulated-checkout-section,
+.preview-workspace--task .preview-pickup-section {
+  width: 100%;
+}
+
+@media (max-width: 1180px) {
+  .preview-workspace--task {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-workspace--task .virtual-cabinet {
+    position: static;
+    width: min(100%, 560px);
+    margin-inline: auto;
+  }
 }
 
 .virtual-cabinet {

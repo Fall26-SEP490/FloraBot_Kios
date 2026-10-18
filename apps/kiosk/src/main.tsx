@@ -107,7 +107,12 @@ function Setup({
   onReady: (device: Device) => void;
   onPreview: () => void;
 }) {
-  const form = useForm<Device>({ resolver: zodResolver(setupSchema) });
+  const [showDeviceKey, setShowDeviceKey] = useState(false);
+  const form = useForm<Device>({
+    resolver: zodResolver(setupSchema),
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
+  });
   const connect = useMutation({
     mutationFn: async (device: Device) => {
       const trimmedDevice: Device = {
@@ -139,52 +144,15 @@ function Setup({
             Hệ thống Tủ Hoa Thông Minh FloraBot
           </h2>
           <p className="setup-hero-desc">
-            Phân phối hoa nghệ thuật tự động 24/7. Trải nghiệm chạm tiện lợi trên màn hình máy tính
-            bảng: mua hoa tại chỗ nhanh chóng hoặc nhận đơn đặt trước an toàn.
+            Mua hoa tại chỗ hoặc nhận đơn đặt trước nhanh chóng trên màn hình cảm ứng.
           </p>
 
-          <div className="setup-highlights-list">
-            <div className="setup-highlight-item">
-              <span className="setup-highlight-icon" aria-hidden="true">
-                🌸
-              </span>
-              <div>
-                <strong>100% Hoa nhân tạo cao cấp</strong>
-                <p className="quiet">
-                  Hoa lụa và hoa sáp bền đẹp, an toàn, không lo hoa héo hay dị ứng phấn hoa.
-                </p>
-              </div>
-            </div>
-            <div className="setup-highlight-item">
-              <span className="setup-highlight-icon" aria-hidden="true">
-                ⚡
-              </span>
-              <div>
-                <strong>Mua tại chỗ không cần đăng nhập</strong>
-                <p className="quiet">
-                  Chạm chọn hoa có sẵn tại từng ô tủ và thanh toán ngay tức thì.
-                </p>
-              </div>
-            </div>
-            <div className="setup-highlight-item">
-              <span className="setup-highlight-icon" aria-hidden="true">
-                📦
-              </span>
-              <div>
-                <strong>Nhận đơn đặt trước bằng mã PIN / QR</strong>
-                <p className="quiet">
-                  Nhập mã PIN hoặc quét mã QR trên màn hình cảm ứng để mở ô nhận hoa kèm phụ kiện.
-                </p>
-              </div>
-            </div>
-          </div>
-
           <div className="setup-preview-card">
-            <h3>Chưa kết nối tủ hoặc muốn xem thử giao diện?</h3>
-            <p>
-              Trải nghiệm đầy đủ danh mục hoa lụa, giỏ hàng tablet và quy trình nhận hoa với dữ liệu
-              minh họa mà không cần thiết bị thật.
-            </p>
+            <div>
+              <span className="setup-preview-eyebrow">KHÔNG CẦN THIẾT BỊ THẬT</span>
+              <h3>Trải nghiệm ngay giao diện kiosk</h3>
+              <p>Xem danh mục, thanh toán và nhận hoa bằng dữ liệu minh họa an toàn.</p>
+            </div>
             <Button
               id="preview-open"
               type="button"
@@ -194,10 +162,36 @@ function Setup({
             >
               Xem giao diện mẫu
             </Button>
-            <p className="preview-help-text">
-              Chế độ xem mẫu độc lập: Không gọi API backend, không trừ tiền và không mở chốt tủ
-              thật.
-            </p>
+          </div>
+
+          <div className="setup-highlights-list">
+            <div className="setup-highlight-item">
+              <span className="setup-highlight-icon" aria-hidden="true">
+                🌸
+              </span>
+              <div>
+                <strong>100% Hoa nhân tạo cao cấp</strong>
+                <p className="quiet">Bền đẹp, an toàn và luôn sẵn sàng tại tủ.</p>
+              </div>
+            </div>
+            <div className="setup-highlight-item">
+              <span className="setup-highlight-icon" aria-hidden="true">
+                ⚡
+              </span>
+              <div>
+                <strong>Mua tại chỗ không cần đăng nhập</strong>
+                <p className="quiet">Chọn hoa có sẵn và thanh toán trực tiếp tại kiosk.</p>
+              </div>
+            </div>
+            <div className="setup-highlight-item">
+              <span className="setup-highlight-icon" aria-hidden="true">
+                📦
+              </span>
+              <div>
+                <strong>Nhận đơn bằng PIN / QR</strong>
+                <p className="quiet">Mở đúng ô nhận hoa bằng mã đã được cấp.</p>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -208,12 +202,11 @@ function Setup({
           </div>
           <h1 id="staff-setup-title">Kết nối tủ FloraBot</h1>
           <p className="setup-staff-subtitle">
-            Dành cho nhân viên thiết lập thiết bị trước khi đón khách. Nhập mã kiosk (UUID) và khóa
-            thiết bị (API key) được cấp để xác thực kết nối qua API.
+            Nhập thông tin được cấp để đồng bộ kiosk với hệ thống FloraBot.
           </p>
 
-          <div className="setup-guidance-callout" role="note">
-            <strong>Lưu ý cho nhân viên kỹ thuật:</strong>
+          <details className="setup-guidance-callout">
+            <summary>Xem hướng dẫn lấy mã kết nối</summary>
             <p>
               Mã kiosk là chuỗi định danh duy nhất (UUID/id). Mã hiển thị như{' '}
               <code>K-DEMO-SIM</code> chỉ là nhãn nhận diện dán trên tủ (display code/label), tuyệt
@@ -221,7 +214,7 @@ function Setup({
               thực giao tiếp API và đồng bộ danh mục, không tự động kích hoạt phần cứng chốt khóa
               tủ.
             </p>
-          </div>
+          </details>
 
           <form
             noValidate
@@ -241,28 +234,49 @@ function Setup({
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
               {...form.register('id')}
               aria-invalid={!!form.formState.errors.id}
-              aria-describedby="device-id-hint device-id-error"
+              aria-describedby={
+                form.formState.errors.id ? 'device-id-hint device-id-error' : 'device-id-hint'
+              }
             />
-            <p id="device-id-error" className="error">
-              {form.formState.errors.id?.message}
-            </p>
+            {form.formState.errors.id && (
+              <p id="device-id-error" className="error">
+                {form.formState.errors.id.message}
+              </p>
+            )}
 
             <label htmlFor="device-key">Khóa thiết bị (API key / apiKey)</label>
             <p id="device-key-hint" className="setup-field-hint">
               Khóa API key bí mật được cấp cho thiết bị (không dùng mã nhãn dán như K-DEMO-SIM).
             </p>
-            <input
-              id="device-key"
-              type="password"
-              autoComplete="off"
-              placeholder="Khóa bí mật API key"
-              {...form.register('key')}
-              aria-invalid={!!form.formState.errors.key}
-              aria-describedby="device-key-hint device-key-error"
-            />
-            <p id="device-key-error" className="error">
-              {form.formState.errors.key?.message}
-            </p>
+            <div className="setup-secret-field">
+              <input
+                id="device-key"
+                type={showDeviceKey ? 'text' : 'password'}
+                autoComplete="off"
+                placeholder="Khóa bí mật API key"
+                {...form.register('key')}
+                aria-invalid={!!form.formState.errors.key}
+                aria-describedby={
+                  form.formState.errors.key
+                    ? 'device-key-hint device-key-error'
+                    : 'device-key-hint'
+                }
+              />
+              <button
+                type="button"
+                className="setup-secret-toggle"
+                aria-label={showDeviceKey ? 'Ẩn API key' : 'Hiện API key'}
+                aria-pressed={showDeviceKey}
+                onClick={() => setShowDeviceKey((visible) => !visible)}
+              >
+                {showDeviceKey ? 'Ẩn' : 'Hiện'}
+              </button>
+            </div>
+            {form.formState.errors.key && (
+              <p id="device-key-error" className="error">
+                {form.formState.errors.key.message}
+              </p>
+            )}
 
             <p role="alert" className="error">
               {connect.error?.message}
