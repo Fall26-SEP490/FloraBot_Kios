@@ -252,6 +252,13 @@
   line-height: 1.2;
 }
 
+.preview-simulator .task-screen-header h1 {
+  margin: 0.25rem 0 0;
+  color: var(--kp-green);
+  font-size: clamp(1.6rem, 2.2vw, 2rem);
+  line-height: 1.15;
+}
+
 .preview-simulator .simulated-checkout-card,
 .preview-simulator .preview-pickup-card {
   border-color: var(--kp-border);
@@ -309,6 +316,10 @@
   .preview-simulator .preview-workspace {
     grid-template-columns: minmax(0, 1fr) 400px;
     gap: 1.25rem;
+  }
+
+  .preview-simulator .preview-workspace--task {
+    grid-template-columns: 1fr;
   }
 
   .preview-simulator .preview-bouquet-grid {

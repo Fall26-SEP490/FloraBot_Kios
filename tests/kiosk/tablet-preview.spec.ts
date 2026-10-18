@@ -25,8 +25,22 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await expect(page.getByText('Dành riêng cho nhân viên kỹ thuật')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Kết nối tủ FloraBot' })).toBeVisible();
     await expect(page.getByLabel('Mã kiosk')).toBeVisible();
-    await expect(page.getByLabel('Khóa thiết bị')).toBeVisible();
+    const deviceKeyInput = page.getByLabel('Khóa thiết bị');
+    await expect(deviceKeyInput).toBeVisible();
     await expect(page.getByRole('button', { name: 'Kết nối tủ' })).toBeVisible();
+
+    // Validation is shown on blur and corrected immediately while typing.
+    await deviceKeyInput.fill('short');
+    await deviceKeyInput.blur();
+    await expect(page.getByText('Khóa thiết bị (API key) cần ít nhất 8 ký tự.')).toBeVisible();
+    await deviceKeyInput.fill('secret-kiosk-key');
+    await expect(page.getByText('Khóa thiết bị (API key) cần ít nhất 8 ký tự.')).toHaveCount(0);
+
+    // Staff can inspect the key deliberately without changing its value.
+    await page.getByRole('button', { name: 'Hiện API key' }).click();
+    await expect(deviceKeyInput).toHaveAttribute('type', 'text');
+    await page.getByRole('button', { name: 'Ẩn API key' }).click();
+    await expect(deviceKeyInput).toHaveAttribute('type', 'password');
 
     // Verify preview button
     const previewBtn = page.getByRole('button', { name: 'Xem giao diện mẫu' });
@@ -81,7 +95,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     // Verify persistent ribbon
     await expect(page.getByText('DỮ LIỆU MINH HỌA')).toBeVisible();
     await expect(page.getByText(/Không thanh toán thật, không mở khóa tủ thật/)).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Tủ hoa thông minh FloraBot' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tủ hoa FloraBot' })).toBeVisible();
     await expect(page.locator('.slot-tab-btn')).toHaveCount(3);
     await expect(page.locator('.virtual-slot')).toHaveCount(0);
 

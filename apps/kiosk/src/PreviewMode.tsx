@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button, Check, Flower2, MapPin } from '@florabot/ui';
 import { flowerPhotos } from '@florabot/ui/flower-photos';
@@ -81,6 +81,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
   const [pickupTriggered, setPickupTriggered] = useState(false);
   const [pickupError, setPickupError] = useState('');
   const [pickupAttempts, setPickupAttempts] = useState(0);
+  const pickupInputRef = useRef<HTMLInputElement>(null);
 
   const selectedBouquets = DEMO_BOUQUETS.filter((b) => selectedIds.includes(b.id));
   const availableBouquets = DEMO_BOUQUETS.filter((bouquet) =>
@@ -114,6 +115,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
     const clean = pickupCode.trim().toUpperCase();
     if (!clean) {
       setPickupError('Vui lòng nhập mã PIN hoặc mã đơn đặt trước.');
+      pickupInputRef.current?.focus();
       return;
     }
     if (pickupAttempts >= 3) {
@@ -222,7 +224,9 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
           </button>
         </div>
 
-        <div className="preview-workspace">
+        <div
+          className={`preview-workspace ${simulatedCheckoutOpen || activeTab === 'pickup' ? 'preview-workspace--task' : ''}`}
+        >
           <div className="preview-flow">
             {/* Tab 1: Walk-in shopping - Catalogue first */}
             {activeTab === 'walkin' && !simulatedCheckoutOpen && (
@@ -324,32 +328,40 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                 className="simulated-checkout-section"
                 aria-labelledby="simulated-checkout-title"
               >
-                <h1 id="simulated-checkout-title">Mô phỏng quy trình thanh toán</h1>
-
-                <div className="preview-warning-box" role="alert">
-                  <strong>MÔ PHỎNG: DỮ LIỆU MINH HỌA</strong>
-                  <p>
-                    Đây là quy trình mô phỏng giao diện Kiosk Tablet. Không kết nối payOS, không trừ
-                    tiền và không gửi lệnh mở chốt tủ thực tế.
-                  </p>
-                </div>
+                <header className="task-screen-header">
+                  <div>
+                    <span className="task-screen-eyebrow">BƯỚC 3 · THANH TOÁN</span>
+                    <h1 id="simulated-checkout-title">Mô phỏng quy trình thanh toán</h1>
+                    <p>Kiểm tra đơn hoa và trải nghiệm bước quét mã thanh toán.</p>
+                  </div>
+                  <div className="preview-warning-box" role="note">
+                    <strong>MÔ PHỎNG: DỮ LIỆU MINH HỌA</strong>
+                    <span>Không kết nối payOS · Không trừ tiền · Không mở tủ thật</span>
+                  </div>
+                </header>
 
                 <div className="simulated-checkout-card">
-                  <h2>Chi tiết đơn hoa mô phỏng</h2>
-                  <ul className="simulated-items-list">
-                    {selectedBouquets.map((b) => (
-                      <li key={b.id} className="simulated-item-row">
-                        <span>
-                          <strong>{b.name}</strong> · Ô {b.slotCode} ({b.shopName})
-                        </span>
-                        <strong>{money(b.price)}</strong>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="simulated-order-summary">
+                    <div className="simulated-card-heading">
+                      <span>ĐƠN HÀNG</span>
+                      <strong>{selectedBouquets.length} bó hoa</strong>
+                    </div>
+                    <ul className="simulated-items-list">
+                      {selectedBouquets.map((b) => (
+                        <li key={b.id} className="simulated-item-row">
+                          <span>
+                            <strong>{b.name}</strong>
+                            <small>Ô {b.slotCode} · {b.shopName}</small>
+                          </span>
+                          <strong>{money(b.price)}</strong>
+                        </li>
+                      ))}
+                    </ul>
 
-                  <div className="simulated-total-row">
-                    <span>Tổng số tiền:</span>
-                    <strong className="simulated-total-amount">{money(totalAmount)}</strong>
+                    <div className="simulated-total-row">
+                      <span>Tổng thanh toán</span>
+                      <strong className="simulated-total-amount">{money(totalAmount)}</strong>
+                    </div>
                   </div>
 
                   {!simulatedPaid ? (
@@ -370,12 +382,11 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                       </div>
 
                       <div className="simulated-instructions">
-                        <p>
-                          Mã đơn mô phỏng: <strong>FB-PREVIEW-261014-01</strong>
-                        </p>
-                        <p>
-                          Mã biên nhận tạm tính: <strong>MINHHOA1</strong>
-                        </p>
+                        <span className="simulated-instructions__label">THÔNG TIN GIAO DỊCH</span>
+                        <dl className="simulated-code-list">
+                          <div><dt>Mã đơn</dt><dd>FB-PREVIEW-261014-01</dd></div>
+                          <div><dt>Biên nhận</dt><dd>MINHHOA1</dd></div>
+                        </dl>
                         <p className="quiet">
                           Giao diện minh họa: Trên thiết bị thật đã cấu hình, khách quét mã payOS để
                           thanh toán và hệ thống tự động mở chốt ô tủ.
@@ -384,6 +395,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                         <div className="simulated-actions">
                           <Button
                             type="button"
+                            aria-label="Mô phỏng thanh toán thành công (Thử nghiệm giao diện)"
                             onClick={() => {
                               setSimulatedPaid(true);
                               cabinet.startDispensing(
@@ -392,7 +404,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                             }}
                             className="simulate-success-btn"
                           >
-                            Mô phỏng thanh toán thành công (Thử nghiệm giao diện)
+                            Xác nhận thanh toán mẫu
                           </Button>
                           <Button
                             type="button"
@@ -460,61 +472,89 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
             {/* Tab 2: Pre-order Pickup */}
             {activeTab === 'pickup' && (
               <section className="preview-pickup-section" aria-labelledby="pickup-heading">
-                <h1 id="pickup-heading">Nhận đơn đặt trước tại tủ (Mô phỏng)</h1>
-                <p className="pickup-lead">
-                  Dành cho khách hàng đã đặt hoa online trước qua website hoặc ứng dụng FloraBot.
-                </p>
-
-                <div className="camera-privacy-notice" role="note">
-                  <strong>Bảo vệ quyền riêng tư & tiện lợi:</strong> Camera trên kiosk không tự động
-                  kích hoạt. Quý khách có thể nhập trực tiếp mã PIN hoặc mã biên nhận trên màn hình
-                  cảm ứng bên dưới.
-                </div>
+                <header className="task-screen-header">
+                  <div>
+                    <span className="task-screen-eyebrow">NHẬN HOA ĐẶT TRƯỚC</span>
+                    <h1
+                      id="pickup-heading"
+                      aria-label="Nhận đơn đặt trước tại tủ (Mô phỏng)"
+                    >
+                      Nhập mã để mở ô nhận hoa
+                    </h1>
+                    <p>Dùng PIN 6 số hoặc mã biên nhận từ website FloraBot.</p>
+                  </div>
+                  <div className="camera-privacy-notice" role="note">
+                    <strong>Camera đang tắt</strong>
+                    <span>Camera trên kiosk không tự động kích hoạt.</span>
+                  </div>
+                </header>
 
                 <div className="preview-pickup-card">
-                  <label htmlFor="preview-pin-input">Mã PIN hoặc Mã biên nhận nhận hoa</label>
-                  <div className="preview-input-group">
-                    <input
-                      id="preview-pin-input"
-                      type="text"
-                      placeholder="Ví dụ: PRE26101 hoặc 123456"
-                      value={pickupCode}
-                      onChange={(e) => setPickupCode(e.target.value)}
-                      maxLength={20}
-                    />
-                    <Button type="button" onClick={handleSimulatePickup}>
-                      Kiểm tra mã đơn
-                    </Button>
-                  </div>
+                  <div className="pickup-entry-panel">
+                    <div className="pickup-entry-form">
+                      <label htmlFor="preview-pin-input">Mã PIN hoặc mã biên nhận</label>
+                      <div className="preview-input-group">
+                        <input
+                          ref={pickupInputRef}
+                          id="preview-pin-input"
+                          type="text"
+                          aria-label="Mã PIN hoặc Mã biên nhận nhận hoa"
+                          inputMode="text"
+                          autoComplete="off"
+                          placeholder="PRE26101 hoặc 123456"
+                          value={pickupCode}
+                          onChange={(e) => {
+                            setPickupCode(e.target.value);
+                            if (pickupError) setPickupError('');
+                          }}
+                          onBlur={() => {
+                            if (!pickupCode.trim()) {
+                              setPickupError('Vui lòng nhập mã PIN hoặc mã đơn đặt trước.');
+                            }
+                          }}
+                          maxLength={20}
+                          aria-invalid={!!pickupError}
+                          aria-describedby={pickupError ? 'preview-pin-error' : undefined}
+                        />
+                        <Button type="button" onClick={handleSimulatePickup}>
+                          Kiểm tra mã đơn
+                        </Button>
+                      </div>
 
-                  {pickupError && (
-                    <p role="alert" className="error">
-                      {pickupError}
-                    </p>
-                  )}
+                      {pickupError && (
+                        <p id="preview-pin-error" role="alert" className="error">
+                          {pickupError}
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="quick-demo-pins">
-                    <span>Mã thử nghiệm nhanh:</span>
-                    <button
-                      type="button"
-                      className="pin-chip"
-                      onClick={() => {
-                        setPickupCode('PRE26101');
-                        setPickupError('');
-                      }}
-                    >
-                      PRE26101 (Hướng dương + thiệp)
-                    </button>
-                    <button
-                      type="button"
-                      className="pin-chip"
-                      onClick={() => {
-                        setPickupCode('123456');
-                        setPickupError('');
-                      }}
-                    >
-                      123456 (Đơn đặt trước mẫu)
-                    </button>
+                    <aside className="quick-demo-pins" aria-label="Mã dùng thử">
+                      <span>MÃ DÙNG THỬ</span>
+                      <button
+                        type="button"
+                        className="pin-chip"
+                        aria-label="PRE26101 (Hướng dương + thiệp)"
+                        onClick={() => {
+                          setPickupCode('PRE26101');
+                          setPickupError('');
+                        }}
+                      >
+                        <strong>PRE26101</strong>
+                        <small>Hướng dương + thiệp</small>
+                      </button>
+                      <button
+                        type="button"
+                        className="pin-chip"
+                        aria-label="123456 (Đơn đặt trước mẫu)"
+                        onClick={() => {
+                          setPickupCode('123456');
+                          setPickupError('');
+                        }}
+                      >
+                        <strong>123456</strong>
+                        <small>Đơn đặt trước mẫu</small>
+                      </button>
+                    </aside>
                   </div>
 
                   {pickupResult && (
