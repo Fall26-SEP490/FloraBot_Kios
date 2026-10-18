@@ -34,7 +34,6 @@ import PickupRecovery from './PickupRecovery';
 import GiftAdvisor from './GiftAdvisor';
 import BouquetImage, { getBouquetImageUrl } from './BouquetImage';
 import PreviewMode from './PreviewMode';
-import KioskPreview from './KioskPreview';
 import '@fontsource/nunito/vietnamese-800.css';
 import '@fontsource/nunito/latin-800.css';
 import '@fontsource/be-vietnam-pro/vietnamese-400.css';
@@ -104,11 +103,9 @@ const stateNames: Record<string, string> = {
 function Setup({
   onReady,
   onPreview,
-  onCatalogPreview,
 }: {
   onReady: (device: Device) => void;
   onPreview: () => void;
-  onCatalogPreview: () => void;
 }) {
   const form = useForm<Device>({ resolver: zodResolver(setupSchema) });
   const connect = useMutation({
@@ -196,14 +193,6 @@ function Setup({
               onClick={onPreview}
             >
               Xem giao diện mẫu
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="setup-preview-button"
-              onClick={onCatalogPreview}
-            >
-              Xem mẫu và danh mục website
             </Button>
             <p className="preview-help-text">
               Chế độ xem mẫu độc lập: Không gọi API backend, không trừ tiền và không mở chốt tủ
@@ -853,9 +842,6 @@ function App() {
     }
   });
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [catalogPreview, setCatalogPreview] = useState(
-    () => new URLSearchParams(window.location.search).get('preview') === '1',
-  );
   const [visit, setVisit] = useState(0);
   const [notice, setNotice] = useState('');
   const reset = React.useCallback(() => {
@@ -872,8 +858,6 @@ function App() {
     [reset],
   );
 
-  if (catalogPreview) return <KioskPreview onSetup={() => setCatalogPreview(false)} />;
-
   if (previewOpen) {
     return <PreviewMode onExit={() => setPreviewOpen(false)} />;
   }
@@ -887,11 +871,7 @@ function App() {
       onPrivacyFinish={privacyFinish}
     />
   ) : (
-    <Setup
-      onReady={setDevice}
-      onPreview={() => setPreviewOpen(true)}
-      onCatalogPreview={() => setCatalogPreview(true)}
-    />
+    <Setup onReady={setDevice} onPreview={() => setPreviewOpen(true)} />
   );
 }
 const root = createRootRoute({
