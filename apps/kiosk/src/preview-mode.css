@@ -1,0 +1,420 @@
+.preview-simulator {
+  --preview-shadow: 0 18px 48px rgb(29 80 55 / 9%);
+}
+
+.preview-simulator .preview-compact-main {
+  max-width: 1500px;
+  padding: 1.2rem 4% 3rem;
+  overflow: visible;
+}
+
+.preview-simulator__header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.preview-simulator__header-actions > button {
+  min-height: 44px;
+  padding-inline: 1rem;
+  border-color: #9caf98;
+  border-radius: 999px;
+  background: white;
+  color: var(--kp-green);
+  white-space: nowrap;
+}
+
+.preview-simulator__hero {
+  margin-bottom: 1rem;
+  box-shadow: var(--preview-shadow);
+}
+
+.preview-simulator__notice {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #e0d4ad;
+  border-radius: 10px;
+  background: #f8f3e4;
+  color: #67572f;
+  font-size: 0.72rem;
+  line-height: 1.55;
+}
+
+.preview-simulator .kiosk-compact-tabs {
+  display: flex;
+  grid-template-columns: none;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+}
+
+.preview-simulator .compact-tab-btn {
+  min-height: 44px;
+  padding: 0.55rem 1.15rem;
+  border: 1px solid #bccdb8;
+  border-radius: 999px;
+  background: white;
+  color: #315b3c;
+  font-size: 0.76rem;
+  box-shadow: none;
+}
+
+.preview-simulator .compact-tab-btn:hover {
+  background: #f0f5ea;
+}
+
+.preview-simulator .compact-tab-btn.active {
+  border-color: var(--kp-green);
+  background: var(--kp-green);
+  color: white;
+  box-shadow: none;
+}
+
+.preview-simulator .preview-workspace {
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 480px);
+  gap: 2rem;
+}
+
+.preview-simulator .preview-flow {
+  min-width: 0;
+}
+
+.preview-simulator .preview-catalogue-header {
+  margin-bottom: 0;
+}
+
+.preview-simulator .preview-compact-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  line-height: 1.25;
+}
+
+.preview-simulator .preview-compact-subtitle {
+  margin: 0.55rem 0 1rem;
+}
+
+.preview-simulator .preview-bouquet-grid {
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.preview-simulator .preview-bouquet-card {
+  border: 1px solid var(--kp-border);
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgb(29 80 55 / 4%);
+}
+
+.preview-simulator .preview-bouquet-card.selected {
+  border-color: var(--kp-green);
+  background: #fff;
+  box-shadow:
+    0 0 0 2px rgb(29 80 55 / 14%),
+    0 12px 30px rgb(29 80 55 / 10%);
+}
+
+.preview-simulator .card-image-wrap {
+  height: auto;
+  aspect-ratio: 1 / 0.82;
+  background: #eef0e6;
+}
+
+.preview-simulator .card-slot-badge {
+  top: 0.65rem;
+  left: 0.65rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: #fffef8;
+  color: #2f5738;
+  font-size: 0.68rem;
+  box-shadow: 0 2px 10px rgb(23 62 43 / 12%);
+}
+
+.preview-simulator .card-content {
+  padding: 0.95rem;
+}
+
+.preview-simulator .card-shop {
+  margin: 0 0 0.4rem;
+  font-size: 0.68rem;
+  color: var(--kp-muted);
+}
+
+.preview-simulator .card-title {
+  min-height: 2.65em;
+  font-size: 0.96rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.preview-simulator .card-illustration-notice {
+  min-height: 3.2em;
+  margin: 0.45rem 0 0.8rem;
+  color: var(--kp-muted);
+  font-size: 0.7rem;
+  font-style: normal;
+  line-height: 1.55;
+}
+
+.preview-simulator .card-purchase-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.preview-simulator .card-price {
+  color: var(--kp-green);
+  font-size: 1rem;
+}
+
+.preview-simulator .card-checkbox-label {
+  position: relative;
+  display: grid;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid #b0c2a7;
+  border-radius: 50%;
+  background: #edf3e7;
+  color: var(--kp-green);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.preview-simulator .card-checkbox-label input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.preview-simulator .card-checkbox-label:has(input:checked) {
+  border-color: var(--kp-green);
+  background: var(--kp-green);
+  color: white;
+}
+
+.preview-simulator .card-checkbox-label:has(input:focus-visible) {
+  outline: 3px solid rgb(29 80 55 / 24%);
+  outline-offset: 3px;
+}
+
+.preview-simulator .compact-preorder-note {
+  margin: 1rem 0;
+  color: var(--kp-muted);
+  font-size: 0.72rem;
+  line-height: 1.65;
+}
+
+.preview-simulator .preview-sticky-basket {
+  bottom: 1rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--kp-border);
+  border-radius: 14px;
+  background: white;
+  box-shadow: var(--preview-shadow);
+}
+
+.preview-simulator .basket-checkout-button,
+.preview-simulator .simulate-success-btn,
+.preview-simulator .preview-input-group button,
+.preview-simulator .pickup-result-card > button {
+  border-color: var(--kp-green);
+  background: var(--kp-green);
+  color: white;
+}
+
+.preview-simulator .basket-checkout-button:disabled {
+  border-color: #b9c7b5;
+  background: #8ba995;
+}
+
+.preview-simulator .preview-warning-box {
+  border: 1px solid #e0d4ad;
+  background: #f8f3e4;
+  color: #67572f;
+}
+
+.preview-simulator .simulated-checkout-section > h1,
+.preview-simulator .preview-pickup-section > h1 {
+  margin: 0 0 0.6rem;
+  color: var(--kp-green);
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  line-height: 1.2;
+}
+
+.preview-simulator .simulated-checkout-card,
+.preview-simulator .preview-pickup-card {
+  border-color: var(--kp-border);
+  box-shadow: 0 10px 30px rgb(29 80 55 / 5%);
+}
+
+.preview-simulator .simulated-qr-wrap,
+.preview-simulator .simulated-success-box,
+.preview-simulator .pickup-result-card {
+  border-color: #b8c9b1;
+  background: #f0f5ea;
+}
+
+.preview-simulator .preview-input-group input {
+  border-color: #8b9e86;
+}
+
+.preview-simulator .preview-input-group input:focus-visible {
+  border-color: var(--kp-green);
+  outline: 3px solid rgb(29 80 55 / 16%);
+}
+
+.preview-simulator .pin-chip {
+  border-color: #bccdb8;
+  background: white;
+  color: #315b3c;
+}
+
+.preview-simulator .virtual-cabinet {
+  top: 1.5rem;
+  box-shadow: 0 22px 52px rgb(20 62 44 / 18%);
+}
+
+.preview-simulator .preview-compact-footer {
+  padding: 1rem 4%;
+  color: var(--kp-muted);
+  text-align: initial;
+}
+
+.preview-simulator .preview-compact-footer p {
+  margin: 0;
+}
+
+@media (max-width: 1180px) {
+  .preview-simulator .kp-header {
+    flex-wrap: wrap;
+  }
+
+  .preview-simulator .kp-top-steps {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .preview-simulator .preview-workspace {
+    grid-template-columns: minmax(0, 1fr) 400px;
+    gap: 1.25rem;
+  }
+
+  .preview-simulator .preview-bouquet-grid {
+    grid-template-columns: minmax(220px, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .preview-simulator .preview-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-simulator .preview-bouquet-grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+
+  .preview-simulator .virtual-cabinet {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .preview-simulator .kp-header {
+    padding: 1rem 5%;
+  }
+
+  .preview-simulator__header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .preview-simulator .kp-top-steps {
+    justify-content: flex-start;
+    gap: 0.65rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .preview-simulator .kp-top-steps li {
+    flex: 0 0 auto;
+  }
+
+  .preview-simulator .preview-compact-main {
+    padding-inline: 5%;
+  }
+
+  .preview-simulator .preview-simulator__hero {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-simulator .preview-simulator__hero > img {
+    max-height: 230px;
+  }
+
+  .preview-simulator .preview-simulator__hero > div {
+    padding: 1.5rem;
+  }
+
+  .preview-simulator .preview-bouquet-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .preview-simulator .kp-section-heading {
+    align-items: flex-end;
+  }
+
+  .preview-simulator .preview-sticky-basket {
+    position: static;
+  }
+
+  .preview-simulator .simulated-checkout-card,
+  .preview-simulator .preview-pickup-card {
+    padding: 1.15rem;
+  }
+
+  .preview-simulator .simulated-item-row,
+  .preview-simulator .result-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .preview-simulator .preview-compact-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .preview-simulator__header-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .preview-simulator .kp-preview-badge {
+    width: fit-content;
+    white-space: normal;
+  }
+
+  .preview-simulator .kiosk-compact-tabs {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .preview-simulator .preview-catalogue-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

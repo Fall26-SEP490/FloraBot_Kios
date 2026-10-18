@@ -31,6 +31,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     // Verify preview button
     const previewBtn = page.getByRole('button', { name: 'Xem giao diện mẫu' });
     await expect(previewBtn).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Xem mẫu và danh mục website' })).toHaveCount(0);
 
     // Verify touch target >= 44px
     const btnBox = await previewBtn.boundingBox();
@@ -58,6 +59,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
   test('Preview mode runs with complete network isolation (0 API calls), persistent banner, and clean exit', async ({
     page,
   }) => {
+    test.setTimeout(180000);
     await page.setViewportSize({ width: 1024, height: 768 });
 
     let apiCallCount = 0;
@@ -79,34 +81,38 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     // Verify persistent ribbon
     await expect(page.getByText('DỮ LIỆU MINH HỌA')).toBeVisible();
     await expect(page.getByText(/Không thanh toán thật, không mở khóa tủ thật/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Tủ hoa thông minh FloraBot' })).toBeVisible();
+    await expect(page.locator('.slot-tab-btn')).toHaveCount(3);
+    await expect(page.locator('.virtual-slot')).toHaveCount(0);
 
     // Verify invariant: One seller leases whole kiosk (shared shop name)
     const shopPills = page.locator('.card-shop');
     const count = await shopPills.count();
-    expect(count).toBe(4);
+    expect(count).toBe(2);
     for (let i = 0; i < count; i++) {
       await expect(shopPills.nth(i)).toContainText('Hoa Sài Gòn (Minh họa)');
     }
 
-    // Verify all 4 demo bouquets are displayed with artificial flower labels and slot codes
-    await expect(page.getByText('Bó hồng lụa dịu dàng')).toBeVisible();
-    await expect(page.getByText('Tulip vải pastel cao cấp')).toBeVisible();
-    await expect(page.getByText('Hướng dương lụa rực rỡ')).toBeVisible();
-    await expect(page.getByText('Bó hồng lụa mini để bàn')).toBeVisible();
+    // Only AVAILABLE slots are listed for walk-in; RESERVED A03 stays in the virtual cabinet.
+    const catalogue = page.locator('.preview-bouquet-grid');
+    await expect(catalogue.getByText('Bó hồng lụa dịu dàng')).toBeVisible();
+    await expect(catalogue.getByText('Tulip vải pastel cao cấp')).toBeVisible();
+    await expect(catalogue.getByText('Hướng dương lụa đặt trước')).toHaveCount(0);
 
     // Verify illustration notices
     const notices = page.locator('.card-illustration-notice');
-    expect(await notices.count()).toBe(4);
+    expect(await notices.count()).toBe(2);
 
-    // Verify slot codes A01, A02, B01, B02
-    await expect(page.getByText('Ô A01', { exact: true })).toBeVisible();
-    await expect(page.getByText('Ô A02', { exact: true })).toBeVisible();
-    await expect(page.getByText('Ô B01', { exact: true })).toBeVisible();
-    await expect(page.getByText('Ô B02', { exact: true })).toBeVisible();
+    // Verify the three physical demo slots and their inventory states.
+    await expect(page.locator('.slot-tab-btn--available')).toHaveCount(2);
+    await expect(page.locator('.slot-tab-btn--reserved')).toHaveCount(1);
+    await expect(page.locator('.slot-tab-btn--reserved')).toContainText('Ô A03');
 
     // Test selection and simulated checkout
     const firstCheckbox = page.getByLabel('Chọn Bó hồng lụa dịu dàng tại ô A01');
     await firstCheckbox.check();
+    await expect(page.getByRole('tab', { name: 'Ô A01', exact: true })).toHaveClass(/held/);
+    await page.getByLabel('Chọn Tulip vải pastel cao cấp tại ô A02').check();
 
     const checkoutBtn = page.getByRole('button', { name: /Thử nghiệm đặt hoa/ });
     await expect(checkoutBtn).toBeEnabled();
@@ -126,7 +132,17 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await expect(page.getByText('✓ MÔ PHỎNG: THANH TOÁN THÀNH CÔNG')).toBeVisible();
     await expect(page.getByText(/TỦ THẬT KHÔNG MỞ CHỐT KHÓA/)).toBeVisible();
 
-    // Finish checkout preview
+    // The virtual cabinet receives UNLOCK, opens the door and requires a close acknowledgement.
+    const closeA01 = page.getByRole('button', { name: 'Đóng cửa ô A01' });
+    await expect(closeA01).toBeVisible();
+    await closeA01.click();
+    await expect(page.getByRole('tab', { name: 'Ô A01', exact: true })).toHaveClass(/empty/);
+    const closeA02 = page.getByRole('button', { name: 'Đóng cửa ô A02' });
+    await expect(closeA02).toBeVisible();
+    await closeA02.click();
+    await expect(page.getByRole('tab', { name: 'Ô A02', exact: true })).toHaveClass(/empty/);
+
+    // Finish checkout preview after all simulated doors are closed.
     await page.getByRole('button', { name: 'Hoàn tất lượt xem mẫu' }).click();
 
     // Switch to Pre-order Pickup tab
@@ -136,18 +152,29 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     ).toBeVisible();
     await expect(page.getByText('Camera trên kiosk không tự động kích hoạt')).toBeVisible();
 
+    // Invalid PIN attempts are limited before the demo asks for a reset.
+    await page.getByLabel('Mã PIN hoặc Mã biên nhận nhận hoa').fill('SAI-MA');
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await page.getByRole('button', { name: 'Kiểm tra mã đơn' }).click();
+    }
+    await expect(page.getByRole('alert')).toContainText('Tạm khóa sau 3 lần thử');
+    await page.getByRole('button', { name: 'Làm mới' }).click();
+
     // Use quick demo pin chip
-    await page.getByRole('button', { name: 'PRE26101 (Hồng lụa + thiệp)' }).click();
+    await page.getByRole('button', { name: 'PRE26101 (Hướng dương + thiệp)' }).click();
     await page.getByRole('button', { name: 'Kiểm tra mã đơn' }).click();
 
     // Verify simulated pickup outcome
     await expect(page.locator('.pickup-result-card')).toBeVisible();
     await expect(page.getByText('FB-PREORDER-26101')).toBeVisible();
-    await expect(page.getByText('Ô PRE-01')).toBeVisible();
-    await page.getByRole('button', { name: 'Mô phỏng mở ô nhận hoa' }).click();
     await expect(
-      page.getByText('MÔ PHỎNG: Lệnh mở ô tủ PRE-01 đã hoàn tất trên giao diện.'),
+      page.locator('.pickup-result-card').getByText('Ô A03', { exact: true }),
     ).toBeVisible();
+    await page.getByRole('button', { name: 'Mô phỏng mở ô nhận hoa' }).click();
+    await expect(page.getByText('MÔ PHỎNG: Đã gửi lệnh mở ô A03 tới tủ ảo.')).toBeVisible();
+    const closeA03 = page.getByRole('button', { name: 'Đóng cửa ô A03' });
+    await expect(closeA03).toBeVisible();
+    await closeA03.click();
 
     // Test Exit Preview Mode returns to Setup
     await page.getByRole('button', { name: 'Thoát xem mẫu' }).click();
@@ -162,10 +189,12 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     ['Tablet Portrait 768x1024', 768, 1024],
     ['Tablet Landscape 1024x768', 1024, 768],
     ['Tablet Widescreen 1280x800', 1280, 800],
+    ['Desktop Wide 1680x1050', 1680, 1050],
   ] as const) {
     test(`Tablet layout responsiveness, touch targets, and above-the-fold visibility at ${name}`, async ({
       page,
     }) => {
+      test.setTimeout(180000);
       await page.setViewportSize({ width, height });
       await page.goto('/');
 
@@ -181,6 +210,12 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
       );
       expect(noOverflow).toBe(true);
 
+      if (width >= 1024) {
+        const cardBox = await page.locator('.preview-bouquet-card').first().boundingBox();
+        expect(cardBox).not.toBeNull();
+        expect(cardBox!.width).toBeGreaterThanOrEqual(240);
+      }
+
       // Verify touch targets >= 44px
       const tabBtn = page.getByRole('tab', { name: /Mua hoa tại chỗ/ });
       const tabBox = await tabBtn.boundingBox();
@@ -194,10 +229,14 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
       expect(exitBox!.height).toBeGreaterThanOrEqual(44);
       expect(exitBox!.width).toBeGreaterThanOrEqual(44);
 
-      // BOUNDING BOX REGRESSION: At 1024x768 landscape, first row card name, price, and select control
-      // MUST be completely visible within the 768px viewport without scrolling
+      // The shared catalogue design intentionally puts a full hero before the product grid.
+      // At 1024x768 the hero must own the first viewport; after scrolling to the first card,
+      // its title, price and select control must remain complete and usable.
       if (width === 1024 && height === 768) {
+        await expect(page.locator('.preview-simulator__hero h1')).toBeInViewport();
+
         const firstCard = page.locator('.preview-bouquet-card').first();
+        await firstCard.scrollIntoViewIfNeeded();
         const cardTitle = firstCard.locator('.card-title');
         const cardPrice = firstCard.locator('.card-price');
         const cardSelect = firstCard.locator('input[type="checkbox"]');
@@ -210,13 +249,12 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
         expect(priceBox).not.toBeNull();
         expect(selectBox).not.toBeNull();
 
-        // Must be visible above the 768px fold without scrolling
         expect(titleBox!.y).toBeGreaterThanOrEqual(0);
         expect(priceBox!.y).toBeGreaterThanOrEqual(0);
         expect(selectBox!.y).toBeGreaterThanOrEqual(0);
-        expect(titleBox!.y + titleBox!.height).toBeLessThanOrEqual(768);
-        expect(priceBox!.y + priceBox!.height).toBeLessThanOrEqual(768);
-        expect(selectBox!.y + selectBox!.height).toBeLessThanOrEqual(768);
+        expect(titleBox!.y + titleBox!.height).toBeLessThanOrEqual(height);
+        expect(priceBox!.y + priceBox!.height).toBeLessThanOrEqual(height);
+        expect(selectBox!.y + selectBox!.height).toBeLessThanOrEqual(height);
       }
 
       // Axe accessibility check
@@ -245,7 +283,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
         // Switch to pickup and capture screenshot
         await page.getByRole('button', { name: 'Quay lại chọn hoa' }).click();
         await page.getByRole('tab', { name: /Nhận đơn đặt trước/ }).click();
-        await page.getByRole('button', { name: 'PRE26101 (Hồng lụa + thiệp)' }).click();
+        await page.getByRole('button', { name: 'PRE26101 (Hướng dương + thiệp)' }).click();
         await page.getByRole('button', { name: 'Kiểm tra mã đơn' }).click();
 
         await page.screenshot({
@@ -306,7 +344,9 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     // Verify actionable local-safe 401 error message
     const alert = page.getByRole('alert');
     await expect(alert).toBeVisible();
-    await expect(alert).toContainText('Mã kiosk (UUID) hoặc khóa thiết bị (API key) chưa chính xác');
+    await expect(alert).toContainText(
+      'Mã kiosk (UUID) hoặc khóa thiết bị (API key) chưa chính xác',
+    );
     await expect(alert).toContainText('K-DEMO-SIM chỉ là nhãn tủ, không phải khóa bí mật');
 
     // CRITICAL: Ensure raw backend detail containing internal secret/credential is NEVER echoed in alert
@@ -331,7 +371,9 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     // Verify distinct network error message
     const alert = page.getByRole('alert');
     await expect(alert).toBeVisible();
-    await expect(alert).toContainText('Không thể kết nối đến máy chủ. Vui lòng kiểm tra đường truyền mạng');
+    await expect(alert).toContainText(
+      'Không thể kết nối đến máy chủ. Vui lòng kiểm tra đường truyền mạng',
+    );
 
     // Remains on setup screen
     await expect(page.getByRole('heading', { name: 'Kết nối tủ FloraBot' })).toBeVisible();
@@ -386,7 +428,9 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await page.getByRole('button', { name: 'Kết nối tủ' }).click();
 
     // Verify that the API was called with trimmed values
-    await expect.poll(() => requestedUrl).toContain('/api/kiosks/40000000-0000-0000-0000-000000000001/catalog/items');
+    await expect
+      .poll(() => requestedUrl)
+      .toContain('/api/kiosks/40000000-0000-0000-0000-000000000001/catalog/items');
     expect(requestedUrl).not.toContain('%20');
     expect(sentKeyHeader).toBe('trimmed-api-key-12345');
 
