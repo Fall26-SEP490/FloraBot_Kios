@@ -8,6 +8,70 @@
   overflow: visible;
 }
 
+.preview-simulator .kp-header {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  min-height: 76px;
+  padding-block: 0.85rem;
+  box-shadow: 0 8px 24px rgb(20 62 44 / 5%);
+}
+
+.preview-simulator .kp-top-steps {
+  gap: clamp(0.8rem, 2vw, 1.6rem);
+  font-size: 0.86rem;
+}
+
+.preview-simulator .kp-top-steps li {
+  gap: 0.4rem;
+  font-size: 0.82rem;
+}
+
+.preview-simulator .kp-top-steps li > span {
+  width: 30px;
+  height: 30px;
+  font-size: 0.8rem;
+}
+
+.preview-context-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--kp-border);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 82%);
+  color: var(--kp-muted);
+  font-size: 0.82rem;
+}
+
+.preview-context-bar > span:first-child,
+.preview-context-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.preview-context-status {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: #f8f3e4;
+  color: #67572f;
+}
+
+.preview-context-bar button {
+  min-width: 88px;
+  min-height: 44px;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #b7c7b3;
+  border-radius: 999px;
+  background: white;
+  color: var(--kp-green);
+  font-weight: 700;
+}
+
 .preview-simulator__header-actions {
   display: flex;
   align-items: center;
@@ -50,13 +114,18 @@
 }
 
 .preview-simulator .compact-tab-btn {
-  min-height: 44px;
-  padding: 0.55rem 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 52px;
+  padding: 0.65rem 1.25rem;
   border: 1px solid #bccdb8;
   border-radius: 999px;
   background: white;
   color: #315b3c;
-  font-size: 0.76rem;
+  font-size: 0.9rem;
+  font-weight: 700;
   box-shadow: none;
 }
 
@@ -74,6 +143,15 @@
 .preview-simulator .preview-workspace {
   grid-template-columns: minmax(0, 1fr) minmax(420px, 480px);
   gap: 2rem;
+}
+
+.preview-simulator .preview-workspace--solo {
+  display: block;
+}
+
+.preview-simulator .preview-workspace--solo .preview-flow {
+  width: min(100%, 1060px);
+  margin-inline: auto;
 }
 
 .preview-simulator .preview-flow {
@@ -257,6 +335,16 @@
   color: var(--kp-green);
   font-size: clamp(1.6rem, 2.2vw, 2rem);
   line-height: 1.15;
+  scroll-margin-top: 185px;
+}
+
+.preview-simulator .task-screen-header h1:focus {
+  outline: none;
+}
+
+.preview-simulator .task-screen-header {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--kp-border);
 }
 
 .preview-simulator .simulated-checkout-card,
@@ -272,6 +360,49 @@
   background: #f0f5ea;
 }
 
+.preview-simulator .simulated-item-row {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.preview-simulator .simulated-item-thumb,
+.preview-simulator .simulated-item-row .flower-svg-fallback {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border: 1px solid var(--kp-border);
+  border-radius: 12px;
+}
+
+.preview-simulator .simulated-payment-status {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.preview-simulator .simulated-payment-status span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #536956;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.preview-simulator .simulated-payment-status strong {
+  padding: 0.3rem 0.55rem;
+  border-radius: 8px;
+  background: #173e2b;
+  color: white;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
 .preview-simulator .preview-input-group input {
   border-color: #8b9e86;
 }
@@ -285,6 +416,108 @@
   border-color: #bccdb8;
   background: white;
   color: #315b3c;
+}
+
+.preview-simulator .pickup-entry-panel {
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: center;
+}
+
+.preview-simulator .pickup-method-badge {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  color: #536956;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.preview-simulator .pickup-entry-form > label {
+  display: block;
+  font-weight: 700;
+}
+
+.preview-simulator .preview-input-group {
+  align-items: stretch;
+}
+
+.preview-simulator .preview-input-group input,
+.preview-simulator .preview-input-group button {
+  min-height: 56px;
+}
+
+.preview-simulator .pickup-security-hint {
+  margin: 0.75rem 0 0;
+  color: var(--kp-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.preview-simulator .pickup-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+  padding: 0.85rem;
+  border: 1px solid var(--kp-border);
+  border-radius: 16px;
+  background: #f4f7ef;
+}
+
+.preview-simulator .pickup-keypad button {
+  display: grid;
+  min-width: 52px;
+  min-height: 52px;
+  padding: 0.35rem;
+  place-items: center;
+  border: 1px solid #c5d2c1;
+  border-radius: 12px;
+  background: white;
+  color: var(--kp-green);
+  font-size: 1rem;
+  font-weight: 800;
+  box-shadow: 0 3px 8px rgb(20 62 44 / 5%);
+}
+
+.preview-simulator .pickup-keypad button:hover,
+.preview-simulator .pickup-keypad button:focus-visible {
+  border-color: var(--kp-green);
+  background: #eaf1e4;
+}
+
+.preview-simulator .pickup-keypad .pickup-keypad__utility {
+  color: #607463;
+  font-size: 0.76rem;
+}
+
+.preview-simulator .quick-demo-pins {
+  margin-top: 1rem;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--kp-border);
+  background: white;
+}
+
+.preview-simulator .quick-demo-pins summary {
+  min-height: 48px;
+  padding: 0.7rem 0.9rem;
+  cursor: pointer;
+  color: var(--kp-green);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.preview-simulator .quick-demo-pins > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  padding: 0 0.9rem 0.9rem;
+}
+
+.preview-simulator .quick-demo-pins .pin-chip {
+  min-height: 54px;
 }
 
 .preview-simulator .virtual-cabinet {
@@ -346,6 +579,10 @@
     padding: 1rem 5%;
   }
 
+  .preview-simulator .task-screen-header h1 {
+    scroll-margin-top: 230px;
+  }
+
   .preview-simulator__header-actions {
     width: 100%;
     justify-content: space-between;
@@ -360,6 +597,16 @@
 
   .preview-simulator .kp-top-steps li {
     flex: 0 0 auto;
+  }
+
+  .preview-context-bar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .preview-context-status {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    border-radius: 10px;
   }
 
   .preview-simulator .preview-compact-main {
@@ -402,6 +649,30 @@
     gap: 0.35rem;
   }
 
+  .preview-simulator .simulated-item-row {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+  }
+
+  .preview-simulator .simulated-item-row > strong {
+    grid-column: 2;
+  }
+
+  .preview-simulator .simulated-item-thumb,
+  .preview-simulator .simulated-item-row .flower-svg-fallback {
+    width: 52px;
+    height: 52px;
+  }
+
+  .preview-simulator .pickup-entry-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-simulator .pickup-keypad {
+    width: min(100%, 360px);
+    margin-inline: auto;
+  }
+
   .preview-simulator .preview-compact-footer {
     align-items: flex-start;
     flex-direction: column;
@@ -427,5 +698,9 @@
   .preview-simulator .preview-catalogue-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .preview-simulator .quick-demo-pins > div {
+    grid-template-columns: 1fr;
   }
 }

@@ -14,7 +14,7 @@ import { z } from 'zod';
 import i18n from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
-import { Button } from '@florabot/ui';
+import { Button, Flower2, PackageCheck, ShieldCheck, Zap } from '@florabot/ui';
 import type { components } from '../../../packages/contracts/src/generated/api';
 import {
   ApiError,
@@ -167,7 +167,7 @@ function Setup({
           <div className="setup-highlights-list">
             <div className="setup-highlight-item">
               <span className="setup-highlight-icon" aria-hidden="true">
-                🌸
+                <Flower2 size={22} />
               </span>
               <div>
                 <strong>100% Hoa nhân tạo cao cấp</strong>
@@ -176,7 +176,7 @@ function Setup({
             </div>
             <div className="setup-highlight-item">
               <span className="setup-highlight-icon" aria-hidden="true">
-                ⚡
+                <Zap size={22} />
               </span>
               <div>
                 <strong>Mua tại chỗ không cần đăng nhập</strong>
@@ -185,7 +185,7 @@ function Setup({
             </div>
             <div className="setup-highlight-item">
               <span className="setup-highlight-icon" aria-hidden="true">
-                📦
+                <PackageCheck size={22} />
               </span>
               <div>
                 <strong>Nhận đơn bằng PIN / QR</strong>
@@ -198,7 +198,8 @@ function Setup({
         {/* Right column: Staff-only Device Setup Form */}
         <section className="setup-form-col" aria-labelledby="staff-setup-title">
           <div className="staff-indicator-pill" role="note">
-            🔒 Dành riêng cho nhân viên kỹ thuật
+            <ShieldCheck size={18} aria-hidden="true" />
+            Dành riêng cho nhân viên kỹ thuật
           </div>
           <h1 id="staff-setup-title">Kết nối tủ FloraBot</h1>
           <p className="setup-staff-subtitle">

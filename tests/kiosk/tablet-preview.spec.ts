@@ -136,6 +136,10 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await expect(
       page.getByRole('heading', { name: 'Mô phỏng quy trình thanh toán' }),
     ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Mô phỏng quy trình thanh toán' }),
+    ).toBeFocused();
+    await expect(page.locator('.virtual-cabinet')).toHaveCount(0);
     await expect(page.getByText('MÔ PHỎNG: DỮ LIỆU MINH HỌA')).toBeVisible();
     await expect(page.getByText('MÃ MINH HỌA - KHÔNG QUÉT THANH TOÁN')).toBeVisible();
 
@@ -164,6 +168,10 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await expect(
       page.getByRole('heading', { name: 'Nhận đơn đặt trước tại tủ (Mô phỏng)' }),
     ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Nhận đơn đặt trước tại tủ (Mô phỏng)' }),
+    ).toBeFocused();
+    await expect(page.locator('.virtual-cabinet')).toHaveCount(0);
     await expect(page.getByText('Camera trên kiosk không tự động kích hoạt')).toBeVisible();
 
     // Invalid PIN attempts are limited before the demo asks for a reset.
@@ -174,8 +182,11 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await expect(page.getByRole('alert')).toContainText('Tạm khóa sau 3 lần thử');
     await page.getByRole('button', { name: 'Làm mới' }).click();
 
-    // Use quick demo pin chip
-    await page.getByRole('button', { name: 'PRE26101 (Hướng dương + thiệp)' }).click();
+    // Enter the six-digit pickup PIN with the touch keypad.
+    for (const digit of [1, 2, 3, 4, 5, 6]) {
+      await page.getByRole('button', { name: `Nhập số ${digit}` }).click();
+    }
+    await expect(page.getByLabel('Mã PIN hoặc Mã biên nhận nhận hoa')).toHaveValue('123456');
     await page.getByRole('button', { name: 'Kiểm tra mã đơn' }).click();
 
     // Verify simulated pickup outcome
@@ -297,6 +308,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
         // Switch to pickup and capture screenshot
         await page.getByRole('button', { name: 'Quay lại chọn hoa' }).click();
         await page.getByRole('tab', { name: /Nhận đơn đặt trước/ }).click();
+        await page.getByText('Dùng dữ liệu thử', { exact: true }).click();
         await page.getByRole('button', { name: 'PRE26101 (Hướng dương + thiệp)' }).click();
         await page.getByRole('button', { name: 'Kiểm tra mã đơn' }).click();
 
