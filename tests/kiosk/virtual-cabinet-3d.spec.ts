@@ -67,6 +67,11 @@ test.describe('Virtual Cabinet 3D Simulator Interactive & Responsive Verificatio
     await page.getByRole('button', { name: '2D', exact: true }).click();
     await expect(page.locator('.virtual-slot')).toHaveCount(0);
 
+    // Release the WebGL canvas before the state and accessibility checks. Headless CI has no
+    // hardware GPU, so leaving the animated 3D scene mounted can starve later DOM assertions.
+    await page.getByRole('button', { name: '3D', exact: true }).click();
+    await expect(page.locator('.virtual-slot')).toHaveCount(3);
+
     // Test OFFLINE blocks door opening
     await page.getByText(/Bảng điều khiển giả lập/).click();
     await page.getByRole('button', { name: 'Mô phỏng offline' }).click();

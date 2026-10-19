@@ -856,9 +856,14 @@
 }
 
 .setup-welcome-col {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   padding: clamp(1.5rem, 3vw, 2.75rem);
+  background:
+    radial-gradient(circle at 100% 0, rgb(255 255 255 / 80%) 0 18%, transparent 19%),
+    linear-gradient(145deg, #edf4e5 0%, #e6efdc 100%);
 }
 
 .setup-hero-title {
@@ -915,14 +920,33 @@
   border-top: 1px solid var(--color-divider);
 }
 
+.setup-highlight-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border-radius: 12px;
+  background: white;
+  color: var(--color-ink);
+  box-shadow: 0 6px 16px rgb(20 62 44 / 7%);
+}
+
 .setup-form-col {
   padding: clamp(1.5rem, 3vw, 2.25rem);
+  box-shadow: 0 18px 48px rgb(20 62 44 / 8%);
 }
 
 .setup-form-col h1 {
   margin: 0 0 0.5rem;
   font-size: clamp(1.8rem, 3vw, 2.45rem);
   line-height: 1.08;
+}
+
+.staff-indicator-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
 .setup-guidance-callout summary {
@@ -1144,6 +1168,10 @@
   .setup-grid {
     grid-template-columns: 1fr;
     gap: 1.25rem;
+  }
+
+  .setup-form-col {
+    order: -1;
   }
 }
 

@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Button, Check, Flower2, MapPin } from '@florabot/ui';
+import {
+  Button,
+  Check,
+  CreditCard,
+  Delete,
+  Flower2,
+  KeyRound,
+  MapPin,
+  PackageCheck,
+} from '@florabot/ui';
 import { flowerPhotos } from '@florabot/ui/flower-photos';
 import BouquetImage from './BouquetImage';
 import { VirtualCabinet } from './virtual-cabinet/VirtualCabinet';
@@ -69,6 +78,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [simulatedCheckoutOpen, setSimulatedCheckoutOpen] = useState(false);
   const [simulatedPaid, setSimulatedPaid] = useState(false);
+  const [paymentSeconds, setPaymentSeconds] = useState(300);
 
   // Pre-order pickup simulation state
   const [pickupCode, setPickupCode] = useState('');
@@ -82,6 +92,8 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
   const [pickupError, setPickupError] = useState('');
   const [pickupAttempts, setPickupAttempts] = useState(0);
   const pickupInputRef = useRef<HTMLInputElement>(null);
+  const checkoutHeadingRef = useRef<HTMLHeadingElement>(null);
+  const pickupHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const selectedBouquets = DEMO_BOUQUETS.filter((b) => selectedIds.includes(b.id));
   const availableBouquets = DEMO_BOUQUETS.filter((bouquet) =>
@@ -91,7 +103,30 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
     ),
   );
   const totalAmount = selectedBouquets.reduce((sum, b) => sum + b.price, 0);
-  const stage = activeTab === 'pickup' || simulatedPaid ? 3 : simulatedCheckoutOpen ? 2 : 0;
+  const stage = activeTab === 'pickup' || simulatedPaid ? 2 : simulatedCheckoutOpen ? 1 : 0;
+  const showCabinet =
+    (activeTab === 'walkin' && !simulatedCheckoutOpen) ||
+    simulatedPaid ||
+    (activeTab === 'pickup' && pickupResult !== null);
+  const paymentTime = `${String(Math.floor(paymentSeconds / 60)).padStart(2, '0')}:${String(paymentSeconds % 60).padStart(2, '0')}`;
+
+  useEffect(() => {
+    if (!simulatedCheckoutOpen || simulatedPaid || paymentSeconds <= 0) return;
+    const timer = window.setInterval(() => {
+      setPaymentSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [paymentSeconds, simulatedCheckoutOpen, simulatedPaid]);
+
+  useEffect(() => {
+    const heading = simulatedCheckoutOpen ? checkoutHeadingRef.current : pickupHeadingRef.current;
+    if (!heading || (!simulatedCheckoutOpen && activeTab !== 'pickup')) return;
+    const frame = window.requestAnimationFrame(() => {
+      heading.scrollIntoView({ block: 'start', behavior: 'auto' });
+      heading.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeTab, simulatedCheckoutOpen]);
 
   const toggleSelect = (id: string) => {
     const isSelected = selectedIds.includes(id);
@@ -103,12 +138,22 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
     setSelectedIds([]);
     setSimulatedCheckoutOpen(false);
     setSimulatedPaid(false);
+    setPaymentSeconds(300);
     setPickupCode('');
     setPickupResult(null);
     setPickupTriggered(false);
     setPickupError('');
     setPickupAttempts(0);
     cabinet.resetCabinet();
+  };
+
+  const enterPickupDigit = (digit: string) => {
+    setPickupCode((current) => {
+      const numeric = /^\d*$/.test(current) ? current : '';
+      return numeric.length >= 6 ? numeric : `${numeric}${digit}`;
+    });
+    setPickupError('');
+    pickupInputRef.current?.focus();
   };
 
   const handleSimulatePickup = () => {
@@ -152,7 +197,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
           FloraBot<span>.</span>
         </div>
         <ol className="kp-top-steps" aria-label="Tiến trình mô phỏng kiosk">
-          {['Chọn hoa', 'Xem giỏ', 'Thanh toán', 'Nhận hoa'].map((label, index) => (
+          {['Chọn hoa', 'Thanh toán', 'Nhận hoa'].map((label, index) => (
             <li key={label} aria-current={stage === index ? 'step' : undefined}>
               <span>{index < stage ? <Check size={14} aria-hidden="true" /> : index + 1}</span>
               {label}
@@ -168,10 +213,13 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
       </header>
 
       <main id="main" className="kp-main preview-compact-main">
-        <div className="kp-location">
+        <div className="preview-context-bar">
           <span>
             <MapPin size={16} aria-hidden="true" />
-            Không gian kiosk minh họa · {SHARED_SHOP_NAME}
+            {SHARED_SHOP_NAME}
+          </span>
+          <span className="preview-context-status" role="status">
+            Chế độ xem mẫu · Không thanh toán thật, không mở khóa tủ thật
           </span>
           <button type="button" onClick={resetPreview}>
             Làm mới
@@ -198,10 +246,6 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
           </section>
         )}
 
-        <p className="preview-simulator__notice" role="status">
-          Chế độ xem mẫu Kiosk Tablet — Không thanh toán thật, không mở khóa tủ thật.
-        </p>
-
         {/* Compact Mode Switcher (Tabs) */}
         <div className="kiosk-compact-tabs" role="tablist" aria-label="Lựa chọn phương thức">
           <button
@@ -211,7 +255,8 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
             aria-selected={activeTab === 'walkin'}
             role="tab"
           >
-            🌸 Mua hoa tại chỗ (Walk-in)
+            <Flower2 size={19} aria-hidden="true" />
+            Mua hoa tại chỗ
           </button>
           <button
             type="button"
@@ -220,12 +265,13 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
             aria-selected={activeTab === 'pickup'}
             role="tab"
           >
-            📦 Nhận đơn đặt trước (PIN / QR)
+            <PackageCheck size={19} aria-hidden="true" />
+            Nhận đơn đặt trước
           </button>
         </div>
 
         <div
-          className={`preview-workspace ${simulatedCheckoutOpen || activeTab === 'pickup' ? 'preview-workspace--task' : ''}`}
+          className={`preview-workspace ${simulatedCheckoutOpen || activeTab === 'pickup' ? 'preview-workspace--task' : ''} ${!showCabinet ? 'preview-workspace--solo' : ''}`}
         >
           <div className="preview-flow">
             {/* Tab 1: Walk-in shopping - Catalogue first */}
@@ -312,7 +358,10 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                     type="button"
                     className="basket-checkout-button"
                     disabled={selectedIds.length === 0}
-                    onClick={() => setSimulatedCheckoutOpen(true)}
+                    onClick={() => {
+                      setPaymentSeconds(300);
+                      setSimulatedCheckoutOpen(true);
+                    }}
                   >
                     {selectedIds.length === 0
                       ? 'Chưa chọn hoa'
@@ -331,7 +380,14 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                 <header className="task-screen-header">
                   <div>
                     <span className="task-screen-eyebrow">BƯỚC 3 · THANH TOÁN</span>
-                    <h1 id="simulated-checkout-title">Mô phỏng quy trình thanh toán</h1>
+                    <h1
+                      ref={checkoutHeadingRef}
+                      id="simulated-checkout-title"
+                      tabIndex={-1}
+                      aria-label="Mô phỏng quy trình thanh toán"
+                    >
+                      Thanh toán đơn hoa
+                    </h1>
                     <p>Kiểm tra đơn hoa và trải nghiệm bước quét mã thanh toán.</p>
                   </div>
                   <div className="preview-warning-box" role="note">
@@ -349,7 +405,14 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                     <ul className="simulated-items-list">
                       {selectedBouquets.map((b) => (
                         <li key={b.id} className="simulated-item-row">
-                          <span>
+                          <BouquetImage
+                            src={b.image}
+                            alt=""
+                            className="simulated-item-thumb"
+                            width={64}
+                            height={64}
+                          />
+                          <span className="simulated-item-copy">
                             <strong>{b.name}</strong>
                             <small>Ô {b.slotCode} · {b.shopName}</small>
                           </span>
@@ -367,6 +430,10 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                   {!simulatedPaid ? (
                     <div className="simulated-payment-box">
                       <div className="simulated-qr-wrap">
+                        <div className="simulated-payment-status">
+                          <span><CreditCard size={17} aria-hidden="true" /> Đang chờ thanh toán</span>
+                          <strong aria-live="polite">{paymentTime}</strong>
+                        </div>
                         <span className="simulated-watermark">
                           MÃ MINH HỌA - KHÔNG QUÉT THANH TOÁN
                         </span>
@@ -396,6 +463,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                           <Button
                             type="button"
                             aria-label="Mô phỏng thanh toán thành công (Thử nghiệm giao diện)"
+                            disabled={paymentSeconds <= 0}
                             onClick={() => {
                               setSimulatedPaid(true);
                               cabinet.startDispensing(
@@ -404,7 +472,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                             }}
                             className="simulate-success-btn"
                           >
-                            Xác nhận thanh toán mẫu
+                            {paymentSeconds > 0 ? 'Xác nhận thanh toán mẫu' : 'Mã thanh toán đã hết hạn'}
                           </Button>
                           <Button
                             type="button"
@@ -476,8 +544,10 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                   <div>
                     <span className="task-screen-eyebrow">NHẬN HOA ĐẶT TRƯỚC</span>
                     <h1
+                      ref={pickupHeadingRef}
                       id="pickup-heading"
                       aria-label="Nhận đơn đặt trước tại tủ (Mô phỏng)"
+                      tabIndex={-1}
                     >
                       Nhập mã để mở ô nhận hoa
                     </h1>
@@ -492,6 +562,10 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                 <div className="preview-pickup-card">
                   <div className="pickup-entry-panel">
                     <div className="pickup-entry-form">
+                      <div className="pickup-method-badge">
+                        <KeyRound size={18} aria-hidden="true" />
+                        Nhập mã bảo mật
+                      </div>
                       <label htmlFor="preview-pin-input">Mã PIN hoặc mã biên nhận</label>
                       <div className="preview-input-group">
                         <input
@@ -526,10 +600,56 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                           {pickupError}
                         </p>
                       )}
+
+                      <p className="pickup-security-hint">
+                        Mã chỉ được dùng để xác nhận đúng đơn và đúng ô tủ. Tối đa 3 lần thử.
+                      </p>
                     </div>
 
-                    <aside className="quick-demo-pins" aria-label="Mã dùng thử">
-                      <span>MÃ DÙNG THỬ</span>
+                    <div className="pickup-keypad" aria-label="Bàn phím nhập PIN">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
+                        <button
+                          key={digit}
+                          type="button"
+                          aria-label={`Nhập số ${digit}`}
+                          onClick={() => enterPickupDigit(String(digit))}
+                        >
+                          {digit}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className="pickup-keypad__utility"
+                        aria-label="Xóa toàn bộ mã"
+                        onClick={() => {
+                          setPickupCode('');
+                          setPickupError('');
+                          pickupInputRef.current?.focus();
+                        }}
+                      >
+                        Xóa
+                      </button>
+                      <button type="button" aria-label="Nhập số 0" onClick={() => enterPickupDigit('0')}>
+                        0
+                      </button>
+                      <button
+                        type="button"
+                        className="pickup-keypad__utility"
+                        aria-label="Xóa ký tự cuối"
+                        onClick={() => {
+                          setPickupCode((current) => current.slice(0, -1));
+                          setPickupError('');
+                          pickupInputRef.current?.focus();
+                        }}
+                      >
+                        <Delete size={22} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <details className="quick-demo-pins">
+                    <summary>Dùng dữ liệu thử</summary>
+                    <div>
                       <button
                         type="button"
                         className="pin-chip"
@@ -554,8 +674,8 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                         <strong>123456</strong>
                         <small>Đơn đặt trước mẫu</small>
                       </button>
-                    </aside>
-                  </div>
+                    </div>
+                  </details>
 
                   {pickupResult && (
                     <div className="pickup-result-card" role="status">
@@ -632,17 +752,19 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
             )}
           </div>
 
-          <VirtualCabinet
-            slots={cabinet.slots}
-            kioskStatus={cabinet.kioskStatus}
-            activeSlot={cabinet.activeSlot}
-            events={cabinet.events}
-            onCloseDoor={cabinet.closeActiveSlot}
-            onToggleOffline={cabinet.toggleOffline}
-            onToggleMaintenance={cabinet.toggleMaintenance}
-            onSimulateFault={cabinet.simulateFault}
-            onReset={resetPreview}
-          />
+          {showCabinet && (
+            <VirtualCabinet
+              slots={cabinet.slots}
+              kioskStatus={cabinet.kioskStatus}
+              activeSlot={cabinet.activeSlot}
+              events={cabinet.events}
+              onCloseDoor={cabinet.closeActiveSlot}
+              onToggleOffline={cabinet.toggleOffline}
+              onToggleMaintenance={cabinet.toggleMaintenance}
+              onSimulateFault={cabinet.simulateFault}
+              onReset={resetPreview}
+            />
+          )}
         </div>
       </main>
 

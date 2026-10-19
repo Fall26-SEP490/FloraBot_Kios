@@ -38,5 +38,11 @@ export {
   Plus,
   Minus,
   Flower2,
+  PackageCheck,
+  ShieldCheck,
+  Zap,
+  CreditCard,
+  KeyRound,
+  Delete,
   LogOut,
 } from 'lucide-react';
