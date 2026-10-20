@@ -34,3 +34,34 @@ pnpm --filter @florabot/kiosk preview
 ```
 
 FE forwards `/kiosk/*` to port 5174. For standalone development at port 5174 with the default root base, use `pnpm dev` and set `VITE_WEB_URL` to the actual website origin. Use `VITE_RECEIPT_URL` for the real device receipt handoff; it is unrelated to the preview code.
+
+## Vercel Deployment
+
+For standalone kiosk deployment on Vercel:
+
+- **Root Directory**: `apps/kiosk`
+- **Framework Preset**: `Vite`
+- **Output Directory**: `dist`
+- **Build Command**: default (`tsc --noEmit && vite build` via pnpm workspace)
+- **Monorepo Settings**: Enable **"Include source files outside of the Root Directory in the Build Step"** (`outsideRootpackages`) so pnpm workspace can access `@florabot/ui` and `@florabot/contracts` packages.
+
+### Environment Variables
+
+Configure public build-time environment variables in Vercel project settings:
+- `VITE_BASE_PATH=/`: Root base path for standalone deployment.
+- `VITE_WEB_URL=https://florabot-fe.vercel.app`: Public frontend origin used for store links and navigation.
+- `VITE_RECEIPT_URL=https://florabot-fe.vercel.app/receipt`: Target URL base for real device receipt handoff (formats `#order={id}&token={token}` for customer mobile QR scanning and direct receipt access; unrelated to preview mode).
+
+> **Security Note:** Environment variables are strictly public (`VITE_*`). **Never** store or configure device keys (`X-Kiosk-Key`) in deployment environment variables.
+
+### API Rewrites (`apps/kiosk/vercel.json`)
+
+Ordered rewrites configured without origin/cookie/security hacks:
+1. `/api/:path*` &rarr; `https://api.florabot.site/api/:path*` (backend API proxy)
+2. `/:path*` &rarr; `/index.html` (SPA client-side routing fallback)
+
+### Device Isolation and Preview
+
+- Accessing `?preview=1` launches the catalog and simulator preview completely isolated from physical hardware.
+- It never issues physical commands, never triggers cabinet/door unlock, and performs no actual purchases, orders, or test writes.
+- Real kiosk operations strictly require explicit runtime device provisioning (UUID and device key). Without provisioning, no physical commands or hardware interactions can occur.
