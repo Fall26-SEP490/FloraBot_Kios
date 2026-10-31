@@ -167,8 +167,8 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
           </h1>
           <p>
             {tr(
-              'Đến đúng kiosk trong khung giờ hẹn. Mở email của shop để lấy mã nhận hoa.',
-              'At your chosen kiosk during your pickup window, open the email from your shop to find your code.',
+              'Đến đúng kiosk khi hoa đã sẵn sàng. Bạn có thể nhận trước giờ hẹn bằng mã trong email của shop, trước khi mã hết hạn.',
+              'At your chosen kiosk, collect as soon as your flowers are ready, even before your appointment. Use the code in your shop email before it expires.',
             )}
           </p>
         </div>
