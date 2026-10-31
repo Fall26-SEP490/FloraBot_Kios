@@ -94,7 +94,7 @@ test('Invalid code and offline kiosk never claim collection or fall back to rece
 });
 for (const width of [390, 1024])
   test(`Email pickup is readable and accessible at ${width}`, async ({ page }) => {
-    await page.setViewportSize({ width, height: 1000 });
+    await page.setViewportSize({ width, height: width === 1024 ? 768 : 844 });
     await page.goto('/');
     await page.getByRole('button', { name: /Nhận đơn đặt trước/ }).click();
     await expect(page.getByLabel('OTP nhận hoa', { exact: true })).toBeVisible();
@@ -105,5 +105,16 @@ for (const width of [390, 1024])
       (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
         .violations,
     ).toEqual([]);
+    const next = page.getByRole('button', { name: 'Tiếp tục', exact: true });
+    await expect(next).toBeDisabled();
+    if (width === 1024) await expect(next).toBeInViewport();
+    for (const digit of '01234567') {
+      await page.getByRole('button', { name: digit, exact: true }).click();
+    }
+    await expect(page.getByLabel('OTP nhận hoa', { exact: true })).toHaveValue('01234567');
+    await expect(next).toBeEnabled();
+    await page.getByRole('button', { name: 'Xóa một số' }).click();
+    await expect(next).toBeDisabled();
+    await page.getByRole('button', { name: 'Xóa hết' }).click();
     await page.screenshot({ path: `artifacts/preorder-email-${width}.png`, fullPage: true });
   });

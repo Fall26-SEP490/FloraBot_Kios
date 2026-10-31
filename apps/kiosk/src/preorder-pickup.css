@@ -1,0 +1,155 @@
+.pickup-entry-layout {
+  width: min(1040px, 100%);
+  margin: 0 auto;
+  padding: clamp(16px, 3vw, 40px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 14px 22px;
+  color: #214a3b;
+}
+.pickup-ticket {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  border-radius: 20px;
+  padding: clamp(24px, 3.4vw, 46px);
+  color: #fffaf1;
+  background:
+    linear-gradient(180deg, #163d32 0%, #163d32f2 32%, #163d3240 70%),
+    url('../../../packages/ui/assets/flowers/pastelBouquet-960.webp') center bottom / cover;
+}
+.pickup-entry-layout:has(.notice) .pickup-ticket {
+  grid-row: 1 / span 2;
+}
+.pickup-ticket .fb-eyebrow {
+  color: #e3e9d5;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+.pickup-ticket h1,
+.pickup-console h2 {
+  font-family: 'Lora', Georgia, serif;
+  line-height: 1.12;
+  font-weight: 400;
+}
+.pickup-ticket h1 {
+  font-size: clamp(40px, 5vw, 64px);
+  margin: 24px 0 16px;
+  max-width: 10ch;
+}
+.pickup-ticket > p:last-child {
+  font-size: 16px;
+  max-width: 30ch;
+  line-height: 1.6;
+}
+.pickup-console,
+.pickup-entry-layout > .notice {
+  grid-column: 2;
+}
+.pickup-console {
+  padding: clamp(20px, 3vw, 34px);
+  background: #fffefa;
+  border: 1px solid #d6dfd2;
+  border-radius: 20px;
+}
+.pickup-step {
+  margin: 0;
+  color: #536951;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+}
+.pickup-console h2 {
+  font-size: clamp(26px, 3vw, 36px);
+  margin: 12px 0 8px;
+}
+.pickup-console > p:not(.pickup-step) {
+  font-size: 14px;
+  color: #506457;
+  line-height: 1.5;
+}
+.pickup-code-field {
+  position: relative;
+  display: block;
+  margin: 18px 0;
+}
+.pickup-code-field input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+.pickup-code-field:focus-within {
+  outline: 2px solid #316a51;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+.pickup-digits {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 5px;
+}
+.pickup-digits span {
+  text-align: center;
+  padding: 11px 0;
+  border-radius: 7px;
+  background: #f2f4ed;
+  border: 1px solid #d6dfd2;
+  font-size: 18px;
+}
+.pickup-digits [data-next='true'] {
+  border-color: #34654f;
+  box-shadow: inset 0 -2px #34654f;
+}
+.pickup-console .ko-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.pickup-console .ko-keypad button {
+  min-height: 50px;
+  font-size: 24px;
+  background: #f7f8f2;
+}
+.pickup-console .ko-keypad button:active {
+  background: #dae9dc;
+}
+.pickup-console .ko-keypad button:nth-child(10) {
+  font-size: 15px;
+}
+.pickup-console form > .button {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 14px;
+  gap: 10px;
+}
+.pickup-email-help {
+  margin: 14px 0 0;
+}
+@media (max-width: 640px) {
+  .pickup-entry-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
+  .pickup-ticket {
+    padding: 14px 20px;
+    background: #204b3b;
+    border-radius: 14px;
+  }
+  .pickup-ticket h1 {
+    max-width: none;
+    font-size: 27px;
+    margin: 6px 0;
+  }
+  .pickup-ticket > p:last-child {
+    font-size: 13px;
+    margin: 0;
+    max-width: none;
+  }
+  .pickup-console {
+    padding: 16px;
+    border-radius: 14px;
+  }
+}

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Delete, KeyRound, PackageCheck, ShieldCheck } from '@florabot/ui';
+import { Button, Delete, ArrowRight, PackageCheck, ShieldCheck } from '@florabot/ui';
 import { ApiError, request, type Device } from './api';
 import type { components } from '../../../packages/contracts/src/generated/pickup-otp-api';
+import './preorder-pickup.css';
 import { KioskHeader } from './KioskHome';
 import { useKioskLanguage } from './kiosk-language';
 
@@ -156,18 +157,18 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
         homeDisabled={stage === 'sending'}
         title={tr('NHẬN HOA ĐẶT TRƯỚC', 'COLLECT PREORDER')}
       />
-      <main id="main" className="ko-main">
-        <div className="ko-heading">
+      <main id="main" className={stage === 'entry' ? 'pickup-entry-layout' : 'ko-main'}>
+        <div className={stage === 'entry' ? 'pickup-ticket' : 'ko-heading'}>
           <p className="fb-eyebrow">
-            {tr('OTP EMAIL · ĐÚNG TỦ · ĐÚNG GIỜ', 'EMAIL CODE · YOUR KIOSK · PICKUP TIME')}
+            {tr('FLORABOT   /   ĐIỂM NHẬN HOA', 'FLORABOT   /   FLOWER PICKUP')}
           </p>
           <h1 ref={heading} tabIndex={-1}>
             {tr('Nhận đơn đặt trước', 'Collect your preorder')}
           </h1>
           <p>
             {tr(
-              'Shop gửi mã đến email đăng nhập sau khi hoa đã được nạp vào tủ. Mã dùng một lần, đến hết khung giờ nhận.',
-              'The shop emails your login address after stocking your flowers. The code is single use and expires at the end of your pickup window.',
+              'Đến đúng kiosk trong khung giờ hẹn. Mở email của shop để lấy mã nhận hoa.',
+              'At your chosen kiosk during your pickup window, open the email from your shop to find your code.',
             )}
           </p>
         </div>
@@ -185,84 +186,96 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
           </p>
         )}
         {stage === 'entry' && (
-          <div className="ko-entry">
-            <section className="ko-form">
-              <span className="ko-form-icon">
-                <KeyRound size={30} aria-hidden="true" />
-              </span>
-              <h2>{tr('Mã nhận hoa trong email', 'Pickup code from your email')}</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!/^\d{8}$/.test(code)) {
-                    setError(
-                      tr(
-                        'Nhập đủ 8 chữ số trong email.',
-                        'Enter the 8-digit code from your email.',
-                      ),
-                    );
-                    return;
-                  }
-                  setError('');
-                  setStage('review');
-                }}
-              >
-                <label htmlFor="preorder-email-code">{tr('OTP nhận hoa', 'Pickup code')}</label>
+          <section className="pickup-console">
+            <p className="pickup-step">
+              {tr('01 / 02   ·   XÁC THỰC', '01 / 02   ·   VERIFICATION')}
+            </p>
+            <h2>{tr('Nhập mã nhận hoa', 'Enter your pickup code')}</h2>
+            <p id="pickup-code-help">
+              {tr('Dùng 8 chữ số trong email nhận hoa.', 'Use the 8 digits in your pickup email.')}
+            </p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!/^\d{8}$/.test(code)) {
+                  setError(
+                    tr('Nhập đủ 8 chữ số trong email.', 'Enter the 8-digit code from your email.'),
+                  );
+                  return;
+                }
+                setError('');
+                setStage('review');
+              }}
+            >
+              <label className="pickup-code-field">
                 <input
-                  id="preorder-email-code"
+                  aria-label={tr('OTP nhận hoa', 'Pickup code')}
+                  aria-describedby="pickup-code-help"
                   type="password"
-                  inputMode="numeric"
+                  inputMode="none"
                   autoComplete="off"
                   maxLength={8}
                   value={code}
                   disabled={!online}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                  onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 8))}
                 />
-                <Button type="submit" disabled={!online}>
-                  {tr('Tiếp tục', 'Continue')}
-                </Button>
-              </form>
-              <p>
-                {tr(
-                  'Chưa có mã? Kiểm tra thư rác hoặc nhờ shop gửi mã. Kiosk không gửi SMS.',
-                  'No code yet? Check spam or ask the shop to send it. The kiosk does not send SMS.',
-                )}
-              </p>
-            </section>
-            <div className="ko-keypad" role="group" aria-label={tr('Bàn phím số', 'Number keypad')}>
-              {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'delete'].map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  disabled={!online}
-                  aria-label={
-                    d === 'delete'
-                      ? tr('Xóa một số', 'Delete last digit')
-                      : d === 'clear'
-                        ? tr('Xóa hết', 'Clear all')
-                        : d
-                  }
-                  onClick={() =>
-                    setCode((v) =>
-                      d === 'clear' ? '' : d === 'delete' ? v.slice(0, -1) : (v + d).slice(0, 8),
-                    )
-                  }
-                >
-                  {d === 'delete' ? (
-                    <Delete size={24} aria-hidden="true" />
-                  ) : d === 'clear' ? (
-                    tr('Xóa', 'Clear')
-                  ) : (
-                    d
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
+                <span className="pickup-digits" aria-hidden="true">
+                  {Array.from({ length: 8 }, (_, index) => (
+                    <span key={index} data-next={index === code.length}>
+                      {index < code.length ? '●' : '–'}
+                    </span>
+                  ))}
+                </span>
+              </label>
+              <div
+                className="ko-keypad"
+                role="group"
+                aria-label={tr('Bàn phím số', 'Number keypad')}
+              >
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'delete'].map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    disabled={!online}
+                    aria-label={
+                      d === 'delete'
+                        ? tr('Xóa một số', 'Delete last digit')
+                        : d === 'clear'
+                          ? tr('Xóa hết', 'Clear all')
+                          : d
+                    }
+                    onClick={() =>
+                      setCode((v) =>
+                        d === 'clear' ? '' : d === 'delete' ? v.slice(0, -1) : (v + d).slice(0, 8),
+                      )
+                    }
+                  >
+                    {d === 'delete' ? (
+                      <Delete size={24} aria-hidden="true" />
+                    ) : d === 'clear' ? (
+                      tr('Xóa', 'Clear')
+                    ) : (
+                      d
+                    )}
+                  </button>
+                ))}
+              </div>
+              <Button type="submit" disabled={!online || code.length !== 8}>
+                {tr('Tiếp tục', 'Continue')} <ArrowRight size={19} aria-hidden="true" />
+              </Button>
+            </form>
+            <p className="pickup-email-help">
+              {tr(
+                'Chưa thấy mã? Kiểm tra thư rác hoặc liên hệ shop.',
+                'Missing your code? Check spam or contact the shop.',
+              )}
+            </p>
+          </section>
         )}
         {(stage === 'review' || stage === 'sending') && (
           <section className="ko-confirm">
             <ShieldCheck size={45} aria-hidden="true" />
+            <p className="pickup-step">{tr('02 / 02 · MỞ Ô NHẬN HOA', '02 / 02 · OPEN LOCKER')}</p>
             <h2>{tr('Sẵn sàng nhận hoa?', 'Ready to collect?')}</h2>
             <p>
               {tr(
