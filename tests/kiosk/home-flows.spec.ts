@@ -83,7 +83,9 @@ for (const width of [390, 1024, 1366])
     await expect(page.getByRole('heading', { name: 'Find your little joy' })).toBeVisible();
     await expect(page.getByRole('checkbox', { name: /Bó hồng lụa/ })).toBeVisible();
     await page.getByRole('checkbox', { name: /Bó hồng lụa/ }).check();
+    await page.getByRole('button', { name: /^Open basket/ }).click();
     await expect(page.getByRole('button', { name: 'Reserve and pay' })).toBeEnabled();
+    await page.getByRole('button', { name: 'Close basket' }).click();
     await page.getByRole('button', { name: 'Home', exact: true }).click();
     await expect(page.getByRole('button', { name: /Collect a preorder/ })).toBeVisible();
   });
@@ -151,6 +153,7 @@ test('Walk-in shows the bank QR and follows server dispensing state without brow
   await page.goto('/');
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
   await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
   await expect(page.getByRole('heading', { name: 'Quét bằng ứng dụng ngân hàng' })).toBeVisible();

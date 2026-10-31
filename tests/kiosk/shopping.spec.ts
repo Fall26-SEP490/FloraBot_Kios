@@ -71,7 +71,19 @@ for (const width of [390, 1024])
       path: `.impeccable/review/kiosk-catalog-${width}.png`,
       fullPage: true,
     });
+    const cart = page.getByRole('button', { name: /^Mở giỏ hoa/ });
+    await expect(cart).toBeInViewport();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await cart.click();
+    await expect(page.getByText('Một niềm vui đang đợi')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(cart).toBeFocused();
     await page.getByRole('checkbox').check();
+    await expect(cart).toHaveAccessibleName('Mở giỏ hoa, 1 bó');
+    await expect(cart).toBeInViewport();
+    await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
+    await expect(page.getByRole('dialog')).toContainText('350.000');
+    await page.screenshot({ path: `.impeccable/review/kiosk-cart-${width}.png` });
     await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
     await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
     await expect(
@@ -122,9 +134,11 @@ test('No automatic checkout retry after response loss and idle clears selection'
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.clock.install();
   await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
   await expect(page.getByRole('alert')).toContainText('tránh tạo giỏ trùng');
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Đóng giỏ hoa' }).click();
   await page.clock.fastForward(540000);
   await expect(page.getByText('Lượt mua sẽ kết thúc', { exact: false })).toBeVisible();
   await page.clock.fastForward(61000);
@@ -150,6 +164,7 @@ test('Installed offline shell does not cache checkout or enable purchase', async
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Chọn một bó hoa bạn thích' })).toBeVisible();
   await expect(page.getByRole('alert')).toContainText('mất kết nối');
+  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
   const cached = await page.evaluate(async () =>
     (

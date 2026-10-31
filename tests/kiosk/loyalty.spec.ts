@@ -32,6 +32,7 @@ async function login(page: Page) {
   await page.getByLabel('Mã xác thực', { exact: true }).fill('123456');
   await page.getByRole('button', { name: 'Xác nhận đăng nhập' }).click();
   await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
 }
 for (const width of [390, 1024])
   test(`Point redemption, authoritative discount and accessibility ${width}`, async ({ page }) => {
@@ -138,6 +139,7 @@ test('Points failure, expired session and lost checkout response', async ({ page
   await expect(page.getByRole('alert')).toContainText('Để tránh tạo giỏ trùng');
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
   expect(checkouts).toBe(1);
+  await page.getByRole('button', { name: 'Đóng giỏ hoa' }).click();
   await page.getByRole('button', { name: 'Kết thúc lượt mua' }).click();
   await page.route('**/customer/points', (route) => route.fulfill({ status: 401, json: {} }));
   await login(page);

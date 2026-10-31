@@ -14,7 +14,17 @@ import { z } from 'zod';
 import i18n from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
-import { Button, Flower2, PackageCheck, ShieldCheck, Zap, ArrowRight, MapPin } from '@florabot/ui';
+import {
+  Button,
+  Flower2,
+  PackageCheck,
+  ShieldCheck,
+  Zap,
+  ArrowRight,
+  MapPin,
+  ShoppingCart,
+  X,
+} from '@florabot/ui';
 import type { components } from '../../../packages/contracts/src/generated/api';
 import {
   ApiError,
@@ -339,6 +349,7 @@ function Shopping({
   const { t } = useTranslation();
   const { tr, language } = useKioskLanguage();
   const [online, setOnline] = useState(navigator.onLine);
+  const basketDialog = React.useRef<HTMLDialogElement>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [accessoriesOpen] = useState(false);
   const [accessoryQuantities] = useState<Record<string, string>>({});
@@ -641,11 +652,27 @@ function Shopping({
                 </Button>
               )}
             </div>
+            <button
+              type="button"
+              className="fb-cart-trigger"
+              aria-haspopup="dialog"
+              aria-controls="walkin-basket"
+              aria-label={tr(
+                `Mở giỏ hoa, ${selected.length} bó`,
+                `Open basket, ${selected.length} bouquets`,
+              )}
+              onClick={() => basketDialog.current?.showModal()}
+            >
+              <ShoppingCart size={23} aria-hidden="true" />
+              {tr('Giỏ hoa', 'Basket')}
+              <span aria-hidden="true">{selected.length}</span>
+            </button>
             <div className="fb-shop-grid">
               <div className="fb-catalog-column">
                 <GiftAdvisor
                   onUseMessage={(message) => {
                     setEcard(message);
+                    basketDialog.current?.showModal();
                     requestAnimationFrame(() => document.getElementById('ecard-message')?.focus());
                   }}
                   key={customer ? 'customer' : 'guest'}
@@ -764,9 +791,26 @@ function Shopping({
                   )}
                 </p>
               </div>
-              <section className="basket fb-basket" aria-label="Giỏ hoa">
+              <dialog
+                ref={basketDialog}
+                id="walkin-basket"
+                className="basket fb-basket"
+                aria-labelledby="walkin-basket-title"
+                onCancel={(event) => {
+                  if (buy.isPending) event.preventDefault();
+                }}
+              >
+                <button
+                  type="button"
+                  className="fb-cart-close"
+                  disabled={buy.isPending}
+                  aria-label={tr('Đóng giỏ hoa', 'Close basket')}
+                  onClick={() => basketDialog.current?.close()}
+                >
+                  <X size={22} aria-hidden="true" />
+                </button>
                 <p className="fb-eyebrow">{tr('MÓN QUÀ CỦA BẠN', 'YOUR LITTLE GIFT')}</p>
-                <h2>
+                <h2 id="walkin-basket-title">
                   {tr('Giỏ hoa', 'Your basket')} <span>{selected.length}</span>
                 </h2>
                 {selected.length === 0 ? (
@@ -855,7 +899,7 @@ function Shopping({
                   <ShieldCheck size={15} aria-hidden="true" />{' '}
                   {tr('Thanh toán an toàn qua payOS', 'Secure payment via payOS')}
                 </p>
-              </section>
+              </dialog>
             </div>
           </>
         ) : (

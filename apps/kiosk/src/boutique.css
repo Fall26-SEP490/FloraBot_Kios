@@ -296,7 +296,7 @@ body {
 }
 .fb-shop-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 330px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 30px;
   align-items: start;
 }
@@ -1071,10 +1071,6 @@ body {
   }
 }
 @media (max-width: 1100px) {
-  .fb-shop-grid {
-    grid-template-columns: minmax(0, 1fr) 290px;
-    gap: 22px;
-  }
   .fb-steps {
     gap: 16px;
   }
@@ -1416,4 +1412,62 @@ body {
 .preview-simulator .virtual-cabinet__toggle-view-btn {
   min-width: 52px;
   border-radius: 8px;
+}
+
+.fb-cart-trigger {
+  position: fixed;
+  z-index: 12;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 10px 16px;
+  border: 1px solid #ffffff80;
+  border-radius: 999px;
+  color: white;
+  background: #244f40;
+  font: 600 16px var(--font-body);
+  box-shadow: 0 4px 16px #173d3433;
+  cursor: pointer;
+}
+.fb-cart-trigger span {
+  min-width: 26px;
+  padding: 3px 6px;
+  border-radius: 99px;
+  color: #244f40;
+  background: #fffaf1;
+}
+.fb-main:has(.fb-cart-trigger) {
+  padding-bottom: 90px;
+}
+.fb-app dialog.fb-basket {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(480px, calc(100% - 24px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+  color: inherit;
+}
+.fb-basket::backdrop {
+  background: #102a22a8;
+}
+.fb-cart-close {
+  float: right;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-divider);
+  border-radius: 50%;
+  background: var(--fb-paper);
+  color: inherit;
+  cursor: pointer;
+}
+body:has(#walkin-basket[open]) {
+  overflow: hidden;
 }

@@ -64,6 +64,7 @@ for (const width of [390, 1024]) {
     ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Xem phụ kiện tại tủ' })).toHaveCount(0);
     await page.getByRole('checkbox').check();
+    await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
     const buy = page.getByRole('button', { name: 'Giữ hoa và thanh toán' });
     await expect(buy).toBeEnabled();
     expect(
@@ -99,6 +100,7 @@ test('Empty bouquet catalogue cannot become an accessory-only checkout', async (
       'Bó hoa mua tại chỗ đã được chuẩn bị sẵn. Phụ kiện đi kèm chỉ áp dụng cho đơn đặt trước.',
     ),
   ).toBeVisible();
+  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
   await expect(page.getByRole('spinbutton')).toHaveCount(0);
   expect(posts).toBe(0);
@@ -115,6 +117,7 @@ test('Legacy accessory API failure never blocks bouquet selection or causes hidd
   await page.goto('/');
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Tải lại phụ kiện' })).toHaveCount(0);
   expect(accessoryReads).toBe(0);

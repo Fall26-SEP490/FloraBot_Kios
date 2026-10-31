@@ -37,6 +37,7 @@ export {
   Check,
   Plus,
   Minus,
+  ShoppingCart,
   Flower2,
   PackageCheck,
   ShieldCheck,

@@ -89,6 +89,7 @@ for (const width of [390, 1024])
       path: `.impeccable/review/kiosk-advisor-${width}.png`,
       fullPage: true,
     });
+    await page.getByRole('button', { name: 'Đóng giỏ hoa' }).click();
     await page.getByRole('button', { name: 'Chọn Bó hồng dịu dàng' }).click();
     await expect(page.getByRole('checkbox')).toBeChecked();
     await expect(page.getByLabel('Lời nhắn tặng hoa (không bắt buộc)')).toHaveValue(
@@ -164,5 +165,6 @@ test('Empty, stale and failed suggestions keep answers and purchase authority', 
   await page.getByRole('button', { name: 'Tìm hoa phù hợp', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Chọn Bó hồng dịu dàng' })).toBeDisabled();
   await expect(page.getByText('Bó này hiện không còn sẵn sàng.')).toBeVisible();
+  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
 });

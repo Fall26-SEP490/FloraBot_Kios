@@ -505,6 +505,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await expect(page.locator('.preview-ribbon')).toHaveCount(0);
 
     // Buy button is disabled because there are no flowers in the catalogue
+    await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
     await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
   });
 

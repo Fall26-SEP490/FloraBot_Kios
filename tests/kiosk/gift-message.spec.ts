@@ -37,6 +37,7 @@ for (const width of [390, 1024])
     await page.goto('/');
     await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await page.getByRole('checkbox').check();
+    await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
     const note = page.getByLabel('Lời nhắn tặng hoa (không bắt buộc)');
     const buy = page.getByRole('button', { name: 'Giữ hoa và thanh toán' });
     await note.fill('🌼'.repeat(151));
@@ -86,6 +87,7 @@ test('Hidden tab clears unsent gift note; known rejection preserves it for corre
   await page.goto('/');
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   const note = page.getByLabel('Lời nhắn tặng hoa (không bắt buộc)');
   await note.fill('Một lời nhắn riêng');
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();

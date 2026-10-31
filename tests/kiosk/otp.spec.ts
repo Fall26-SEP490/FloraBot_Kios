@@ -92,6 +92,7 @@ test('OTP validation, error, bearer checkout, then session end clears token', as
   await page.getByRole('button', { name: 'Tìm hoa phù hợp', exact: true }).click();
   await expect(page.getByText('Chưa có bó hoa phù hợp lúc này.', { exact: false })).toBeVisible();
   await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
   await expect(page.getByText('Đã xác thực số điện thoại.', { exact: false })).toHaveCount(0);
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
