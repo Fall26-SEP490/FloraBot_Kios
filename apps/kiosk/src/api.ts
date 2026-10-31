@@ -56,12 +56,14 @@ export async function request<T>(
   path: string,
   body?: unknown,
   accessToken?: string,
+  extraHeaders?: Record<string, string>,
 ): Promise<T> {
   const response = await fetch(`/api/kiosks/${device.id}${path}`, {
     method: body === undefined ? 'GET' : 'POST',
     credentials: 'omit',
     cache: 'no-store',
     headers: {
+      ...extraHeaders,
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : { 'X-Kiosk-Key': device.key }),
       ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
     },

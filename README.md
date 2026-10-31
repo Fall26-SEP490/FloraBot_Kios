@@ -24,11 +24,11 @@ A provisioned kiosk opens Home first. Customers choose walk-in shopping or preor
 
 - Walk-in stock comes from `/api/kiosks/{id}/catalog/items`, including its physical slot and shop photo when available. Generic photos remain labelled illustrations. Basket checkout and payment amounts are owned by the backend.
 - Payment QR uses the signed payOS `qrCode` returned by the backend. Older backends without that field retain the payOS checkout-link QR. A browser redirect never marks a payment successful. Backend/device status drives payment, dispensing and collection feedback.
-- Preorder collection requests an SMS OTP through the existing kiosk OTP endpoints, keeps the customer token only in memory, then lists eligible paid orders belonging to that customer at this kiosk. Opening a locker requires an explicit second confirmation. Ambiguous command responses never cause an automatic resend. Home, hidden tabs and session expiry discard customer state.
-- SMS lookup uses the phone saved in the ordering account's website profile. Email registration alone does not add a phone number. The explicit “Nhận bằng biên nhận” fallback reuses the existing receipt capability flow when SMS is unavailable or the customer has no profile phone; it still checks the original kiosk, receipt, payment, pickup window and door state on the server.
+- Preorder collection accepts only the eight-digit email pickup OTP. After payment and stocking, the Seller sends it to the Customer's login email through `POST /api/me/preorders/{requestId}/pickup-otp`. No phone or receipt UUID is required. The code is kiosk-bound, single use and valid only within the pickup window.
+- Explicit confirmation calls `POST /api/kiosks/{id}/preorders/pickup-otp/open` with `{code,attemptId}`. An ambiguous response is never automatically retried; a manual check reuses the same attempt ID and receives the same command. Status polling uses the returned `X-Pickup-Token` header, held only in memory. Home, hidden tabs and three-minute inactivity discard state. Preorders have no receipt-opening fallback; walk-in receipt recovery remains.
 - Device support QR opens an anonymous mobile report form; a report enters the admin incident queue without changing slots, payments or locks. Shop support QR opens the website shop-contact page and its authenticated customer/shop chat.
 
-Deploy the matching BE, FE and Kios changes together. Production SMS requires the backend HTTPS `SMS_WEBHOOK_URL` and `SMS_API_TOKEN`; no development OTP fallback is enabled by the UI. The existing MQTT credentials/ACLs, HMAC keys and physically closed doors remain required for actual dispensing. No firmware pin changes are required by this UI work.
+Deploy the matching BE migration `20261031_preorder_email_pickup_otp.sql`, API, Seller website send-code button and Kiosk together. Email uses the existing BE transactional-email configuration. The existing MQTT credentials/ACLs, HMAC keys, heartbeat and physically closed doors remain required for actual dispensing. No firmware pin changes are required by this UI work.
 
 Build-time kiosk configuration:
 
@@ -41,15 +41,11 @@ Build-time kiosk configuration:
 
 ## UI preview without IoT
 
-Open `/?preview=1`, or choose “Xem giao diện mẫu” from setup, to view the Home screen and isolated simulator. This mode never uses the provisioned device credentials, creates a payment or sends a hardware command. Demo collection uses sample codes (`123456`, `PRE26101`, `DEMO2026`); the connected kiosk uses real SMS verification instead. Exiting preview returns to the provisioned Home, or setup if no device is connected.
+Open `/?preview=1`, or choose “Xem giao diện mẫu” from setup, to view the Home screen and isolated simulator. This mode never uses the provisioned device credentials, creates a payment or sends a hardware command. Its sample codes are isolated demo data; the connected kiosk uses the email pickup flow above. Exiting preview returns to the provisioned Home, or setup if no device is connected.
 
 ## Contract generation
 
-From BE, export a schema without database initialization or background jobs:
-
-```powershell
-dotnet run --project src/FloraBot.Api --no-launch-profile -- --export-openapi 'D:/path/to/openapi.json'
-```
+Export the actual schema using the BE checkout's supported workflow, or save the authenticated `/openapi/v1.json` response. Do not initialize or reset a database just to generate contracts. This BE revision does not implement a `--export-openapi` CLI flag.
 
 Copy that exported schema to `packages/contracts/openapi.json`, then run:
 
@@ -57,4 +53,11 @@ Copy that exported schema to `packages/contracts/openapi.json`, then run:
 pnpm exec openapi-typescript packages/contracts/openapi.json -o packages/contracts/src/generated/api.d.ts
 ```
 
-Generated contracts are not edited by hand. Browser tests mock the backend, SMS and gateway; passing them does not claim a real SMS, bank transfer or physical locker cycle.
+The email pickup contract is a separate additive snapshot because the main kiosk snapshot contains APIs from a different BE revision. From an actual `/openapi/v1.json` export, run:
+
+```sh
+node packages/contracts/sync-pickup-otp.mjs /path/to/exported-openapi.json
+pnpm exec openapi-typescript packages/contracts/openapi-pickup-otp.json -o packages/contracts/src/generated/pickup-otp-api.d.ts
+```
+
+Generated contracts are not edited by hand. Browser tests mock the backend and gateway; passing them does not claim real email delivery, a bank transfer or a physical locker cycle.
