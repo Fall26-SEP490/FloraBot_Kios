@@ -14,7 +14,7 @@ import { z } from 'zod';
 import i18n from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
-import { Button, Flower2, PackageCheck, ShieldCheck, Zap } from '@florabot/ui';
+import { Button, Flower2, PackageCheck, ShieldCheck, Zap, ArrowRight, MapPin } from '@florabot/ui';
 import type { components } from '../../../packages/contracts/src/generated/api';
 import {
   ApiError,
@@ -34,6 +34,15 @@ import PickupRecovery from './PickupRecovery';
 import GiftAdvisor from './GiftAdvisor';
 import BouquetImage, { getBouquetImageUrl } from './BouquetImage';
 import PreviewMode from './PreviewMode';
+import KioskHome, { KioskHeader, portalUrl } from './KioskHome';
+import PreorderPickup from './PreorderPickup';
+import DeviceSupport from './DeviceSupport';
+import { useKioskLanguage } from './kiosk-language';
+import { KioskBrand, KioskSteps, KioskFooter } from './KioskIdentity';
+import '@fontsource/lora/vietnamese-400.css';
+import '@fontsource/lora/latin-400.css';
+import '@fontsource/lora/vietnamese-400-italic.css';
+import '@fontsource/lora/latin-400-italic.css';
 import '@fontsource/nunito/vietnamese-800.css';
 import '@fontsource/nunito/latin-800.css';
 import '@fontsource/be-vietnam-pro/vietnamese-400.css';
@@ -43,12 +52,24 @@ import '@fontsource/be-vietnam-pro/latin-600.css';
 import '@florabot/ui/tokens.css';
 import './style.css';
 import './tablet.css';
+import './boutique.css';
+import './kiosk-home.css';
 
 void i18n.use(initReactI18next).init({
   lng: 'vi',
   fallbackLng: 'vi',
   interpolation: { escapeValue: false },
   resources: {
+    en: {
+      translation: {
+        title: 'A bouquet, a brighter day.',
+        intro: 'Choose flowers, pay and collect at the locker.',
+        offline: 'The kiosk is offline. Please wait for the connection before buying.',
+        reset: 'End this visit',
+        retry: 'Try again',
+        loading: 'Checking available flowers…',
+      },
+    },
     vi: {
       translation: {
         title: 'Một bó hoa, một ngày vui.',
@@ -79,11 +100,7 @@ const setupSchema = z.object({
 const money = (amount: string | number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Number(amount));
 function receiptUrl(id: string, token: string) {
-  const base =
-    import.meta.env.VITE_RECEIPT_URL ||
-    (import.meta.env.DEV
-      ? `${window.location.protocol}//${window.location.hostname}:3010/receipt`
-      : '/receipt');
+  const base = import.meta.env.VITE_RECEIPT_URL || portalUrl('/receipt');
   const url = new URL(base, window.location.origin);
   url.hash = new URLSearchParams({ order: id, token }).toString();
   return url.toString();
@@ -132,19 +149,32 @@ function Setup({
     },
   });
   return (
-    <main id="main" className="setup setup-container">
+    <main id="main" className="setup setup-container fb-setup">
       <div className="setup-grid">
         {/* Left column: Branded Welcome & Preview trigger */}
         <section className="setup-welcome-col" aria-labelledby="welcome-hero-title">
           <div className="setup-brand-row">
-            <strong className="brand">FloraBot</strong>
-            <span className="setup-version-pill">Kiosk Tablet UI</span>
+            <KioskBrand />
+            <span className="setup-version-pill">CHÀO MỪNG BẠN</span>
           </div>
-          <h2 id="welcome-hero-title" className="setup-hero-title">
-            Hệ thống Tủ Hoa Thông Minh FloraBot
+          <div className="fb-setup-art">
+            <img
+              src={`${import.meta.env.BASE_URL}images/demo-pastel-bouquet.png`}
+              width={440}
+              height={440}
+              alt="Bó hoa nhân tạo pastel, hình ảnh minh họa"
+            />
+            <span>Mỗi bó hoa, một lời thương.</span>
+          </div>
+          <h2
+            id="welcome-hero-title"
+            className="setup-hero-title"
+            aria-label="Hệ thống Tủ Hoa Thông Minh FloraBot"
+          >
+            Hoa đẹp, <em>ngay bên bạn.</em>
           </h2>
           <p className="setup-hero-desc">
-            Mua hoa tại chỗ hoặc nhận đơn đặt trước nhanh chóng trên màn hình cảm ứng.
+            Chạm để chọn. Trao gửi yêu thương. Khám phá trải nghiệm mua hoa tại tủ FloraBot.
           </p>
 
           <div className="setup-preview-card">
@@ -160,7 +190,7 @@ function Setup({
               className="setup-preview-button"
               onClick={onPreview}
             >
-              Xem giao diện mẫu
+              Xem giao diện mẫu <ArrowRight size={19} aria-hidden="true" />
             </Button>
           </div>
 
@@ -258,9 +288,7 @@ function Setup({
                 {...form.register('key')}
                 aria-invalid={!!form.formState.errors.key}
                 aria-describedby={
-                  form.formState.errors.key
-                    ? 'device-key-hint device-key-error'
-                    : 'device-key-hint'
+                  form.formState.errors.key ? 'device-key-hint device-key-error' : 'device-key-hint'
                 }
               />
               <button
@@ -288,8 +316,8 @@ function Setup({
           </form>
 
           <p className="quiet setup-privacy-note">
-            Ghi chú bảo mật: Khóa thiết bị được bảo mật trong phiên làm việc của trình duyệt
-            (sessionStorage). Khi kết nối thành công, kiosk sẽ hoạt động với API thật.
+            Khóa thiết bị chỉ được lưu trong phiên trình duyệt này. Kết nối thành công sẽ sử dụng dữ
+            liệu thật.
           </p>
         </section>
       </div>
@@ -309,6 +337,7 @@ function Shopping({
   onPrivacyFinish: (message: string) => void;
 }) {
   const { t } = useTranslation();
+  const { tr, language } = useKioskLanguage();
   const [online, setOnline] = useState(navigator.onLine);
   const [selected, setSelected] = useState<string[]>([]);
   const [accessoriesOpen] = useState(false);
@@ -468,11 +497,12 @@ function Shopping({
       .reduce((sum, item) => sum + Number(item.price), 0) || 0) + accessoryTotal;
   if (pickupOpen)
     return (
-      <>
-        <header>
-          <strong className="brand">FloraBot</strong>
+      <div className="fb-app">
+        <header className="fb-header">
+          <KioskBrand />
+          <KioskSteps stage={2} />
         </header>
-        <main id="main">
+        <main id="main" className="fb-main fb-task-main">
           <PickupRecovery
             device={device}
             online={online}
@@ -483,15 +513,13 @@ function Shopping({
             }}
           />
         </main>
-      </>
+      </div>
     );
   if (accountOpen && customer)
     return (
-      <>
-        <header>
-          <strong className="brand">FloraBot</strong>
-        </header>
-        <main id="main">
+      <div className="fb-app">
+        <KioskHeader onHome={onReset} title={tr('TÀI KHOẢN', 'ACCOUNT')} />
+        <main id="main" className="fb-main fb-task-main">
           <CustomerAccount
             device={device}
             token={customer.accessToken}
@@ -507,17 +535,24 @@ function Shopping({
             onFinish={onPrivacyFinish}
           />
         </main>
-      </>
+      </div>
     );
   return (
-    <>
-      <header>
-        <strong className="brand">FloraBot</strong>
+    <div className="fb-app">
+      <KioskHeader
+        onHome={onReset}
+        homeDisabled={buy.isPending}
+        title={tr('MUA HOA TẠI CHỖ', 'BUY FLOWERS HERE')}
+      />
+      <div className="ks-progress">
+        <KioskSteps
+          stage={!checkoutId ? 0 : checkout.data?.paymentStatus === 'SUCCEEDED' ? 2 : 1}
+        />
         <Button variant="outline" onClick={onReset} disabled={buy.isPending}>
           {t('reset')}
         </Button>
-      </header>
-      <main id="main">
+      </div>
+      <main id="main" className="fb-main">
         {notice && !customer && (
           <p ref={privacyNotice} tabIndex={-1} role="status" className="notice">
             {notice}
@@ -544,30 +579,24 @@ function Shopping({
         )}
         {!checkoutId ? (
           <>
-            <section className="welcome">
-              <div>
-                <h1>{t('title')}</h1>
-                <p>{t('intro')}</p>
-              </div>
-              <BouquetImage
-                src={`${import.meta.env.BASE_URL}images/demo-pastel-bouquet.png`}
-                width={480}
-                height={320}
-                alt="Minh họa hoa nhân tạo FloraBot"
-              />
-            </section>
-            {!customer && (
-              <CustomerLogin
-                device={device}
-                online={online}
-                onReady={(session) =>
-                  setCustomer({
-                    ...session,
-                    expiresAt: Date.now() + Math.min(600, Number(session.expiresInSeconds)) * 1000,
-                  })
-                }
-              />
-            )}
+            <div className="fb-context">
+              <span>
+                <MapPin size={16} aria-hidden="true" />{' '}
+                {catalog.data?.[0]?.shopName || 'Tủ hoa FloraBot'}
+              </span>
+              <span>
+                {tr('Không cần đăng nhập để mua hoa', 'No account needed to buy flowers')}
+              </span>
+            </div>
+            <div className="ks-catalog-intro">
+              <h1>{tr('Chọn một bó hoa bạn thích', 'Find your little joy')}</h1>
+              <p>
+                {tr(
+                  'Mỗi bó hoa tương ứng một ô tủ. Chọn hoa, thêm vào giỏ rồi thanh toán.',
+                  'Each bouquet belongs to a locker. Choose your flowers, add to your basket and pay.',
+                )}
+              </p>
+            </div>
             <Button
               id="pickup-open"
               variant="outline"
@@ -578,161 +607,265 @@ function Shopping({
                 setPickupOpen(true);
               }}
             >
-              Đã thanh toán nhưng chưa nhận hoa?
+              {tr('Đã thanh toán nhưng chưa nhận hoa?', 'Paid but have not received your flowers?')}
             </Button>
-            {customer && (
-              <Button
-                id="customer-account-open"
-                variant="outline"
-                disabled={buy.isPending || uncertain}
-                onClick={() => {
-                  setPoints(0);
-                  setEcard('');
-                  setAccountOpen(true);
-                }}
-              >
-                Lịch sử mua và thông tin cá nhân
-              </Button>
-            )}
-            <GiftAdvisor
-              onUseMessage={(message) => {
-                setEcard(message);
-                requestAnimationFrame(() => document.getElementById('ecard-message')?.focus());
-              }}
-              key={customer ? 'customer' : 'guest'}
-              request={shoppingRequest}
-              online={online}
-              disabled={buy.isPending || uncertain || catalog.isError}
-              available={available}
-              selected={selected}
-              onSelect={(id) => setSelected((ids) => (ids.includes(id) ? ids : [...ids, id]))}
-            />
-            <section aria-labelledby="flowers-title">
-              <h2 id="flowers-title">Hoa đang đợi bạn</h2>
-              {catalog.isPending && <p role="status">{t('loading')}</p>}
-              {catalog.isError && (
-                <div>
-                  <p role="alert" className="error">
-                    {catalog.error.message}
-                  </p>
-                  <Button onClick={() => void catalog.refetch()} disabled={!online}>
-                    {t('retry')}
-                  </Button>
-                </div>
-              )}
-              {catalog.data?.length === 0 && (
-                <p role="status">Tủ chưa có hoa sẵn sàng. Bạn ghé lại sau nhé.</p>
-              )}
-              <div className="artificial-flower-pill-notice" role="note">
-                🌸 <strong>100% Hoa nhân tạo cao cấp:</strong> Hoa lụa & hoa sáp nghệ thuật bền đẹp
-                dài lâu, không cần làm lạnh. Phụ kiện đi kèm chỉ áp dụng cho đơn đặt trước.
-              </div>
-              <ul className="flowers">
-                {catalog.data?.map((item, idx) => (
-                  <li key={item.bouquetId}>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={selected.includes(item.bouquetId)}
-                        disabled={buy.isPending || uncertain || !online}
-                        onChange={(event) =>
-                          setSelected((ids) =>
-                            event.target.checked
-                              ? [...ids, item.bouquetId]
-                              : ids.filter((id) => id !== item.bouquetId),
-                          )
-                        }
-                      />
-                      <BouquetImage
-                        src={getBouquetImageUrl(item.name, idx)}
-                        alt={`Ảnh minh họa ${item.name}`}
-                        className="flower-thumb-image"
-                        width={120}
-                        height={120}
-                      />
-                      <span className="flower-item-details">
-                        <strong>{item.name}</strong>
-                        <span className="shop">
-                          {item.shopName} · Ô {item.slotCode}
-                        </span>
-                        <span className="illustration-caption">
-                          Hình ảnh minh họa kiểu dáng · Hoa nhân tạo thực tế tại ô {item.slotCode}
-                        </span>
-                      </span>
-                      <strong className="price">{money(item.price)}</strong>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-              {selected.some((id) => !available.has(id)) && (
-                <p role="status">
-                  Có bó hoa vừa hết lượt mua. Vui lòng chọn lại từ danh sách hiện tại.
-                </p>
-              )}
-            </section>
-            <section className="accessory-picker" aria-labelledby="preorder-accessories-title">
-              <h2 id="preorder-accessories-title">Phụ kiện đi kèm đơn đặt trước</h2>
-              <p>
-                Phụ kiện được shop chuẩn bị cùng bó hoa đặt trước. Kiosk không bán phụ kiện riêng
-                hoặc thêm phụ kiện vào đơn mua ngay.
-              </p>
-            </section>
-            <section className="basket" aria-label="Giỏ hoa">
-              <p>
-                {selected.length} bó đã chọn
-                {selectedAccessories.length > 0
-                  ? ` · ${selectedAccessories.length} loại phụ kiện`
-                  : ''}{' '}
-                · <strong>{money(total)}</strong>
-              </p>
-              <p className="quiet">Giá và tình trạng hàng sẽ được xác nhận khi giữ giỏ.</p>
-              {customer && (
-                <PointRedemption
+            <div className="fb-member-tools">
+              {!customer && (
+                <CustomerLogin
                   device={device}
-                  token={customer.accessToken}
                   online={online}
-                  disabled={buy.isPending || uncertain}
-                  onChange={setPoints}
-                  onExit={onReset}
+                  onReady={(session) =>
+                    setCustomer({
+                      ...session,
+                      expiresAt:
+                        Date.now() + Math.min(600, Number(session.expiresInSeconds)) * 1000,
+                    })
+                  }
                 />
               )}
-              <GiftMessage
-                value={ecard}
-                onChange={setEcard}
-                disabled={!online || buy.isPending || uncertain}
-              />
-              <Button
-                disabled={
-                  !online ||
-                  !selectionValid ||
-                  !Number.isSafeInteger(total) ||
-                  points === null ||
-                  Array.from(ecard).length > 150 ||
-                  buy.isPending ||
-                  uncertain ||
-                  (selected.length > 0 && catalog.isError)
-                }
-                onClick={() => buy.mutate()}
-              >
-                {buy.isPending ? 'Đang giữ hoa…' : 'Giữ hoa và thanh toán'}
-              </Button>
-              {buy.isError && !uncertain && (
-                <p role="alert" className="error">
-                  {buy.error.message} Bạn có thể điều chỉnh giỏ hoặc số điểm rồi thử lại.
-                </p>
+              {customer && (
+                <Button
+                  id="customer-account-open"
+                  variant="outline"
+                  disabled={buy.isPending || uncertain}
+                  onClick={() => {
+                    setPoints(0);
+                    setEcard('');
+                    setAccountOpen(true);
+                  }}
+                >
+                  {tr(
+                    'Lịch sử mua và thông tin cá nhân',
+                    'Purchase history and personal information',
+                  )}
+                </Button>
               )}
-              {uncertain && (
-                <p role="alert" className="error">
-                  Chưa xác nhận được giỏ. Để tránh tạo giỏ trùng, hãy kết thúc lượt này; hoa đã giữ
-                  sẽ được hệ thống trả lại khi hết hạn.
+            </div>
+            <div className="fb-shop-grid">
+              <div className="fb-catalog-column">
+                <GiftAdvisor
+                  onUseMessage={(message) => {
+                    setEcard(message);
+                    requestAnimationFrame(() => document.getElementById('ecard-message')?.focus());
+                  }}
+                  key={customer ? 'customer' : 'guest'}
+                  request={shoppingRequest}
+                  online={online}
+                  disabled={buy.isPending || uncertain || catalog.isError}
+                  available={available}
+                  selected={selected}
+                  onSelect={(id) => setSelected((ids) => (ids.includes(id) ? ids : [...ids, id]))}
+                />
+                <section aria-labelledby="flowers-title">
+                  <div className="fb-section-heading">
+                    <div>
+                      <p className="fb-eyebrow">{tr('CHỌN MỘT NIỀM VUI', 'PICK A LITTLE JOY')}</p>
+                      <h2 id="flowers-title">
+                        {tr('Hoa đang đợi bạn', 'Flowers waiting for you')}
+                      </h2>
+                    </div>
+                    <span>
+                      {catalog.data?.length || 0} {tr('bó có sẵn', 'available')}
+                    </span>
+                  </div>
+                  {catalog.isPending && <p role="status">{t('loading')}</p>}
+                  {catalog.isError && (
+                    <div>
+                      <p role="alert" className="error">
+                        {catalog.error.message}
+                      </p>
+                      <Button onClick={() => void catalog.refetch()} disabled={!online}>
+                        {t('retry')}
+                      </Button>
+                    </div>
+                  )}
+                  {catalog.data?.length === 0 && (
+                    <p role="status">
+                      {tr(
+                        'Tủ chưa có hoa sẵn sàng. Bạn ghé lại sau nhé.',
+                        'No flowers are ready right now. Please come back soon.',
+                      )}
+                    </p>
+                  )}
+                  <div className="artificial-flower-pill-notice" role="note">
+                    <Flower2 size={17} aria-hidden="true" />{' '}
+                    {tr(
+                      'Hoa lụa & hoa sáp nghệ thuật · Bền đẹp theo thời gian',
+                      'Silk & wax flowers · Made to last',
+                    )}
+                  </div>
+                  <ul className="flowers">
+                    {catalog.data?.map((item, idx) => (
+                      <li
+                        key={item.bouquetId}
+                        className={selected.includes(item.bouquetId) ? 'is-selected' : undefined}
+                      >
+                        <label>
+                          <input
+                            type="checkbox"
+                            aria-label={`Chọn ${item.name} tại ô ${item.slotCode}`}
+                            checked={selected.includes(item.bouquetId)}
+                            disabled={buy.isPending || uncertain || !online}
+                            onChange={(event) =>
+                              setSelected((ids) =>
+                                event.target.checked
+                                  ? [...ids, item.bouquetId]
+                                  : ids.filter((id) => id !== item.bouquetId),
+                              )
+                            }
+                          />
+                          <span className="fb-product-photo">
+                            <BouquetImage
+                              src={item.imageUrl || getBouquetImageUrl(item.name, idx)}
+                              alt={
+                                item.imageUrl
+                                  ? item.name
+                                  : tr(`Ảnh minh họa ${item.name}`, `Illustration of ${item.name}`)
+                              }
+                              className="flower-thumb-image"
+                              width={400}
+                              height={400}
+                            />
+                            <span className="fb-slot-label">Ô {item.slotCode}</span>
+                            <span className="fb-product-selected" aria-hidden="true">
+                              {selected.includes(item.bouquetId) ? '✓' : '+'}
+                            </span>
+                          </span>
+                          <span className="flower-item-details">
+                            <strong>{item.name}</strong>
+                            <span className="shop">
+                              {item.shopName} · Ô {item.slotCode}
+                            </span>
+                            <span className="illustration-caption">
+                              {item.imageUrl
+                                ? tr('Ảnh từ cửa hàng · Ô', 'Shop photo · Locker')
+                                : tr(
+                                    'Hình ảnh minh họa · Hoa thực tế tại ô',
+                                    'Illustrative image · Actual flowers in locker',
+                                  )}{' '}
+                              {item.slotCode}
+                            </span>
+                          </span>
+                          <strong className="price">{money(item.price)}</strong>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                  {selected.some((id) => !available.has(id)) && (
+                    <p role="status">
+                      Có bó hoa vừa hết lượt mua. Vui lòng chọn lại từ danh sách hiện tại.
+                    </p>
+                  )}
+                </section>
+                <p className="fb-accessory-note">
+                  {tr(
+                    'Bó hoa mua tại chỗ đã được chuẩn bị sẵn. Phụ kiện đi kèm chỉ áp dụng cho đơn đặt trước.',
+                    'Walk-in bouquets are ready to collect. Accessories are prepared for preorders only.',
+                  )}
                 </p>
-              )}
-            </section>
+              </div>
+              <section className="basket fb-basket" aria-label="Giỏ hoa">
+                <p className="fb-eyebrow">{tr('MÓN QUÀ CỦA BẠN', 'YOUR LITTLE GIFT')}</p>
+                <h2>
+                  {tr('Giỏ hoa', 'Your basket')} <span>{selected.length}</span>
+                </h2>
+                {selected.length === 0 ? (
+                  <div className="fb-basket-empty">
+                    <Flower2 size={38} strokeWidth={1} aria-hidden="true" />
+                    <strong>{tr('Một niềm vui đang đợi', 'A little joy awaits')}</strong>
+                    <p>
+                      {tr(
+                        'Chạm vào bó hoa bạn yêu thích để thêm vào giỏ nhé.',
+                        'Touch a bouquet you love to add it to your basket.',
+                      )}
+                    </p>
+                  </div>
+                ) : (
+                  <ul className="fb-basket-items">
+                    {catalog.data
+                      ?.filter((item) => selected.includes(item.bouquetId))
+                      .map((item) => (
+                        <li key={item.bouquetId}>
+                          <span>
+                            {item.name}
+                            <small>Ô {item.slotCode}</small>
+                          </span>
+                          <strong>{money(item.price)}</strong>
+                        </li>
+                      ))}
+                  </ul>
+                )}
+                <p className="fb-basket-total">
+                  {selected.length} {tr('bó đã chọn', 'selected')}
+                  {selectedAccessories.length > 0
+                    ? ` · ${selectedAccessories.length} loại phụ kiện`
+                    : ''}{' '}
+                  · <strong>{money(total)}</strong>
+                </p>
+                <p className="quiet">
+                  {tr(
+                    'Giá và tình trạng hàng sẽ được xác nhận khi giữ giỏ.',
+                    'Price and availability are confirmed when reserving your basket.',
+                  )}
+                </p>
+                {customer && (
+                  <PointRedemption
+                    device={device}
+                    token={customer.accessToken}
+                    online={online}
+                    disabled={buy.isPending || uncertain}
+                    onChange={setPoints}
+                    onExit={onReset}
+                  />
+                )}
+                <GiftMessage
+                  value={ecard}
+                  onChange={setEcard}
+                  disabled={!online || buy.isPending || uncertain}
+                />
+                <Button
+                  disabled={
+                    !online ||
+                    !selectionValid ||
+                    !Number.isSafeInteger(total) ||
+                    points === null ||
+                    Array.from(ecard).length > 150 ||
+                    buy.isPending ||
+                    uncertain ||
+                    (selected.length > 0 && catalog.isError)
+                  }
+                  onClick={() => buy.mutate()}
+                >
+                  {buy.isPending
+                    ? tr('Đang giữ hoa…', 'Reserving flowers…')
+                    : tr('Giữ hoa và thanh toán', 'Reserve and pay')}
+                </Button>
+                {buy.isError && !uncertain && (
+                  <p role="alert" className="error">
+                    {buy.error.message} Bạn có thể điều chỉnh giỏ hoặc số điểm rồi thử lại.
+                  </p>
+                )}
+                {uncertain && (
+                  <p role="alert" className="error">
+                    Chưa xác nhận được giỏ. Để tránh tạo giỏ trùng, hãy kết thúc lượt này; hoa đã
+                    giữ sẽ được hệ thống trả lại khi hết hạn.
+                  </p>
+                )}
+                <p className="fb-checkout-note">
+                  <ShieldCheck size={15} aria-hidden="true" />{' '}
+                  {tr('Thanh toán an toàn qua payOS', 'Secure payment via payOS')}
+                </p>
+              </section>
+            </div>
           </>
         ) : (
-          <section className="checkout" aria-labelledby="checkout-title">
-            <h1 id="checkout-title">Một chút nữa là hoa đến tay bạn.</h1>
-            {checkout.isPending && <p role="status">Đang lấy thông tin giỏ hoa…</p>}
+          <section className="checkout fb-checkout" aria-labelledby="checkout-title">
+            <h1 id="checkout-title">
+              {tr('Một chút nữa là hoa đến tay bạn.', 'Your flowers are almost yours.')}
+            </h1>
+            {checkout.isPending && (
+              <p role="status">{tr('Đang lấy thông tin giỏ hoa…', 'Loading your basket…')}</p>
+            )}
             {checkout.isError && (
               <div>
                 <p role="alert" className="error">
@@ -746,7 +879,7 @@ function Shopping({
             {current && (
               <>
                 <p className="total">
-                  Tổng thanh toán: <strong>{money(current.amount)}</strong>
+                  {tr('Tổng thanh toán:', 'Total to pay:')} <strong>{money(current.amount)}</strong>
                 </p>
                 {current.orders.some((order) => Number(order.pointsRedeemed) > 0) && (
                   <p>
@@ -757,13 +890,16 @@ function Shopping({
                 {payable && (
                   <>
                     <p>
-                      Thời gian còn lại: {Math.floor(remaining / 60)} phút {remaining % 60} giây.
+                      {tr('Thời gian còn lại:', 'Time remaining:')} {Math.floor(remaining / 60)}:
+                      {String(remaining % 60).padStart(2, '0')}
                     </p>
                     <Button
                       onClick={() => payment.mutate()}
                       disabled={!online || payment.isPending}
                     >
-                      {payment.isPending ? 'Đang tạo liên kết…' : 'Tạo mã thanh toán'}
+                      {payment.isPending
+                        ? tr('Đang tạo liên kết…', 'Creating payment…')
+                        : tr('Tạo mã thanh toán', 'Show payment QR')}
                     </Button>
                   </>
                 )}
@@ -779,30 +915,67 @@ function Shopping({
                 )}
                 {payment.data && payable && online && (
                   <div className="payment-code">
-                    <h2>Quét bằng camera điện thoại</h2>
+                    <h2>
+                      {payment.data.qrCode
+                        ? tr('Quét bằng ứng dụng ngân hàng', 'Scan with your banking app')
+                        : tr('Quét bằng camera điện thoại', 'Scan with your phone camera')}
+                    </h2>
                     <QRCodeSVG
-                      value={payment.data.checkoutUrl}
+                      value={payment.data.qrCode || payment.data.checkoutUrl}
                       size={224}
-                      title="Mã QR mở trang thanh toán payOS"
+                      title={
+                        payment.data.qrCode
+                          ? tr('Mã QR thanh toán payOS', 'payOS payment QR')
+                          : tr('Mã QR mở trang thanh toán payOS', 'QR to open payOS checkout')
+                      }
                     />
-                    <p>Mở trang payOS và làm theo hướng dẫn thanh toán.</p>
+                    <p>
+                      {payment.data.qrCode
+                        ? tr(
+                            'Quét mã QR để thanh toán qua payOS. Sau khi hệ thống xác nhận tiền, ô tủ sẽ được mở.',
+                            'Scan to pay through payOS. The locker will open after the server confirms payment.',
+                          )
+                        : tr(
+                            'Mở trang payOS và làm theo hướng dẫn thanh toán.',
+                            'Open payOS and follow the payment instructions.',
+                          )}
+                    </p>
                     <a href={payment.data.checkoutUrl} target="_blank" rel="noopener noreferrer">
-                      Mở liên kết thanh toán (tab mới)
+                      {tr('Mở liên kết thanh toán (tab mới)', 'Open payment link (new tab)')}
                     </a>
                   </div>
                 )}
-                <h2>Biên nhận của bạn</h2>
+                <h2>{tr('Biên nhận của bạn', 'Your receipt')}</h2>
                 <p className="quiet">
-                  Giữ mã đơn và mã biên nhận để tra cứu hoặc báo sự cố. Màn hình sẽ xóa thông tin
-                  sau 10 phút không thao tác.
+                  {tr(
+                    'Giữ mã đơn và mã biên nhận để tra cứu hoặc báo sự cố. Màn hình sẽ xóa thông tin sau 10 phút không thao tác.',
+                    'Keep your order and receipt codes for support. This screen clears after 10 minutes of inactivity.',
+                  )}
                 </p>
                 <ul className="receipts">
                   {current.orders.map((order) => (
                     <li key={order.id}>
                       <h3>{order.orderCode}</h3>
-                      <p role="status">{stateNames[order.status] || 'Đang cập nhật trạng thái'}</p>
+                      <p role="status">
+                        {language === 'vi'
+                          ? stateNames[order.status] || 'Đang cập nhật trạng thái'
+                          : (
+                              {
+                                AWAITING_PAYMENT: 'Awaiting payment',
+                                PAID: 'Payment received · Waiting for locker',
+                                DISPENSING: 'Locker opening · Please collect your flowers',
+                                COMPLETED: 'Flowers collected',
+                                DISPENSE_FAILED: 'Locker issue · Please keep your receipt',
+                                REFUNDED: 'Refunded',
+                                CANCELLED: 'Cancelled',
+                                EXPIRED: 'Expired',
+                                DISPUTED: 'Support in progress',
+                              } as Record<string, string>
+                            )[order.status] || 'Updating status'}
+                      </p>
                       <p>
-                        Mã biên nhận: <strong>{order.trackingToken}</strong>
+                        {tr('Mã biên nhận:', 'Receipt code:')}{' '}
+                        <strong>{order.trackingToken}</strong>
                       </p>
                       <p>{money(order.amount)}</p>
                       {Number(order.pointsRedeemed) > 0 && (
@@ -817,7 +990,12 @@ function Shopping({
                         marginSize={4}
                         title={`QR tra cứu đơn ${order.orderCode}`}
                       />
-                      <p>Quét QR để giữ biên nhận trên điện thoại.</p>
+                      <p>
+                        {tr(
+                          'Quét QR để giữ biên nhận trên điện thoại.',
+                          'Scan to save your receipt on your phone.',
+                        )}
+                      </p>
                       {!customer && order.status === 'COMPLETED' && (
                         <p>
                           Đã lưu giao dịch mua thành công. Quét QR bằng điện thoại riêng, mở biên
@@ -830,7 +1008,7 @@ function Shopping({
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Xem biên nhận (tab mới)
+                        {tr('Xem biên nhận (tab mới)', 'View receipt (new tab)')}
                       </a>
                     </li>
                   ))}
@@ -840,8 +1018,8 @@ function Shopping({
           </section>
         )}
       </main>
-      <footer>Chọn hoa cho người thương, hoặc dành một bó cho chính mình.</footer>
-    </>
+      <KioskFooter />
+    </div>
   );
 }
 
@@ -856,13 +1034,17 @@ function App() {
       return null;
     }
   });
-  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(
+    () => new URLSearchParams(window.location.search).get('preview') === '1',
+  );
+  const [screen, setScreen] = useState<'home' | 'shop' | 'pickup'>('home');
   const [visit, setVisit] = useState(0);
   const [notice, setNotice] = useState('');
   const reset = React.useCallback(() => {
     queryClient.clear();
     setNotice('');
     setVisit((value) => value + 1);
+    setScreen('home');
     window.scrollTo(0, 0);
   }, []);
   const privacyFinish = React.useCallback(
@@ -873,20 +1055,61 @@ function App() {
     [reset],
   );
 
-  if (previewOpen) {
-    return <PreviewMode onExit={() => setPreviewOpen(false)} />;
-  }
-
-  return device ? (
+  const support = new URLSearchParams(window.location.search);
+  if (support.get('support') === 'device' && /^[0-9a-f-]{36}$/i.test(support.get('kiosk') || ''))
+    return <DeviceSupport kioskId={support.get('kiosk')!} />;
+  const activeDevice =
+    device ||
+    (previewOpen ? { id: '00000000-0000-0000-0000-000000000001', key: 'preview-only' } : null);
+  if (!activeDevice)
+    return (
+      <Setup
+        onReady={(value) => {
+          setDevice(value);
+          setScreen('home');
+        }}
+        onPreview={() => {
+          setPreviewOpen(true);
+          setScreen('home');
+        }}
+      />
+    );
+  if (screen === 'home')
+    return (
+      <KioskHome
+        device={activeDevice}
+        preview={previewOpen}
+        notice={notice}
+        onBuy={() => {
+          setScreen('shop');
+          window.scrollTo(0, 0);
+        }}
+        onPickup={() => {
+          setScreen('pickup');
+          window.scrollTo(0, 0);
+        }}
+      />
+    );
+  if (previewOpen)
+    return (
+      <PreviewMode
+        initialTab={screen === 'pickup' ? 'pickup' : 'walkin'}
+        onExit={() => {
+          setPreviewOpen(false);
+          setScreen('home');
+        }}
+      />
+    );
+  if (screen === 'pickup')
+    return <PreorderPickup key={visit} device={activeDevice} onHome={reset} />;
+  return (
     <Shopping
       key={visit}
-      device={device}
+      device={activeDevice}
       onReset={reset}
       notice={notice}
       onPrivacyFinish={privacyFinish}
     />
-  ) : (
-    <Setup onReady={setDevice} onPreview={() => setPreviewOpen(true)} />
   );
 }
 const root = createRootRoute({

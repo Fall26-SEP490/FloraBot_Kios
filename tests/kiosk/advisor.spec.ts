@@ -57,6 +57,7 @@ for (const width of [390, 1024])
     });
     await page.route('**/surveys/*', (route) => route.fulfill({ json: answer }));
     await page.goto('/');
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await page.getByText('Cần một chút gợi ý để chọn hoa?', { exact: true }).click();
     await page.getByLabel('Ngân sách tối đa (đồng)').fill('0');
     await page.getByRole('button', { name: 'Tìm hoa phù hợp', exact: true }).click();
@@ -115,6 +116,7 @@ test('Retry reads an existing survey, and offline blocks selection', async ({ pa
     return reads === 1 ? route.fulfill({ status: 503, json: {} }) : route.fulfill({ json: answer });
   });
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.getByText('Cần một chút gợi ý để chọn hoa?', { exact: true }).click();
   await page.getByRole('button', { name: 'Tìm hoa phù hợp', exact: true }).click();
   await page.getByRole('button', { name: 'Tải lại gợi ý' }).click();
@@ -149,6 +151,7 @@ test('Empty, stale and failed suggestions keep answers and purchase authority', 
     }),
   );
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.getByText('Cần một chút gợi ý để chọn hoa?', { exact: true }).click();
   await page.getByLabel('Bạn muốn tặng ai?').selectOption('FRIEND');
   await page.getByRole('button', { name: 'Tìm hoa phù hợp', exact: true }).click();

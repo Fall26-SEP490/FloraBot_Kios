@@ -65,7 +65,8 @@ for (const width of [390, 1024])
       }),
     );
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Một bó hoa, một ngày vui.' })).toBeVisible();
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Chọn một bó hoa bạn thích' })).toBeVisible();
     await page.screenshot({
       path: `.impeccable/review/kiosk-catalog-${width}.png`,
       fullPage: true,
@@ -105,6 +106,7 @@ for (const width of [390, 1024])
     );
     await page.getByRole('button', { name: 'Kết thúc lượt mua' }).click();
     await expect(page.getByText('ABCD2345')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await expect(page.getByRole('checkbox')).not.toBeChecked();
   });
 
@@ -117,6 +119,7 @@ test('No automatic checkout retry after response loss and idle clears selection'
     return route.abort();
   });
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.clock.install();
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
@@ -125,6 +128,7 @@ test('No automatic checkout retry after response loss and idle clears selection'
   await page.clock.fastForward(540000);
   await expect(page.getByText('Lượt mua sẽ kết thúc', { exact: false })).toBeVisible();
   await page.clock.fastForward(61000);
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await expect(page.getByRole('checkbox')).not.toBeChecked();
   expect(attempts).toBe(1);
 });
@@ -134,14 +138,17 @@ test('Installed offline shell does not cache checkout or enable purchase', async
   context,
 }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
   await page.reload();
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await expect(page.getByRole('checkbox')).toBeVisible();
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Một bó hoa, một ngày vui.' })).toBeVisible();
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Chọn một bó hoa bạn thích' })).toBeVisible();
   await expect(page.getByRole('alert')).toContainText('mất kết nối');
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
   const cached = await page.evaluate(async () =>

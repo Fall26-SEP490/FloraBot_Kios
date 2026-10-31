@@ -9,6 +9,7 @@ pnpm test
 ```
 
 For development, set API_PROXY_TARGET to the running API/gateway origin, then run pnpm dev.
+Copy `.env.example` to `.env.local` at the repository root; Vite reads that directory. To connect local development to the real server, set `API_PROXY_TARGET=https://api.florabot.site`. This server-only setting is never included in the browser bundle.
 The UI is at http://127.0.0.1:5174. Device provisioning is required for real kiosk operations.
 Shared contracts and UI are local snapshots so this checkout builds independently.
 The composed stack builds `kiosk-web` from this repository via `../Kios`, and FE integration tests also start this standalone application.
@@ -17,20 +18,43 @@ For the composed stack and cross-repository integration tests, check out BE, FE,
 
 Contract snapshots are not automatically synchronized with FE or BE. Review and regenerate them from the backend OpenAPI when a kiosk-consumed endpoint changes; do not hand-edit generated types. Additive portal-only API changes do not by themselves require changing kiosk behavior.
 
+## Home and customer journeys
+
+A provisioned kiosk opens Home first. Customers choose walk-in shopping or preorder collection; the VI/EN control is shared by the real customer screens. Selecting staff links to the authenticated website workspace and does not grant hardware access.
+
+- Walk-in stock comes from `/api/kiosks/{id}/catalog/items`, including its physical slot and shop photo when available. Generic photos remain labelled illustrations. Basket checkout and payment amounts are owned by the backend.
+- Payment QR uses the signed payOS `qrCode` returned by the backend. Older backends without that field retain the payOS checkout-link QR. A browser redirect never marks a payment successful. Backend/device status drives payment, dispensing and collection feedback.
+- Preorder collection requests an SMS OTP through the existing kiosk OTP endpoints, keeps the customer token only in memory, then lists eligible paid orders belonging to that customer at this kiosk. Opening a locker requires an explicit second confirmation. Ambiguous command responses never cause an automatic resend. Home, hidden tabs and session expiry discard customer state.
+- SMS lookup uses the phone saved in the ordering account's website profile. Email registration alone does not add a phone number. The explicit “Nhận bằng biên nhận” fallback reuses the existing receipt capability flow when SMS is unavailable or the customer has no profile phone; it still checks the original kiosk, receipt, payment, pickup window and door state on the server.
+- Device support QR opens an anonymous mobile report form; a report enters the admin incident queue without changing slots, payments or locks. Shop support QR opens the website shop-contact page and its authenticated customer/shop chat.
+
+Deploy the matching BE, FE and Kios changes together. Production SMS requires the backend HTTPS `SMS_WEBHOOK_URL` and `SMS_API_TOKEN`; no development OTP fallback is enabled by the UI. The existing MQTT credentials/ACLs, HMAC keys and physically closed doors remain required for actual dispensing. No firmware pin changes are required by this UI work.
+
+Build-time kiosk configuration:
+
+- `VITE_PORTAL_URL`: website origin (default `https://florabot-fe.vercel.app`).
+- `VITE_PUBLIC_KIOSK_URL`: public kiosk URL used in device-support QR codes (default `https://florabot-kiosk.vercel.app/`). Do not use localhost for a QR scanned by a separate phone.
+- `VITE_RECEIPT_URL`: optional full electronic receipt page URL.
+- `API_PROXY_TARGET`: local development API/gateway; browser/device keys never enter support QR codes.
+
+`vercel.json` builds from the repository root into `apps/kiosk/dist` and proxies `/api/*` to `https://api.florabot.site/api/*` before SPA navigation fallback. Vercel uses the root `/` base path; the Docker image continues to use `/kiosk/`. Do not set `VITE_BASE_PATH=/kiosk/` for the standalone Vercel domain. No device key belongs in a `VITE_*` variable or a committed environment file.
+
 ## UI preview without IoT
 
-When no device is provisioned, the app opens device setup, preserving the tablet setup and preview from `main`. “Xem giao diện mẫu” opens that isolated tablet preview; “Xem mẫu và danh mục website” opens the flower catalog preview. `?preview=1` opens the catalog preview directly even if a device session exists; `?setup=1` opens the normal setup/device journey. The catalog preview includes flower selection, basket/message, payment layout and pickup screens. Sample photos/prices are labelled, and all transitions stay in memory. It never creates an order/payment, sends a device command, uses a device key or claims a physical pickup. Enter `DEMO2026` to view the final screen.
+Open `/?preview=1`, or choose “Xem giao diện mẫu” from setup, to view the Home screen and isolated simulator. This mode never uses the provisioned device credentials, creates a payment or sends a hardware command. Demo collection uses sample codes (`123456`, `PRE26101`, `DEMO2026`); the connected kiosk uses real SMS verification instead. Exiting preview returns to the provisioned Home, or setup if no device is connected.
 
-The optional “Danh mục API” source reads only public `GET /api/shop/catalog` and `GET /api/kiosks`, omitting cookies. It shows the first web-catalog page, not physical WALK_IN inventory; API emptiness/errors never silently become sample inventory. The real device journey remains separately protected by provisioning and its existing backend policies.
+## Contract generation
 
-For the local FE URL `http://localhost:8088/kiosk/?preview=1`:
+From BE, export a schema without database initialization or background jobs:
 
 ```powershell
-$env:VITE_BASE_PATH='/kiosk/'
-$env:VITE_WEB_URL='http://localhost:8088'
-$env:API_PROXY_TARGET='http://127.0.0.1:5080'
-pnpm build
-pnpm --filter @florabot/kiosk preview
+dotnet run --project src/FloraBot.Api --no-launch-profile -- --export-openapi 'D:/path/to/openapi.json'
 ```
 
-FE forwards `/kiosk/*` to port 5174. For standalone development at port 5174 with the default root base, use `pnpm dev` and set `VITE_WEB_URL` to the actual website origin. Use `VITE_RECEIPT_URL` for the real device receipt handoff; it is unrelated to the preview code.
+Copy that exported schema to `packages/contracts/openapi.json`, then run:
+
+```sh
+pnpm exec openapi-typescript packages/contracts/openapi.json -o packages/contracts/src/generated/api.d.ts
+```
+
+Generated contracts are not edited by hand. Browser tests mock the backend, SMS and gateway; passing them does not claim a real SMS, bank transfer or physical locker cycle.

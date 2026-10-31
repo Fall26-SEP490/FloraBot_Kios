@@ -1,3 +1,4 @@
+import { useKioskLanguage } from './kiosk-language';
 import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -25,6 +26,7 @@ export default function CustomerLogin({
   online: boolean;
   onReady: (session: CustomerSession) => void;
 }) {
+  const { tr } = useKioskLanguage();
   const [phone, setPhone] = useState<string>();
   const [cooldown, setCooldown] = useState(0);
   const phoneForm = useForm<z.infer<typeof phoneSchema>>({ resolver: zodResolver(phoneSchema) });
@@ -68,7 +70,9 @@ export default function CustomerLogin({
   });
   return (
     <details className="customer-login">
-      <summary>Đăng nhập bằng số điện thoại (không bắt buộc)</summary>
+      <summary>
+        {tr('Đăng nhập bằng số điện thoại (không bắt buộc)', 'Sign in with your phone (optional)')}
+      </summary>
       <p>
         Bạn vẫn có thể chọn hoa và thanh toán không cần đăng nhập. Phiên xác thực trên tủ kéo dài
         tối đa 10 phút.

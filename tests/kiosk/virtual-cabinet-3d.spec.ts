@@ -27,6 +27,7 @@ test.describe('Virtual Cabinet 3D Simulator Interactive & Responsive Verificatio
 
     // Launch preview mode from setup screen
     await page.getByRole('button', { name: 'Xem giao diện mẫu' }).click();
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
 
     // Verify 3D container / canvas is mounted or fallback is rendered
     const simulator = page.locator('.virtual-cabinet-simulator');
@@ -104,6 +105,7 @@ test.describe('Virtual Cabinet 3D Simulator Interactive & Responsive Verificatio
       await page.goto('/');
 
       await page.getByRole('button', { name: 'Xem giao diện mẫu' }).click();
+      await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
       await expect(page.getByRole('heading', { name: 'Tủ hoa FloraBot' })).toBeVisible();
 
       // Verify no horizontal overflow

@@ -11,6 +11,7 @@ async function open(page: Page) {
   );
   await page.route('**/catalog/items', (route) => route.fulfill({ json: [] }));
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.getByRole('button', { name: 'Đã thanh toán nhưng chưa nhận hoa?' }).click();
 }
 async function review(page: Page) {
@@ -121,7 +122,7 @@ test('Offline and hidden-tab recovery do not send or resurrect a request', async
   });
   release?.();
   await expect(page.locator('.pickup-recovery')).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'Một bó hoa, một ngày vui.' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true })).toBeVisible();
   await expect(page.getByText('Đã tiếp nhận yêu cầu mở ô', { exact: false })).toHaveCount(0);
   expect(posts).toBe(1);
 });

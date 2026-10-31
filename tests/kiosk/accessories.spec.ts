@@ -56,8 +56,11 @@ for (const width of [390, 1024]) {
       }),
     );
     await page.goto('/');
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await expect(
-      page.getByRole('heading', { name: 'Phụ kiện đi kèm đơn đặt trước' }),
+      page.getByText(
+        'Bó hoa mua tại chỗ đã được chuẩn bị sẵn. Phụ kiện đi kèm chỉ áp dụng cho đơn đặt trước.',
+      ),
     ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Xem phụ kiện tại tủ' })).toHaveCount(0);
     await page.getByRole('checkbox').check();
@@ -90,7 +93,12 @@ test('Empty bouquet catalogue cannot become an accessory-only checkout', async (
     return route.abort();
   });
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Phụ kiện đi kèm đơn đặt trước' })).toBeVisible();
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
+  await expect(
+    page.getByText(
+      'Bó hoa mua tại chỗ đã được chuẩn bị sẵn. Phụ kiện đi kèm chỉ áp dụng cho đơn đặt trước.',
+    ),
+  ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
   await expect(page.getByRole('spinbutton')).toHaveCount(0);
   expect(posts).toBe(0);
@@ -105,6 +113,7 @@ test('Legacy accessory API failure never blocks bouquet selection or causes hidd
     return route.fulfill({ status: 503, json: {} });
   });
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.getByRole('checkbox').check();
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Tải lại phụ kiện' })).toHaveCount(0);

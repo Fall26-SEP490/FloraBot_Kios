@@ -25,6 +25,7 @@ async function login(page: Page) {
     route.fulfill({ json: { accessToken: 'loyalty-token', expiresInSeconds: 600 } }),
   );
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.locator('.customer-login summary').click();
   await page.getByLabel('Số điện thoại', { exact: true }).fill('0901234567');
   await page.getByRole('button', { name: 'Gửi mã xác thực', exact: true }).click();
@@ -141,6 +142,7 @@ test('Points failure, expired session and lost checkout response', async ({ page
   await page.route('**/customer/points', (route) => route.fulfill({ status: 401, json: {} }));
   await login(page);
   await page.getByRole('button', { name: 'Xem điểm có thể dùng' }).click();
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await expect(page.locator('.customer-login')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Xem điểm có thể dùng' })).toHaveCount(0);
 });
@@ -162,6 +164,7 @@ test('Hiding the kiosk invalidates a late points response', async ({ page }) => 
     document.dispatchEvent(new Event('visibilitychange'));
   });
   release?.();
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await expect(page.locator('.customer-login')).toBeVisible();
   await expect(page.locator('.point-redemption')).toHaveCount(0);
   await expect(page.getByText('Bạn có 12.345 điểm. Mỗi điểm giảm 1 đồng.')).toHaveCount(0);

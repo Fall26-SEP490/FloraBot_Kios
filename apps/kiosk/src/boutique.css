@@ -1,0 +1,1419 @@
+/* Shared visual language for the connected kiosk and the isolated simulator. */
+:root {
+  --color-canvas: #faf9f6;
+  --color-ink: #224d3d;
+  --color-brand: #edf2e9;
+  --color-muted: #59665d;
+  --color-line: #bdc8be;
+  --color-divider: #e1e5dc;
+  --color-surface-soft: #f3f4ee;
+  --color-action-hover: #143b2c;
+  --fb-paper: #fffefa;
+  --fb-rose: #a86455;
+  font-size: 16px;
+  background: var(--color-canvas);
+}
+
+body {
+  background: var(--color-canvas);
+}
+.button {
+  border-radius: 12px;
+  min-height: 52px;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+}
+.button:disabled {
+  cursor: not-allowed;
+}
+.button-outline {
+  border-color: var(--color-divider);
+  background: var(--fb-paper);
+}
+.fb-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-ink);
+  font: 800 29px/1.1 var(--font-display);
+  letter-spacing: -0.8px;
+  white-space: nowrap;
+}
+.fb-brand-mark {
+  width: 43px;
+  height: 47px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #b4c2b5;
+  border-radius: 24px 24px 10px 10px;
+}
+.fb-brand-dot {
+  color: var(--fb-rose);
+}
+.fb-brand small {
+  display: block;
+  margin-top: 5px;
+  font: 600 8px/1.2 var(--font-body);
+  letter-spacing: 2.3px;
+}
+.fb-header {
+  padding: 20px max(4%, calc((100vw - 1360px) / 2));
+  min-height: 92px;
+  background: var(--fb-paper);
+  border-bottom: 1px solid var(--color-divider);
+}
+.fb-header > .button {
+  font-size: 14px;
+  min-height: 44px;
+}
+.fb-steps {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fb-steps li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+.fb-steps li > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-divider);
+  border-radius: 50%;
+  font-size: 12px;
+}
+.fb-steps li[aria-current] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.fb-steps li[aria-current] > span {
+  color: white;
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+}
+.fb-main {
+  max-width: 1440px;
+  width: 100%;
+  padding: 24px 4% 40px;
+}
+.fb-context {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--color-muted);
+  margin-bottom: 18px;
+}
+.fb-context > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.fb-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--color-muted);
+  margin: 0 0 16px;
+}
+.fb-eyebrow > span {
+  width: 19px;
+  height: 1px;
+  background: currentColor;
+}
+.fb-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  min-height: 300px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #f0efe8;
+}
+.fb-hero-copy {
+  padding: clamp(26px, 3vw, 42px);
+  align-self: center;
+  position: relative;
+  z-index: 1;
+}
+.fb-hero h1 {
+  margin: 0 0 18px;
+  font:
+    400 clamp(38px, 4vw, 54px)/1.15 'Lora',
+    Georgia,
+    serif;
+  letter-spacing: -2px;
+  color: var(--color-ink);
+}
+.fb-hero h1 em {
+  color: #6d8062;
+  font-weight: 400;
+}
+.fb-hero-copy > p:not(.fb-eyebrow) {
+  font-size: 14px;
+  line-height: 1.9;
+  color: #59644f;
+  margin: 0;
+}
+.fb-hero-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #d2d6c8;
+}
+.fb-hero-features span {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  font-size: 12px;
+  color: #52644e;
+}
+.fb-hero-art {
+  position: relative;
+  min-width: 0;
+  background: #eeeae5;
+}
+.fb-hero-art > img {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  object-fit: cover;
+  object-position: center 51%;
+  mix-blend-mode: multiply;
+}
+.fb-hero-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, #f0efe8 0, transparent 20%);
+}
+.fb-hero-stamp {
+  position: absolute;
+  z-index: 1;
+  bottom: 28px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 17px;
+  border: 1px solid #ffffffb5;
+  border-radius: 12px;
+  background: #fffefaeb;
+  transform: rotate(-5deg);
+  box-shadow: 0 6px 24px #44332110;
+}
+.fb-hero-stamp span {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.fb-hero-stamp em {
+  font:
+    italic 16px 'Lora',
+    Georgia,
+    serif;
+}
+.fb-image-note {
+  position: absolute;
+  z-index: 1;
+  right: 18px;
+  top: 15px;
+  font-size: 10px;
+  letter-spacing: 1.4px;
+  color: #665f57;
+}
+.fb-mode-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.fb-mode-nav > a,
+.fb-mode-nav > .button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  min-height: 80px;
+  padding: 17px 22px;
+  text-decoration: none;
+  background: var(--fb-paper);
+  border: 1px solid var(--color-divider);
+  border-radius: 12px;
+  color: var(--color-ink);
+  text-align: left;
+}
+.fb-mode-nav > .fb-mode-active {
+  background: var(--color-ink);
+  color: white;
+  border-color: var(--color-ink);
+}
+.fb-mode-nav > * > svg:last-child {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.fb-mode-nav > * > span {
+  font-size: 16px;
+  font-weight: 600;
+}
+.fb-mode-nav small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+.fb-member-tools {
+  margin-bottom: 26px;
+}
+.fb-member-tools .customer-login {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 14px;
+}
+.fb-member-tools .customer-login summary {
+  min-height: 44px;
+  padding: 10px 0;
+  color: var(--color-muted);
+  font-weight: 400;
+}
+.fb-shop-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 30px;
+  align-items: start;
+}
+.fb-catalog-column {
+  min-width: 0;
+}
+.fb-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 13px;
+}
+.fb-section-heading .fb-eyebrow {
+  margin: 0 0 8px;
+  font-size: 11px;
+}
+.fb-section-heading h2 {
+  margin: 0;
+  font:
+    400 30px/1.2 'Lora',
+    Georgia,
+    serif;
+  letter-spacing: -0.8px;
+}
+.fb-section-heading > span {
+  font-size: 12px;
+  color: var(--color-muted);
+  border-radius: 30px;
+  padding: 6px 10px;
+  background: #eaf0e4;
+  white-space: nowrap;
+}
+.fb-app .artificial-flower-pill-notice {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+.fb-app .flowers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0;
+}
+.fb-app .flowers li {
+  padding: 0;
+  border: 1px solid var(--color-divider);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--fb-paper);
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+  min-width: 0;
+}
+.fb-app .flowers li:hover {
+  border-color: #97a88c;
+}
+.fb-app .flowers li.is-selected {
+  border-color: var(--color-ink);
+  box-shadow: 0 0 0 1px var(--color-ink);
+}
+.fb-app .flowers label {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  height: 100%;
+}
+.fb-app .flowers input {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  opacity: 0;
+}
+.fb-app .flowers label:has(input:focus-visible) {
+  outline: 3px solid var(--color-ink);
+  outline-offset: -4px;
+}
+.fb-product-photo {
+  display: block;
+  position: relative;
+  aspect-ratio: 1.16;
+  background: #eeece7;
+  overflow: hidden;
+}
+.fb-app .flowers .flower-thumb-image,
+.fb-product-photo .flower-svg-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+}
+.fb-slot-label {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 5px 10px;
+  background: #fffefaf2;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.fb-product-selected {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  top: 16px;
+  right: 16px;
+  border-radius: 50%;
+  background: var(--fb-paper);
+  color: var(--color-ink);
+  font-size: 24px;
+  box-shadow: 0 2px 9px #00000008;
+}
+.is-selected .fb-product-selected {
+  background: var(--color-ink);
+  color: white;
+  font-size: 18px;
+}
+.fb-app .flower-item-details {
+  padding: 17px 18px 0;
+}
+.fb-app .flower-item-details > strong {
+  display: block;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.fb-app .flower-item-details .shop {
+  font-size: 12px;
+  margin: 5px 0;
+}
+.fb-app .illustration-caption {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--color-muted);
+  display: block;
+}
+.fb-app .flowers .price {
+  margin: auto 0 0;
+  padding: 13px 18px 18px;
+  font-size: 17px;
+}
+.fb-accessory-note {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--color-muted);
+  margin: 16px 0;
+}
+.fb-app .fb-basket {
+  position: sticky;
+  top: 24px;
+  padding: 24px;
+  margin: 0;
+  border: 1px solid var(--color-divider);
+  border-radius: 14px;
+  background: var(--fb-paper);
+  box-shadow: 0 6px 30px #2d493608;
+}
+.fb-basket > .fb-eyebrow {
+  font-size: 11px;
+  margin-bottom: 10px;
+}
+.fb-basket > h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font:
+    400 29px 'Lora',
+    Georgia,
+    serif;
+  margin: 0;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-divider);
+}
+.fb-basket > h2 > span {
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  font: 600 11px var(--font-body);
+  border-radius: 50%;
+  background: var(--color-brand);
+}
+.fb-basket-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 28px 0 22px;
+  color: #7c8c73;
+}
+.fb-basket-empty strong {
+  font-size: 14px;
+  color: var(--color-ink);
+  margin-top: 12px;
+}
+.fb-basket-empty p {
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 6px 0 0;
+  color: var(--color-muted);
+}
+.fb-basket-items {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+.fb-basket-items li {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-divider);
+  font-size: 13px;
+}
+.fb-basket-items small {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-muted);
+}
+.fb-basket-items strong {
+  white-space: nowrap;
+}
+.fb-basket-total {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 14px;
+  padding-top: 15px;
+  border-top: 1px solid var(--color-divider);
+}
+.fb-basket-total > strong {
+  font-size: 23px;
+}
+.fb-basket > .quiet {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.fb-basket .gift-message-editor {
+  border-top: 1px solid var(--color-divider);
+  margin-top: 18px;
+  padding-top: 15px;
+}
+.fb-basket .gift-message-editor h2 {
+  font: 600 12px var(--font-body);
+  margin: 0 0 10px;
+}
+.fb-basket .gift-message-editor label,
+.fb-basket #ecard-count {
+  font-size: 12px;
+}
+.fb-basket .gift-message-editor textarea {
+  font-size: 14px;
+  min-height: 82px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+.fb-basket #ecard-help {
+  font-size: 11px;
+}
+.fb-basket > .button {
+  width: 100%;
+  font-size: 14px;
+  margin-top: 18px;
+}
+.fb-checkout-note {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-muted);
+  font-size: 11px;
+  margin: 12px 0 0;
+}
+.fb-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 1325px;
+  margin: 0 auto;
+  padding: 24px 0;
+  border-top: 1px solid var(--color-divider);
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.fb-footer > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fb-checkout,
+.fb-task-main .pickup-recovery,
+.fb-task-main .customer-account {
+  background: var(--fb-paper);
+  border: 1px solid var(--color-divider);
+  padding: clamp(22px, 4vw, 48px);
+  border-radius: 18px;
+}
+.fb-checkout h1,
+.fb-task-main h1 {
+  font:
+    400 clamp(30px, 4vw, 44px)/1.2 'Lora',
+    Georgia,
+    serif;
+  letter-spacing: -1px;
+}
+.fb-checkout h2 {
+  font-size: 20px;
+  margin-top: 28px;
+}
+.fb-checkout .total {
+  padding: 18px;
+  background: var(--color-surface-soft);
+  border-radius: 10px;
+}
+.fb-checkout .payment-code {
+  background: #f3f4ee;
+  border-color: var(--color-divider);
+  text-align: center;
+}
+.fb-checkout .payment-code svg {
+  margin-inline: auto;
+  border-radius: 12px;
+}
+.fb-checkout .receipts li {
+  padding: 24px 0;
+}
+.fb-app .notice {
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+/* Provisioning remains a staff task; the illustrated welcome also offers a safe preview. */
+.fb-setup.setup-container {
+  width: 100%;
+  max-width: 1380px;
+  padding: 44px 4%;
+}
+.fb-setup .setup-grid {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 50px;
+  align-items: center;
+}
+.fb-setup .setup-welcome-col {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.fb-setup .setup-brand-row {
+  justify-content: space-between;
+}
+.fb-setup .setup-version-pill {
+  border: 1px solid var(--color-divider);
+  background: transparent;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 6px 10px;
+}
+.fb-setup-art {
+  position: relative;
+  height: 240px;
+  margin: 24px 0 22px;
+  overflow: hidden;
+  border-radius: 130px 130px 14px 14px;
+  background: #eee9e2;
+}
+.fb-setup-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+  mix-blend-mode: multiply;
+}
+.fb-setup-art > span {
+  position: absolute;
+  bottom: 15px;
+  left: 18px;
+  color: var(--color-ink);
+  padding: 7px 13px;
+  background: #fffefae8;
+  border-radius: 30px;
+  font:
+    italic 17px 'Lora',
+    Georgia,
+    serif;
+}
+.fb-setup .setup-hero-title {
+  font:
+    400 clamp(32px, 3.2vw, 46px)/1.2 'Lora',
+    Georgia,
+    serif;
+  letter-spacing: -1px;
+  margin: 0 0 13px;
+}
+.fb-setup .setup-hero-title em {
+  color: #738367;
+}
+.fb-setup .setup-hero-desc {
+  font-size: 14px;
+  max-width: 50ch;
+}
+.fb-setup .setup-preview-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 15px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid var(--color-divider);
+  border-radius: 12px;
+  background: var(--fb-paper);
+  margin: 20px 0;
+}
+.fb-setup .setup-preview-eyebrow {
+  font-size: 10px;
+  color: var(--color-muted);
+  letter-spacing: 1px;
+}
+.fb-setup .setup-preview-card h3 {
+  font-size: 15px;
+  margin: 5px 0;
+}
+.fb-setup .setup-preview-card p {
+  font-size: 12px;
+  margin: 0;
+}
+.fb-setup .setup-preview-button {
+  width: auto;
+  font-size: 13px;
+  border: 0;
+  color: white;
+  background: var(--color-ink);
+  white-space: nowrap;
+}
+.fb-setup .setup-highlights-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 0;
+}
+.fb-setup .setup-highlight-item {
+  flex: 1;
+  min-width: 100px;
+  gap: 8px;
+}
+.fb-setup .setup-highlight-icon {
+  color: #7c8b70;
+}
+.fb-setup .setup-highlight-item strong {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.fb-setup .setup-highlight-item p {
+  font-size: 11px;
+}
+.fb-setup .setup-form-col {
+  padding: 32px;
+  border: 1px solid var(--color-divider);
+  border-radius: 18px;
+  box-shadow: 0 10px 50px #27433305;
+}
+.fb-setup .staff-indicator-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: #edf2e9;
+  border: 0;
+  color: #476040;
+  font-size: 11px;
+  margin-bottom: 24px;
+}
+.fb-setup .setup-form-col h1 {
+  font:
+    400 32px/1.2 'Lora',
+    Georgia,
+    serif;
+  letter-spacing: -1px;
+  margin: 0 0 10px;
+}
+.fb-setup .setup-staff-subtitle {
+  font-size: 14px;
+}
+.fb-setup .setup-guidance-callout {
+  background: var(--color-surface-soft);
+  border: 0;
+  border-radius: 10px;
+  margin: 20px 0;
+  padding: 5px 12px;
+  font-size: 13px;
+}
+.fb-setup .setup-guidance-callout summary {
+  min-height: 44px;
+  align-content: center;
+  cursor: pointer;
+}
+.fb-setup .setup-form-col label {
+  font-size: 14px;
+}
+.fb-setup .setup-field-hint {
+  font-size: 12px;
+  line-height: 1.7;
+  margin-block: 6px 10px;
+}
+.fb-setup .setup-form-col input {
+  font-size: 14px;
+  background: #fafbf8;
+  border-radius: 9px;
+  border: 1px solid #c8d1c4;
+  min-height: 52px;
+}
+.fb-setup .setup-secret-toggle {
+  min-width: 50px;
+  min-height: 44px;
+  font-size: 13px;
+}
+.fb-setup .setup-form-col form > .button {
+  margin-top: 20px;
+  width: 100%;
+  font-size: 15px;
+}
+.fb-setup .setup-privacy-note {
+  font-size: 12px;
+  line-height: 1.8;
+  border-top: 1px solid var(--color-divider);
+  padding-top: 18px;
+  margin-top: 20px;
+}
+
+/* Give preview shoppers the same visual hierarchy while retaining simulation controls. */
+.preview-simulator {
+  --kp-green: var(--color-ink);
+  --kp-muted: var(--color-muted);
+  --kp-border: var(--color-divider);
+  background: var(--color-canvas);
+}
+.preview-simulator .kp-header {
+  position: static;
+  background: var(--fb-paper);
+  padding: 18px 4%;
+  box-shadow: none;
+}
+.preview-simulator .kp-top-steps {
+  gap: 22px;
+}
+.preview-simulator .kp-top-steps li {
+  font-size: 13px;
+}
+.preview-simulator .kp-top-steps li > span {
+  width: 27px;
+  height: 27px;
+  font-size: 12px;
+}
+.preview-simulator .kp-preview-badge {
+  font-size: 10px;
+  background: #f2eee5;
+  border-color: #e0d5c3;
+  color: #766045;
+  padding: 6px 10px;
+}
+.preview-simulator__header-actions > .button {
+  font-size: 12px;
+  min-height: 44px;
+  border-radius: 10px;
+}
+.preview-simulator .preview-compact-main {
+  max-width: 1440px;
+  padding: 20px 4% 40px;
+}
+.preview-simulator .preview-context-bar {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  font-size: 12px;
+  gap: 10px;
+}
+.preview-simulator .preview-context-status {
+  background: transparent;
+  color: #7a6543;
+  font-size: 11px;
+}
+.preview-simulator .preview-context-bar button {
+  border-color: var(--color-divider);
+  font-size: 12px;
+  min-width: 65px;
+}
+.preview-simulator .kiosk-compact-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 0;
+  margin: 0 0 28px;
+}
+.preview-simulator .compact-tab-btn {
+  width: 100%;
+  border-radius: 12px;
+  min-height: 65px;
+  font-size: 15px;
+  background: var(--fb-paper);
+  border-color: var(--color-divider);
+}
+.preview-simulator .compact-tab-btn.active {
+  background: var(--color-ink);
+}
+.preview-simulator .preview-workspace {
+  grid-template-columns: minmax(0, 1fr) 345px;
+  gap: 28px;
+}
+.preview-simulator .preview-bouquet-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.preview-simulator .preview-catalogue-header {
+  margin-bottom: 10px;
+}
+.preview-simulator .preview-compact-title {
+  font:
+    400 29px/1.2 'Lora',
+    Georgia,
+    serif;
+  margin: 4px 0;
+  letter-spacing: -0.6px;
+}
+.preview-simulator .kp-eyebrow {
+  font-size: 11px;
+  letter-spacing: 1.8px;
+}
+.preview-simulator .preview-catalogue-header > span {
+  font-size: 12px;
+  border-radius: 20px;
+  background: #eaf0e4;
+  padding: 5px 9px;
+}
+.preview-simulator .preview-compact-subtitle {
+  font-size: 12px;
+  margin-bottom: 18px;
+}
+.preview-simulator .preview-bouquet-card {
+  border: 1px solid var(--color-divider);
+  border-radius: 14px;
+  background: var(--fb-paper);
+  box-shadow: none;
+}
+.preview-simulator .preview-bouquet-card.selected {
+  border-color: var(--color-ink);
+  box-shadow: 0 0 0 1px var(--color-ink);
+}
+.preview-simulator .card-image-wrap {
+  height: auto;
+  aspect-ratio: 1.16;
+  background: #eeece7;
+}
+.preview-simulator .card-slot-badge {
+  background: #fffefaf2;
+  color: var(--color-ink);
+  font-size: 12px;
+  border-radius: 6px;
+  padding: 5px 10px;
+  top: 14px;
+  left: 14px;
+}
+.preview-simulator .card-content {
+  padding: 16px 18px;
+}
+.preview-simulator .card-title {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.preview-simulator .card-shop {
+  font-size: 11px;
+  color: var(--color-muted);
+  margin-bottom: 7px;
+}
+.preview-simulator .card-illustration-notice {
+  font-size: 11px;
+  font-style: normal;
+  margin-block: 7px 12px;
+}
+.preview-simulator .card-price {
+  font-size: 17px;
+}
+.preview-simulator .card-checkbox-label {
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  background: var(--color-brand);
+}
+.preview-simulator .card-checkbox-label input {
+  width: 44px;
+  height: 44px;
+}
+.preview-simulator .preview-sticky-basket {
+  position: static;
+  padding: 18px 20px;
+  border: 1px solid var(--color-divider);
+  border-radius: 12px;
+  background: var(--fb-paper);
+  box-shadow: none;
+}
+.preview-simulator .basket-info {
+  gap: 4px;
+}
+.preview-simulator .basket-count {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+.preview-simulator .basket-total {
+  font-size: 14px;
+}
+.preview-simulator .basket-total strong {
+  font-size: 20px;
+}
+.preview-simulator .basket-checkout-button {
+  font-size: 13px;
+  padding-inline: 18px;
+  min-height: 52px;
+}
+.preview-simulator .compact-preorder-note {
+  font-size: 12px;
+  line-height: 1.8;
+}
+.preview-simulator .virtual-cabinet {
+  border-color: var(--color-divider);
+  border-radius: 14px;
+  box-shadow: none;
+}
+.preview-simulator .preview-compact-footer {
+  font-size: 12px;
+  border-top: 1px solid var(--color-divider);
+  background: transparent;
+  padding: 22px 4%;
+}
+.preview-simulator .simulated-checkout-card,
+.preview-simulator .preview-pickup-card {
+  background: var(--fb-paper);
+  border-color: var(--color-divider);
+  box-shadow: none;
+}
+.preview-simulator .task-screen-header h1 {
+  font:
+    400 36px/1.2 'Lora',
+    Georgia,
+    serif;
+  letter-spacing: -0.8px;
+}
+
+@media (min-width: 1400px) {
+  .fb-app .flowers {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1100px) {
+  .fb-shop-grid {
+    grid-template-columns: minmax(0, 1fr) 290px;
+    gap: 22px;
+  }
+  .fb-steps {
+    gap: 16px;
+  }
+  .preview-simulator .preview-workspace {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 22px;
+  }
+  .preview-simulator .kp-top-steps {
+    display: none;
+  }
+  .fb-setup .setup-grid {
+    gap: 28px;
+  }
+  .fb-setup .setup-form-col {
+    padding: 25px;
+  }
+  .fb-setup .setup-preview-card {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 900px) {
+  .fb-shop-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fb-app .fb-basket {
+    position: static;
+  }
+  .fb-basket-empty {
+    padding: 18px 0;
+  }
+  .fb-hero {
+    min-height: 300px;
+  }
+  .fb-hero-copy {
+    padding: 28px;
+  }
+  .fb-hero h1 {
+    font-size: 43px;
+  }
+  .fb-hero-features {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .preview-simulator .preview-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fb-setup .setup-grid {
+    grid-template-columns: 1fr;
+  }
+  .fb-setup .setup-form-col {
+    order: 0;
+  }
+  .fb-setup-art {
+    height: 240px;
+  }
+  .fb-setup .setup-preview-card {
+    grid-template-columns: 1fr auto;
+  }
+  .fb-footer {
+    margin-inline: 4%;
+  }
+}
+@media (max-width: 600px) {
+  .fb-header,
+  .preview-simulator .kp-header {
+    padding: 16px 5%;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .fb-brand {
+    font-size: 25px;
+  }
+  .fb-brand-mark {
+    width: 37px;
+    height: 42px;
+  }
+  .fb-brand small {
+    font-size: 7px;
+    letter-spacing: 1.8px;
+  }
+  .fb-steps {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    border-top: 1px solid var(--color-divider);
+    padding-top: 12px;
+    gap: 24px;
+  }
+  .fb-steps li {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .fb-header > .button {
+    font-size: 12px;
+    padding-inline: 12px;
+  }
+  .fb-main,
+  .preview-simulator .preview-compact-main {
+    padding: 18px 5% 30px;
+  }
+  .fb-context {
+    font-size: 12px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .fb-hero {
+    grid-template-columns: 1fr;
+    border-radius: 14px;
+  }
+  .fb-hero-copy {
+    padding: 28px 26px 22px;
+  }
+  .fb-hero h1 {
+    font-size: 45px;
+    letter-spacing: -1.5px;
+  }
+  .fb-eyebrow {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+  }
+  .fb-hero-features {
+    flex-direction: row;
+    margin-top: 17px;
+    padding-top: 14px;
+    gap: 10px;
+  }
+  .fb-hero-features span {
+    font-size: 11px;
+  }
+  .fb-hero-art {
+    height: 200px;
+  }
+  .fb-hero-art > img {
+    object-position: center 43%;
+  }
+  .fb-hero-art::after {
+    background: linear-gradient(180deg, #f0efe8 0, transparent 20%);
+  }
+  .fb-hero-stamp {
+    bottom: 17px;
+    right: 16px;
+    padding: 9px 13px;
+  }
+  .fb-mode-nav {
+    gap: 9px;
+    margin-bottom: 12px;
+  }
+  .fb-mode-nav > a,
+  .fb-mode-nav > .button {
+    gap: 8px;
+    padding: 13px;
+    flex-wrap: wrap;
+    align-content: center;
+    min-height: 104px;
+  }
+  .fb-mode-nav > * > span {
+    font-size: 13px;
+  }
+  .fb-mode-nav > * > svg:last-child {
+    display: none;
+  }
+  .fb-mode-nav small {
+    font-size: 11px;
+  }
+  .fb-member-tools {
+    margin-bottom: 16px;
+  }
+  .fb-member-tools .customer-login summary {
+    font-size: 12px;
+  }
+  .fb-section-heading h2 {
+    font-size: 27px;
+  }
+  .fb-app .flowers {
+    gap: 12px;
+  }
+  .fb-product-photo {
+    aspect-ratio: 0.92;
+  }
+  .fb-app .flower-item-details {
+    padding: 12px 12px 0;
+  }
+  .fb-app .flower-item-details > strong {
+    font-size: 14px;
+  }
+  .fb-app .flowers .price {
+    padding: 10px 12px 14px;
+    font-size: 15px;
+  }
+  .fb-slot-label {
+    top: 9px;
+    left: 9px;
+    font-size: 11px;
+    padding: 4px 7px;
+  }
+  .fb-app .flowers input,
+  .fb-product-selected {
+    top: 7px;
+    right: 7px;
+  }
+  .fb-product-selected {
+    width: 36px;
+    height: 36px;
+    margin: 4px;
+  }
+  .fb-setup.setup-container {
+    padding: 26px 5%;
+  }
+  .fb-setup .setup-grid {
+    gap: 28px;
+  }
+  .fb-setup .setup-preview-card {
+    grid-template-columns: 1fr;
+  }
+  .fb-setup .setup-hero-title {
+    font-size: 36px;
+  }
+  .fb-setup .setup-form-col {
+    padding: 24px 20px;
+  }
+  .fb-setup .setup-highlights-list {
+    gap: 10px;
+  }
+  .preview-simulator__header-actions {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .preview-simulator .kp-preview-badge {
+    max-width: 125px;
+    font-size: 7px;
+    padding: 5px 8px;
+    white-space: normal;
+  }
+  .preview-simulator .preview-context-bar {
+    grid-template-columns: 1fr auto;
+  }
+  .preview-simulator .preview-context-status {
+    grid-column: 1/-1;
+    grid-row: 2;
+    padding: 0;
+  }
+  .preview-simulator .kiosk-compact-tabs {
+    gap: 9px;
+  }
+  .preview-simulator .compact-tab-btn {
+    padding: 10px;
+    font-size: 13px;
+    min-height: 58px;
+  }
+  .preview-simulator .preview-bouquet-grid {
+    gap: 12px;
+  }
+  .preview-simulator .card-image-wrap {
+    aspect-ratio: 0.92;
+  }
+  .preview-simulator .card-content {
+    padding: 12px;
+  }
+  .preview-simulator .card-title {
+    font-size: 14px;
+  }
+  .preview-simulator .card-price {
+    font-size: 16px;
+  }
+  .preview-simulator .card-shop {
+    font-size: 10px;
+  }
+  .preview-simulator .card-illustration-notice {
+    font-size: 10px;
+  }
+  .preview-simulator .preview-sticky-basket {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .preview-simulator .basket-info {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .preview-simulator .task-screen-header h1 {
+    font-size: 29px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fb-hero-copy,
+  .fb-setup .setup-form-col {
+    animation: fb-arrive 0.45s ease both;
+  }
+  @keyframes fb-arrive {
+    from {
+      transform: translateY(8px);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
+
+.fb-setup .setup-grid > * {
+  min-width: 0;
+}
+.fb-setup .setup-preview-card > * {
+  min-width: 0;
+}
+.fb-setup .setup-brand-row {
+  flex-wrap: wrap;
+}
+.fb-setup .setup-hero-title {
+  max-width: none;
+}
+.fb-app .gift-advisor {
+  margin: 0 0 22px;
+  border: 1px solid var(--color-divider);
+  border-radius: 10px;
+  padding: 0 15px;
+  background: var(--fb-paper);
+  font-size: 14px;
+}
+.fb-app .gift-advisor summary {
+  min-height: 52px;
+  align-content: center;
+  font-size: 13px;
+}
+.preview-simulator .virtual-cabinet__heading {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.preview-simulator .virtual-cabinet h2 {
+  font:
+    400 23px/1.3 'Lora',
+    Georgia,
+    serif;
+}
+.preview-simulator .virtual-cabinet__eyebrow {
+  font-size: 9px;
+}
+.preview-simulator .virtual-cabinet__toggle-view-btn {
+  min-width: 52px;
+  border-radius: 8px;
+}
