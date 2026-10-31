@@ -70,7 +70,8 @@ for (const width of [390, 1024])
     ).toBeFocused();
     await expect(page.getByText('Gợi ý dựa trên dịp tặng', { exact: false })).toBeVisible();
     await page.getByRole('button', { name: 'Dùng lời nhắn này' }).click();
-    await expect(page.getByLabel('Lời nhắn tặng hoa (không bắt buộc)')).toBeFocused();
+    await expect(page.locator('#walkin-basket')).toBeHidden();
+    await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
     await expect(page.getByLabel('Lời nhắn tặng hoa (không bắt buộc)')).toHaveValue(
       answer.suggestions[0].cardMessage,
     );

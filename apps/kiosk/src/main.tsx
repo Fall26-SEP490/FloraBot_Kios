@@ -664,17 +664,12 @@ function Shopping({
               onClick={() => basketDialog.current?.showModal()}
             >
               <ShoppingCart size={23} aria-hidden="true" />
-              {tr('Giỏ hoa', 'Basket')}
               <span aria-hidden="true">{selected.length}</span>
             </button>
             <div className="fb-shop-grid">
               <div className="fb-catalog-column">
                 <GiftAdvisor
-                  onUseMessage={(message) => {
-                    setEcard(message);
-                    basketDialog.current?.showModal();
-                    requestAnimationFrame(() => document.getElementById('ecard-message')?.focus());
-                  }}
+                  onUseMessage={setEcard}
                   key={customer ? 'customer' : 'guest'}
                   request={shoppingRequest}
                   online={online}
@@ -800,19 +795,21 @@ function Shopping({
                   if (buy.isPending) event.preventDefault();
                 }}
               >
-                <button
-                  type="button"
-                  className="fb-cart-close"
-                  disabled={buy.isPending}
-                  aria-label={tr('Đóng giỏ hoa', 'Close basket')}
-                  onClick={() => basketDialog.current?.close()}
-                >
-                  <X size={22} aria-hidden="true" />
-                </button>
-                <p className="fb-eyebrow">{tr('MÓN QUÀ CỦA BẠN', 'YOUR LITTLE GIFT')}</p>
-                <h2 id="walkin-basket-title">
-                  {tr('Giỏ hoa', 'Your basket')} <span>{selected.length}</span>
-                </h2>
+                <header className="fb-cart-heading">
+                  <div>
+                    <p className="fb-eyebrow">{tr('MÓN QUÀ CỦA BẠN', 'YOUR LITTLE GIFT')}</p>
+                    <h2 id="walkin-basket-title">{tr('Giỏ hoa', 'Your basket')}</h2>
+                  </div>
+                  <button
+                    type="button"
+                    className="fb-cart-close"
+                    disabled={buy.isPending}
+                    aria-label={tr('Đóng giỏ hoa', 'Close basket')}
+                    onClick={() => basketDialog.current?.close()}
+                  >
+                    <X size={22} aria-hidden="true" />
+                  </button>
+                </header>
                 {selected.length === 0 ? (
                   <div className="fb-basket-empty">
                     <Flower2 size={38} strokeWidth={1} aria-hidden="true" />

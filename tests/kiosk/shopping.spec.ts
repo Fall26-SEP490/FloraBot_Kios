@@ -81,8 +81,14 @@ for (const width of [390, 1024])
     await page.getByRole('checkbox').check();
     await expect(cart).toHaveAccessibleName('Mở giỏ hoa, 1 bó');
     await expect(cart).toBeInViewport();
+    await expect(page.locator('#walkin-basket')).toBeHidden();
     await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
     await expect(page.getByRole('dialog')).toContainText('350.000');
+    await expect
+      .poll(() =>
+        page.getByRole('dialog').evaluate((el) => Math.round(el.getBoundingClientRect().right)),
+      )
+      .toBe(width);
     await page.screenshot({ path: `.impeccable/review/kiosk-cart-${width}.png` });
     await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
     await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
