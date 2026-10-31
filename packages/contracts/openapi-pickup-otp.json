@@ -1,0 +1,266 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "FloraBot.Api | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/me/preorders/{requestId}/pickup-otp": {
+      "post": {
+        "tags": [
+          "Ordering"
+        ],
+        "summary": "Seller gửi OTP nhận preorder tới email đăng nhập của khách",
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreorderPickupOtpSent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/kiosks/{kioskId}/preorders/pickup-otp/open": {
+      "post": {
+        "tags": [
+          "Ordering"
+        ],
+        "summary": "Nhập OTP email tại đúng kiosk và yêu cầu mở ô preorder",
+        "parameters": [
+          {
+            "name": "kioskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreorderPickupOtpOpenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreorderPickupOtpOpened"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/kiosks/{kioskId}/preorders/pickup-otp/attempts/{attemptId}": {
+      "get": {
+        "tags": [
+          "Ordering"
+        ],
+        "summary": "Theo dõi lệnh nhận hoa; gửi X-Pickup-Token từ kết quả mở ô",
+        "parameters": [
+          {
+            "name": "kioskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "attemptId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Pickup-Token",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreorderPickupOtpStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PreorderPickupOtpSent": {
+        "required": [
+          "requestId",
+          "orderId",
+          "recipientMasked",
+          "expiresAt",
+          "resendAfterSeconds"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipientMasked": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resendAfterSeconds": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PreorderPickupOtpOpenRequest": {
+        "required": [
+          "code",
+          "attemptId"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "attemptId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PreorderPickupOtpOpened": {
+        "required": [
+          "attemptId",
+          "orderId",
+          "orderCode",
+          "productName",
+          "slotCode",
+          "orderStatus",
+          "commandId",
+          "watchToken",
+          "watchExpiresAt"
+        ],
+        "type": "object",
+        "properties": {
+          "attemptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderCode": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "slotCode": {
+            "type": "string"
+          },
+          "orderStatus": {
+            "type": "string"
+          },
+          "commandId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "watchToken": {
+            "type": "string"
+          },
+          "watchExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PreorderPickupOtpStatus": {
+        "required": [
+          "orderId",
+          "orderCode",
+          "productName",
+          "slotCode",
+          "orderStatus",
+          "commandStatus"
+        ],
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderCode": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "slotCode": {
+            "type": "string"
+          },
+          "orderStatus": {
+            "type": "string"
+          },
+          "commandStatus": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

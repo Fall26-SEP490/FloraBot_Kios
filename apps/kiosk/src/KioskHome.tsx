@@ -180,8 +180,8 @@ export default function KioskHome({
                 <strong>{tr('Nhận đơn đặt trước', 'Collect a preorder')}</strong>
                 <span>
                   {tr(
-                    'Xác thực OTP SMS · Chọn đơn · Nhận hoa',
-                    'Verify by SMS · Select your order · Collect',
+                    'Nhập OTP email · Nhận hoa đặt trước',
+                    'Enter email code · Collect your preorder',
                   )}
                 </span>
               </span>

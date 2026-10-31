@@ -1,62 +1,34 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Delete, KeyRound, PackageCheck, ShieldCheck } from '@florabot/ui';
-import { ApiError, request, type CustomerSession, type Device } from './api';
-import type { components } from '../../../packages/contracts/src/generated/api';
+import { ApiError, request, type Device } from './api';
+import type { components } from '../../../packages/contracts/src/generated/pickup-otp-api';
 import { KioskHeader } from './KioskHome';
 import { useKioskLanguage } from './kiosk-language';
-import PickupRecovery from './PickupRecovery';
 
-type PickupOrder = components['schemas']['KioskPickupOrder'];
-type Stage = 'phone' | 'otp' | 'orders' | 'review' | 'sending' | 'watch' | 'uncertain';
+type Opened = components['schemas']['PreorderPickupOtpOpened'];
+type Status = components['schemas']['PreorderPickupOtpStatus'];
+type Stage = 'entry' | 'review' | 'sending' | 'watch' | 'uncertain';
 
 export default function PreorderPickup({ device, onHome }: { device: Device; onHome: () => void }) {
   const { tr } = useKioskLanguage();
-  const [stage, setStage] = useState<Stage>('phone');
-  const [phone, setPhone] = useState('');
+  const [stage, setStage] = useState<Stage>('entry');
   const [code, setCode] = useState('');
-  const [session, setSession] = useState<CustomerSession>();
-  const [orders, setOrders] = useState<PickupOrder[]>([]);
-  const [selected, setSelected] = useState<PickupOrder>();
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [cooldown, setCooldown] = useState(0);
+  const [opened, setOpened] = useState<Opened>();
+  const [status, setStatus] = useState<Status>();
   const [online, setOnline] = useState(navigator.onLine);
-  const [receiptMode, setReceiptMode] = useState(false);
+  const attempt = useRef<string | undefined>(undefined);
   const epoch = useRef(0);
   const sending = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null);
-  const [activeField, setActiveField] = useState<'phone' | 'code'>('phone');
   useEffect(() => {
     heading.current?.focus();
   }, [stage]);
   useEffect(() => {
-    const onlineChanged = () => setOnline(navigator.onLine);
+    const connection = () => setOnline(navigator.onLine);
     const hide = () => {
       if (document.hidden) onHome();
     };
-    window.addEventListener('online', onlineChanged);
-    window.addEventListener('offline', onlineChanged);
-    document.addEventListener('visibilitychange', hide);
-    const invalidate = () => {
-      epoch.current += 1;
-    };
-    return () => {
-      invalidate();
-      window.removeEventListener('online', onlineChanged);
-      window.removeEventListener('offline', onlineChanged);
-      document.removeEventListener('visibilitychange', hide);
-    };
-  }, [onHome]);
-  useEffect(() => {
-    const timer = setInterval(() => setCooldown((v) => Math.max(0, v - 1)), 1000);
-    return () => clearInterval(timer);
-  }, []);
-  useEffect(() => {
-    if (!session) return;
-    const timer = setTimeout(onHome, Math.min(600, Number(session.expiresInSeconds)) * 1000);
-    return () => clearTimeout(timer);
-  }, [session, onHome]);
-  useEffect(() => {
     let last = Date.now();
     const touch = () => {
       last = Date.now();
@@ -64,188 +36,138 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
     const timer = setInterval(() => {
       if (Date.now() - last >= 180000) onHome();
     }, 1000);
+    window.addEventListener('online', connection);
+    window.addEventListener('offline', connection);
     window.addEventListener('pointerdown', touch);
     window.addEventListener('keydown', touch);
+    document.addEventListener('visibilitychange', hide);
+    const invalidate = () => {
+      epoch.current++;
+    };
     return () => {
+      invalidate();
       clearInterval(timer);
+      window.removeEventListener('online', connection);
+      window.removeEventListener('offline', connection);
       window.removeEventListener('pointerdown', touch);
       window.removeEventListener('keydown', touch);
+      document.removeEventListener('visibilitychange', hide);
     };
   }, [onHome]);
-  const loadOrders = useCallback(
-    async (token: string) => request<PickupOrder[]>(device, '/pickup/orders', undefined, token),
-    [device],
-  );
-  async function run(action: () => Promise<void>) {
-    if (sending.current || !online) return;
-    sending.current = true;
-    setBusy(true);
-    setError('');
-    const attempt = epoch.current;
-    try {
-      await action();
-    } catch (cause) {
-      if (attempt === epoch.current)
-        setError(
-          cause instanceof ApiError && cause.status === 429
-            ? tr(
-                'Thử quá nhiều lần. Vui lòng chờ rồi thử lại.',
-                'Too many attempts. Please wait before trying again.',
-              )
-            : cause instanceof ApiError && cause.status === 503
-              ? tr(
-                  'SMS hiện chưa sẵn sàng. Bạn có thể nhận hoa bằng ID và mã trên biên nhận.',
-                  'SMS is unavailable. You can collect using your receipt ID and code.',
-                )
-              : cause instanceof ApiError && cause.status === 401
-                ? tr('Mã không đúng hoặc đã hết hạn.', 'The code is incorrect or has expired.')
-                : tr(
-                    'Chưa xử lý được yêu cầu. Kiểm tra kết nối rồi thử lại.',
-                    'Unable to complete the request. Check the connection and try again.',
-                  ),
-        );
-    } finally {
-      if (attempt === epoch.current) {
-        sending.current = false;
-        setBusy(false);
-      }
-    }
-  }
-  function sendOtp() {
-    if (!/^(0[35789]\d{8}|\+84[35789]\d{8})$/.test(phone.trim())) {
-      setError(tr('Nhập số điện thoại Việt Nam hợp lệ.', 'Enter a valid Vietnamese phone number.'));
-      return;
-    }
-    const attempt = epoch.current;
-    void run(async () => {
-      await request(device, '/otp/request', { phone: phone.trim() });
-      if (attempt !== epoch.current) return;
-      setCooldown(60);
-      setCode('');
-      setActiveField('code');
-      setStage('otp');
-    });
-  }
-  function verifyOtp() {
-    if (!/^\d{6}$/.test(code)) {
-      setError(tr('Nhập đủ 6 chữ số trong SMS.', 'Enter the 6-digit SMS code.'));
-      return;
-    }
-    const attempt = epoch.current;
-    void run(async () => {
-      const result = await request<CustomerSession>(device, '/otp/verify', {
-        phone: phone.trim(),
-        code,
-      });
-      if (attempt !== epoch.current) return;
-      if (
-        !result.accessToken ||
-        !Number.isFinite(Number(result.expiresInSeconds)) ||
-        Number(result.expiresInSeconds) <= 0
-      )
-        throw new Error('Invalid session');
-      setSession(result);
-      setCode('');
-      setPhone('');
-      setStage('orders');
-      const rows = await loadOrders(result.accessToken);
-      if (attempt === epoch.current) setOrders(rows);
-    });
-  }
-  async function openOrder() {
-    if (!selected || !session || sending.current || !online) return;
-    sending.current = true;
-    setStage('sending');
-    setError('');
-    const attempt = epoch.current;
-    try {
-      const result = await request<components['schemas']['FlowResult']>(
-        device,
-        `/pickup/orders/${selected.id}/open`,
-        {},
-        session.accessToken,
-      );
-      if (attempt !== epoch.current) return;
-      setStage(
-        typeof result.result === 'string' && /^[0-9a-f-]{36}$/i.test(result.result)
-          ? 'watch'
-          : 'uncertain',
-      );
-    } catch (cause) {
-      if (attempt !== epoch.current) return;
-      if (cause instanceof ApiError && [400, 401, 403, 404, 409, 429].includes(cause.status)) {
-        setStage('orders');
+
+  useEffect(() => {
+    if (!opened || stage !== 'watch' || !online) return;
+    let active = true;
+    let inFlight = false;
+    const poll = async () => {
+      if (inFlight) return;
+      if (Date.now() >= Date.parse(opened.watchExpiresAt!)) {
         setError(
           tr(
-            'Đơn chưa thể nhận tại tủ này. Kiểm tra giờ hẹn, tình trạng cửa và thử lại.',
-            'This order cannot be collected here yet. Check the pickup time and locker doors.',
+            'Lượt theo dõi đã hết hạn. Liên hệ shop nếu chưa nhận được hoa.',
+            'Tracking has expired. Contact the shop if you have not collected your flowers.',
           ),
         );
-      } else setStage('uncertain');
-    } finally {
-      if (attempt === epoch.current) sending.current = false;
-    }
-  }
-  const selectedId = selected?.id;
-  useEffect(() => {
-    if (stage !== 'watch' || !selectedId || !session || !online) return;
-    let active = true;
+        setStage('uncertain');
+        return;
+      }
+      inFlight = true;
+      try {
+        const result = await request<Status>(
+          device,
+          `/preorders/pickup-otp/attempts/${opened.attemptId}`,
+          undefined,
+          undefined,
+          { 'X-Pickup-Token': opened.watchToken! },
+        );
+        if (active) {
+          setStatus(result);
+          setError('');
+        }
+      } catch {
+        if (active)
+          setError(
+            tr(
+              'Chưa đọc được trạng thái cửa. Không tự mở lại; kiểm tra ô và liên hệ shop nếu cần.',
+              'Unable to read the door status. Do not reopen; check the locker and contact the shop if needed.',
+            ),
+          );
+      } finally {
+        inFlight = false;
+      }
+    };
+    void poll();
     const timer = setInterval(() => {
-      void request<PickupOrder>(
-        device,
-        `/pickup/orders/${selectedId}`,
-        undefined,
-        session.accessToken,
+      if (
+        status?.orderStatus !== 'COMPLETED' &&
+        !['FAILED', 'EXPIRED', 'REVOKED'].includes(status?.commandStatus ?? '')
       )
-        .then((row) => {
-          if (active) setSelected(row);
-        })
-        .catch(() => {});
+        void poll();
     }, 3000);
     return () => {
       active = false;
       clearInterval(timer);
     };
-  }, [device, online, selectedId, session, stage]);
-  if (receiptMode)
-    return (
-      <div className="kh-shell">
-        <KioskHeader title={tr('NHẬN BẰNG BIÊN NHẬN', 'COLLECT WITH RECEIPT')} />
-        <main id="main" className="ko-main">
-          <PickupRecovery
-            device={device}
-            online={online}
-            onBack={() => setReceiptMode(false)}
-            onExit={onHome}
-          />
-        </main>
-      </div>
-    );
-  const title =
-    stage === 'phone' || stage === 'otp'
-      ? tr('Nhận đơn đặt trước', 'Collect your preorder')
-      : stage === 'watch'
-        ? tr('Món quà của bạn', 'Your flowers are waiting')
-        : tr('Chọn đơn nhận hoa', 'Select your order');
+  }, [opened, stage, online, device, tr, status?.orderStatus, status?.commandStatus]);
+
+  async function openLocker() {
+    if (sending.current || !online) return;
+    sending.current = true;
+    attempt.current ??= crypto.randomUUID();
+    const visit = epoch.current;
+    setError('');
+    setStage('sending');
+    try {
+      const result = await request<Opened>(device, '/preorders/pickup-otp/open', {
+        code,
+        attemptId: attempt.current,
+      });
+      if (visit !== epoch.current) return;
+      setOpened(result);
+      setCode('');
+      setStage('watch');
+    } catch (cause) {
+      if (visit !== epoch.current) return;
+      if (cause instanceof ApiError && [400, 401, 403, 409, 429].includes(cause.status)) {
+        setError(cause.message);
+        setStage('entry');
+        attempt.current = undefined;
+      } else {
+        setError(
+          tr(
+            'Chưa xác nhận được lệnh mở ô. Kiểm tra cửa trước; nút bên dưới chỉ kiểm tra lại cùng lượt, không tạo lệnh mới.',
+            'The opening request could not be confirmed. Check the door first; the button below checks the same attempt without creating another command.',
+          ),
+        );
+        setStage('uncertain');
+      }
+    } finally {
+      if (visit === epoch.current) sending.current = false;
+    }
+  }
+
+  const failed =
+    status?.orderStatus === 'DISPENSE_FAILED' ||
+    ['FAILED', 'EXPIRED', 'REVOKED'].includes(status?.commandStatus ?? '');
   return (
     <div className="kh-shell">
       <KioskHeader
         onHome={onHome}
         homeDisabled={stage === 'sending'}
-        title={tr('NHẬN HOA', 'COLLECT FLOWERS')}
+        title={tr('NHẬN HOA ĐẶT TRƯỚC', 'COLLECT PREORDER')}
       />
       <main id="main" className="ko-main">
         <div className="ko-heading">
           <p className="fb-eyebrow">
-            {tr('XÁC THỰC · CHỌN ĐƠN · NHẬN HOA', 'VERIFY · SELECT · COLLECT')}
+            {tr('OTP EMAIL · ĐÚNG TỦ · ĐÚNG GIỜ', 'EMAIL CODE · YOUR KIOSK · PICKUP TIME')}
           </p>
           <h1 ref={heading} tabIndex={-1}>
-            {title}
+            {tr('Nhận đơn đặt trước', 'Collect your preorder')}
           </h1>
           <p>
             {tr(
-              'Chỉ hiển thị đơn của bạn, đã thanh toán và sẵn sàng tại tủ này.',
-              'Only your paid orders that are ready at this kiosk will appear.',
+              'Shop gửi mã đến email đăng nhập sau khi hoa đã được nạp vào tủ. Mã dùng một lần, đến hết khung giờ nhận.',
+              'The shop emails your login address after stocking your flowers. The code is single use and expires at the end of your pickup window.',
             )}
           </p>
         </div>
@@ -257,113 +179,62 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
             )}
           </p>
         )}
-        {(stage === 'phone' || stage === 'otp') && (
+        {error && (
+          <p className="notice" role="alert">
+            {error}
+          </p>
+        )}
+        {stage === 'entry' && (
           <div className="ko-entry">
             <section className="ko-form">
               <span className="ko-form-icon">
                 <KeyRound size={30} aria-hidden="true" />
               </span>
-              <h2>
-                {stage === 'phone'
-                  ? tr('Số điện thoại đặt hoa', 'Order phone number')
-                  : tr('Nhập mã xác thực', 'Enter verification code')}
-              </h2>
-              <p>
-                {stage === 'phone'
-                  ? tr(
-                      'OTP sẽ được gửi qua SMS tới số dùng đặt đơn.',
-                      'An SMS code will be sent to the number used for your order.',
-                    )
-                  : tr(
-                      'Mã có 6 chữ số, hiệu lực 3 phút. Không chia sẻ mã với người khác.',
-                      'Your 6-digit code expires in 3 minutes. Do not share it.',
-                    )}
-              </p>
+              <h2>{tr('Mã nhận hoa trong email', 'Pickup code from your email')}</h2>
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (stage === 'phone') sendOtp();
-                  else verifyOtp();
+                  if (!/^\d{8}$/.test(code)) {
+                    setError(
+                      tr(
+                        'Nhập đủ 8 chữ số trong email.',
+                        'Enter the 8-digit code from your email.',
+                      ),
+                    );
+                    return;
+                  }
+                  setError('');
+                  setStage('review');
                 }}
               >
-                <label htmlFor="preorder-phone">{tr('Số điện thoại', 'Phone number')}</label>
+                <label htmlFor="preorder-email-code">{tr('OTP nhận hoa', 'Pickup code')}</label>
                 <input
-                  id="preorder-phone"
-                  type="tel"
-                  inputMode="tel"
+                  id="preorder-email-code"
+                  type="password"
+                  inputMode="numeric"
                   autoComplete="off"
-                  value={phone}
-                  disabled={stage === 'otp' || busy || !online}
-                  onFocus={() => setActiveField('phone')}
-                  onChange={(e) => setPhone(e.target.value)}
+                  maxLength={8}
+                  value={code}
+                  disabled={!online}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
                 />
-                {stage === 'otp' && (
-                  <>
-                    <label htmlFor="preorder-otp">{tr('OTP từ SMS', 'SMS code')}</label>
-                    <input
-                      id="preorder-otp"
-                      inputMode="numeric"
-                      autoComplete="off"
-                      maxLength={6}
-                      value={code}
-                      onFocus={() => setActiveField('code')}
-                      onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                      disabled={busy || !online}
-                    />
-                  </>
-                )}
-                <Button disabled={busy || !online} type="submit">
-                  {busy
-                    ? tr('Đang xử lý…', 'Please wait…')
-                    : stage === 'phone'
-                      ? tr('Gửi OTP qua SMS', 'Send SMS code')
-                      : tr('Xác thực và tìm đơn', 'Verify and find my orders')}
+                <Button type="submit" disabled={!online}>
+                  {tr('Tiếp tục', 'Continue')}
                 </Button>
               </form>
-              <Button
-                variant="outline"
-                disabled={busy}
-                onClick={() => {
-                  epoch.current += 1;
-                  setPhone('');
-                  setCode('');
-                  setError('');
-                  setReceiptMode(true);
-                }}
-              >
-                {tr('Nhận bằng biên nhận', 'Collect with receipt')}
-              </Button>
-              {stage === 'otp' && (
-                <div className="ko-otp-actions">
-                  <Button
-                    variant="outline"
-                    disabled={busy || !online || cooldown > 0}
-                    onClick={sendOtp}
-                  >
-                    {cooldown > 0
-                      ? tr(`Gửi lại sau ${cooldown}s`, `Resend in ${cooldown}s`)
-                      : tr('Gửi lại OTP', 'Resend code')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() => {
-                      setStage('phone');
-                      setCode('');
-                      setActiveField('phone');
-                    }}
-                  >
-                    {tr('Đổi số điện thoại', 'Change phone number')}
-                  </Button>
-                </div>
-              )}
+              <p>
+                {tr(
+                  'Chưa có mã? Kiểm tra thư rác hoặc nhờ shop gửi mã. Kiosk không gửi SMS.',
+                  'No code yet? Check spam or ask the shop to send it. The kiosk does not send SMS.',
+                )}
+              </p>
             </section>
             <div className="ko-keypad" role="group" aria-label={tr('Bàn phím số', 'Number keypad')}>
               {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'delete'].map((d) => (
                 <button
                   key={d}
-                  disabled={busy || !online}
                   type="button"
+                  disabled={!online}
                   aria-label={
                     d === 'delete'
                       ? tr('Xóa một số', 'Delete last digit')
@@ -371,16 +242,11 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
                         ? tr('Xóa hết', 'Clear all')
                         : d
                   }
-                  onClick={() => {
-                    const update = (value: string) =>
-                      d === 'clear'
-                        ? ''
-                        : d === 'delete'
-                          ? value.slice(0, -1)
-                          : (value + d).slice(0, activeField === 'code' ? 6 : 12);
-                    if (activeField === 'code') setCode(update);
-                    else setPhone(update);
-                  }}
+                  onClick={() =>
+                    setCode((v) =>
+                      d === 'clear' ? '' : d === 'delete' ? v.slice(0, -1) : (v + d).slice(0, 8),
+                    )
+                  }
                 >
                   {d === 'delete' ? (
                     <Delete size={24} aria-hidden="true" />
@@ -394,70 +260,17 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
             </div>
           </div>
         )}
-        {stage === 'orders' && (
-          <section className="ko-orders">
-            {busy ? (
-              <p role="status">{tr('Đang tìm đơn…', 'Finding your orders…')}</p>
-            ) : orders.length === 0 ? (
-              <div className="ko-empty">
-                <PackageCheck size={50} aria-hidden="true" />
-                <h2>{tr('Chưa có đơn sẵn sàng nhận', 'No orders ready to collect')}</h2>
-                <p>
-                  {tr(
-                    'Kiểm tra đúng tủ, giờ hẹn và thông báo shop đã chuẩn bị hoa. Số điện thoại phải được lưu trong hồ sơ của tài khoản đặt đơn trên website.',
-                    'Check the kiosk, pickup time and the shop’s ready notification. Your phone number must be saved in the website profile of the account that placed the order.',
-                  )}
-                </p>
-              </div>
-            ) : (
-              orders.map((order) => (
-                <article key={order.id}>
-                  <PackageCheck size={27} aria-hidden="true" />
-                  <div>
-                    <strong>{order.name}</strong>
-                    <p>{order.orderCode}</p>
-                  </div>
-                  <Button
-                    onClick={() => {
-                      setSelected(order);
-                      setStage('review');
-                    }}
-                    disabled={!online}
-                  >
-                    {tr('Chọn đơn này', 'Select order')}
-                  </Button>
-                </article>
-              ))
-            )}
-            <Button
-              variant="outline"
-              disabled={busy || !online}
-              onClick={() => {
-                const attempt = epoch.current;
-                void run(async () => {
-                  const rows = await loadOrders(session!.accessToken);
-                  if (attempt === epoch.current) setOrders(rows);
-                });
-              }}
-            >
-              {tr('Tải lại danh sách', 'Refresh orders')}
-            </Button>
-          </section>
-        )}
-        {(stage === 'review' || stage === 'sending') && selected && (
+        {(stage === 'review' || stage === 'sending') && (
           <section className="ko-confirm">
             <ShieldCheck size={45} aria-hidden="true" />
             <h2>{tr('Sẵn sàng nhận hoa?', 'Ready to collect?')}</h2>
             <p>
-              <strong>{selected.name}</strong> · {selected.orderCode}
-            </p>
-            <p>
               {tr(
-                'Đảm bảo các cửa tủ đã đóng. Sau khi xác nhận, nhận hoa ở ô được mở rồi đóng cửa lại.',
-                'Make sure all locker doors are closed. After confirming, collect your flowers from the opening locker, then close the door.',
+                'Đứng trước đúng kiosk đã chọn, kiểm tra cửa đã đóng. Xác nhận sẽ kiểm tra mã và yêu cầu mở ô của đơn tương ứng.',
+                'Stand at your selected kiosk and check that its doors are closed. Confirmation verifies the code and requests the matching locker to open.',
               )}
             </p>
-            <Button disabled={stage === 'sending' || !online} onClick={() => void openOrder()}>
+            <Button disabled={!online || stage === 'sending'} onClick={() => void openLocker()}>
               {stage === 'sending'
                 ? tr('Đang gửi lệnh…', 'Sending request…')
                 : tr('Xác nhận mở ô nhận hoa', 'Confirm and open locker')}
@@ -465,61 +278,60 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
             <Button
               variant="outline"
               disabled={stage === 'sending'}
-              onClick={() => setStage('orders')}
+              onClick={() => {
+                setCode('');
+                setStage('entry');
+              }}
             >
-              {tr('Chọn lại đơn', 'Choose another order')}
+              {tr('Nhập lại mã', 'Enter another code')}
             </Button>
           </section>
         )}
-        {stage === 'watch' && selected && (
+        {stage === 'watch' && opened && (
           <section className="ko-confirm" role="status">
             <PackageCheck size={52} aria-hidden="true" />
             <h2>
-              {selected.status === 'COMPLETED'
+              {status?.orderStatus === 'COMPLETED'
                 ? tr('Đã nhận hoa. Cảm ơn bạn!', 'Collected. Thank you!')
-                : selected.status === 'DISPENSE_FAILED'
-                  ? tr('Tủ gặp sự cố', 'Locker issue')
-                  : tr('Đã gửi yêu cầu mở ô', 'Locker request accepted')}
+                : failed
+                  ? tr('Chưa xác nhận nhận hoa', 'Pickup not confirmed')
+                  : status?.commandStatus === 'OPENED'
+                    ? tr('Cửa đã mở, mời bạn lấy hoa', 'The door is open. Collect your flowers')
+                    : tr('Đang chờ tủ mở cửa', 'Waiting for the locker to open')}
             </h2>
             <p>
-              {selected.status === 'COMPLETED'
-                ? tr(
-                    'Cửa đã được đóng. Chúc bạn một ngày thật vui.',
-                    'The door is closed. Have a lovely day.',
-                  )
-                : selected.status === 'DISPENSE_FAILED'
-                  ? tr(
-                      'Về Trang chủ và quét QR hỗ trợ admin. Giữ mã đơn để tra cứu.',
-                      'Return Home and scan the admin support QR. Keep your order reference.',
-                    )
-                  : tr(
-                      'Quan sát tủ, nhận hoa khi cửa mở và đóng cửa sau khi lấy hoa. Đang chờ phản hồi từ thiết bị.',
-                      'Watch the kiosk, collect the flowers when the door opens, and close it afterwards. Waiting for the device response.',
-                    )}
+              <strong>{opened.productName}</strong> · {opened.orderCode} · {tr('Ô', 'Locker')}{' '}
+              {opened.slotCode}
             </p>
-            <strong>{selected.orderCode}</strong>
-            <Button onClick={onHome}>{tr('Hoàn tất · Về Trang chủ', 'Finish · Back Home')}</Button>
+            <p>
+              {failed
+                ? tr(
+                    'Kiểm tra ô và liên hệ shop để được hỗ trợ. Không tự gửi thêm lệnh mở.',
+                    'Check the locker and contact the shop. Do not send another opening command.',
+                  )
+                : tr(
+                    'Lấy hoa ở ô được mở rồi đóng cửa lại. Hệ thống chỉ xác nhận hoàn tất khi nhận được trạng thái thực từ tủ.',
+                    'Collect your flowers and close the door. Completion is confirmed only from the actual device status.',
+                  )}
+            </p>
           </section>
         )}
         {stage === 'uncertain' && (
-          <div className="notice" role="alert">
-            {tr(
-              'Chưa xác nhận được kết quả. Hãy quan sát cửa tủ trước; màn hình không tự gửi lại lệnh. Nếu cửa không mở, về Trang chủ để quét QR hỗ trợ.',
-              'The result is uncertain. Check the locker first; this screen will not resend the command. If the door stays closed, return Home for support.',
+          <section className="ko-confirm">
+            <h2>{tr('Kiểm tra ô nhận hoa', 'Check your locker')}</h2>
+            {!opened && (
+              <Button disabled={!online} onClick={() => void openLocker()}>
+                {tr('Kiểm tra lại cùng lượt nhận', 'Check the same pickup attempt')}
+              </Button>
             )}
-          </div>
+            <p>
+              {tr(
+                'Nếu cửa đã mở, lấy hoa và đóng cửa. Nếu chưa nhận được hoa, liên hệ shop; không tạo lượt mới để mở lại.',
+                'If the door opened, collect your flowers and close it. If not, contact the shop; do not start another attempt to reopen it.',
+              )}
+            </p>
+          </section>
         )}
-        {error && (
-          <p role="alert" className="error">
-            {error}
-          </p>
-        )}
-        <p className="ko-privacy">
-          {tr(
-            'Thông tin xác thực chỉ giữ trong lượt này và được xóa khi về Trang chủ.',
-            'Verification details are kept only for this visit and cleared when you return Home.',
-          )}
-        </p>
       </main>
     </div>
   );

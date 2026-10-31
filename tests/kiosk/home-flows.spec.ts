@@ -3,14 +3,6 @@ import AxeBuilder from '@axe-core/playwright';
 
 const kiosk = '40000000-0000-0000-0000-000000000001';
 const order = '30000000-0000-0000-0000-000000000099';
-const command = '50000000-0000-0000-0000-000000000099';
-const readyOrder = {
-  id: order,
-  orderCode: 'FB-READY-01',
-  name: 'Bó hồng dành cho bạn',
-  status: 'PAID',
-  pickupBefore: new Date(Date.now() + 3600000).toISOString(),
-};
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(
@@ -96,82 +88,6 @@ for (const width of [390, 1024, 1366])
     await expect(page.getByRole('button', { name: /Collect a preorder/ })).toBeVisible();
   });
 
-test('Preorder SMS verifies before listing, opens only on explicit confirmation and clears memory on Home', async ({
-  page,
-}) => {
-  let opens = 0,
-    verified = false;
-  await page.route('**/otp/request', (route) => {
-    expect(route.request().postDataJSON()).toEqual({ phone: '0901234567' });
-    return route.fulfill({ json: { expiresInSeconds: 180 } });
-  });
-  await page.route('**/otp/verify', (route) => {
-    expect(route.request().postDataJSON()).toEqual({ phone: '0901234567', code: '123456' });
-    verified = true;
-    return route.fulfill({ json: { accessToken: 'private-otp-session', expiresInSeconds: 600 } });
-  });
-  await page.route('**/pickup/orders', (route) => {
-    expect(verified).toBe(true);
-    expect(route.request().headers().authorization).toBe('Bearer private-otp-session');
-    expect(route.request().headers()['x-kiosk-key']).toBeUndefined();
-    return route.fulfill({ json: [readyOrder] });
-  });
-  await page.route(`**/pickup/orders/${order}/open`, (route) => {
-    opens++;
-    expect(route.request().headers().authorization).toBe('Bearer private-otp-session');
-    return route.fulfill({ json: { result: command } });
-  });
-  await page.route(`**/pickup/orders/${order}`, (route) =>
-    route.fulfill({ json: { ...readyOrder, status: 'COMPLETED' } }),
-  );
-  await page.goto('/');
-  await page.getByRole('button', { name: /Nhận đơn đặt trước/ }).click();
-  await page.getByLabel('Số điện thoại', { exact: true }).fill('0901234567');
-  await page.getByRole('button', { name: 'Gửi OTP qua SMS' }).click();
-  await page.getByLabel('OTP từ SMS').fill('123456');
-  await page.getByRole('button', { name: 'Xác thực và tìm đơn' }).click();
-  await expect(page.getByText('FB-READY-01', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Chọn đơn này' }).click();
-  expect(opens).toBe(0);
-  await page.getByRole('button', { name: 'Xác nhận mở ô nhận hoa' }).click();
-  await expect(page.getByRole('heading', { name: 'Đã gửi yêu cầu mở ô' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Đã nhận hoa. Cảm ơn bạn!' })).toBeVisible();
-  expect(opens).toBe(1);
-  await page.getByRole('button', { name: 'Hoàn tất · Về Trang chủ' }).click();
-  expect(
-    await page.evaluate(() => JSON.stringify({ ...sessionStorage, ...localStorage })),
-  ).not.toContain('private-otp-session');
-  expect(
-    await page.evaluate(() => JSON.stringify({ ...sessionStorage, ...localStorage })),
-  ).not.toContain('0901234567');
-  await page.getByRole('button', { name: /Nhận đơn đặt trước/ }).click();
-  await expect(page.getByLabel('Số điện thoại', { exact: true })).toHaveValue('');
-});
-
-test('An uncertain unlock response never repeats the hardware request', async ({ page }) => {
-  let opens = 0;
-  await page.route('**/otp/request', (route) => route.fulfill({ json: { expiresInSeconds: 180 } }));
-  await page.route('**/otp/verify', (route) =>
-    route.fulfill({ json: { accessToken: 'ephemeral-token', expiresInSeconds: 600 } }),
-  );
-  await page.route('**/pickup/orders', (route) => route.fulfill({ json: [readyOrder] }));
-  await page.route(`**/pickup/orders/${order}/open`, (route) => {
-    opens++;
-    return route.abort();
-  });
-  await page.goto('/');
-  await page.getByRole('button', { name: /Nhận đơn đặt trước/ }).click();
-  await page.getByLabel('Số điện thoại', { exact: true }).fill('0901234567');
-  await page.getByRole('button', { name: 'Gửi OTP qua SMS' }).click();
-  await page.getByLabel('OTP từ SMS').fill('123456');
-  await page.getByRole('button', { name: 'Xác thực và tìm đơn' }).click();
-  await page.getByRole('button', { name: 'Chọn đơn này' }).click();
-  await page.getByRole('button', { name: 'Xác nhận mở ô nhận hoa' }).click();
-  await expect(page.getByRole('alert')).toContainText('không tự gửi lại lệnh');
-  await expect(page.getByRole('button', { name: 'Xác nhận mở ô nhận hoa' })).toHaveCount(0);
-  expect(opens).toBe(1);
-});
-
 test('Mobile report QR landing submits without device credentials or hardware commands', async ({
   page,
 }) => {
@@ -189,29 +105,6 @@ test('Mobile report QR landing submits without device credentials or hardware co
   await page.getByRole('button', { name: 'Gửi báo lỗi' }).click();
   await expect(page.getByRole('status')).toContainText('Đã gửi đến admin');
   expect(reports).toBe(1);
-});
-
-test('Preorder offers receipt collection when production SMS is unavailable', async ({ page }) => {
-  let opens = 0;
-  await page.route('**/otp/request', (route) => route.fulfill({ status: 503, json: {} }));
-  await page.route('**/flows/request_pickup', (route) => {
-    opens++;
-    expect(route.request().postDataJSON()).toEqual({ p_order: order, p_tracking: 'ABCD2345' });
-    return route.fulfill({ json: { result: command } });
-  });
-  await page.goto('/');
-  await page.getByRole('button', { name: /Nhận đơn đặt trước/ }).click();
-  await page.getByLabel('Số điện thoại', { exact: true }).fill('0901234567');
-  await page.getByRole('button', { name: 'Gửi OTP qua SMS' }).click();
-  await expect(page.getByRole('alert')).toContainText('SMS hiện chưa sẵn sàng');
-  await page.getByRole('button', { name: 'Nhận bằng biên nhận', exact: true }).click();
-  await page.getByLabel('ID biên nhận', { exact: true }).fill(order);
-  await page.getByLabel('Mã biên nhận (8 ký tự)').fill('ABCD2345');
-  await page.getByRole('button', { name: 'Kiểm tra thông tin' }).click();
-  expect(opens).toBe(0);
-  await page.getByRole('button', { name: 'Yêu cầu mở ô nhận hoa' }).click();
-  await expect(page.getByRole('status')).toContainText('Đã tiếp nhận yêu cầu mở ô');
-  expect(opens).toBe(1);
 });
 
 test('Walk-in shows the bank QR and follows server dispensing state without browser unlock commands', async ({
