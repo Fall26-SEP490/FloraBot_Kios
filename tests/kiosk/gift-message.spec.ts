@@ -35,6 +35,7 @@ for (const width of [390, 1024])
       }),
     );
     await page.goto('/');
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await page.getByRole('checkbox').check();
     const note = page.getByLabel('Lời nhắn tặng hoa (không bắt buộc)');
     const buy = page.getByRole('button', { name: 'Giữ hoa và thanh toán' });
@@ -72,6 +73,7 @@ for (const width of [390, 1024])
     ).toBeVisible();
     expect(submitted).toEqual({ p_bouquets: ['b1'], p_ecard: message });
     await page.getByRole('button', { name: 'Kết thúc lượt mua' }).click();
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await expect(note).toHaveValue('');
   });
 
@@ -82,6 +84,7 @@ test('Hidden tab clears unsent gift note; known rejection preserves it for corre
     route.fulfill({ status: 409, json: { detail: 'Giỏ hoa cần được kiểm tra lại.' } }),
   );
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.getByRole('checkbox').check();
   const note = page.getByLabel('Lời nhắn tặng hoa (không bắt buộc)');
   await note.fill('Một lời nhắn riêng');

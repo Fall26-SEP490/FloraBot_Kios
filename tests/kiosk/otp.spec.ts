@@ -60,6 +60,7 @@ test('OTP validation, error, bearer checkout, then session end clears token', as
     });
   });
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.locator('.customer-login summary').click();
   await page.getByLabel('Số điện thoại', { exact: true }).fill('123');
   await page.getByRole('button', { name: 'Gửi mã xác thực', exact: true }).click();
@@ -93,6 +94,7 @@ test('OTP validation, error, bearer checkout, then session end clears token', as
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
   await expect(page.getByText('Đã xác thực số điện thoại.', { exact: false })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await expect(page.getByRole('checkbox')).not.toBeChecked();
 });
 
@@ -103,6 +105,7 @@ test('Customer absolute expiry clears memory without refresh or persistent perso
     route.fulfill({ json: { accessToken: 'short-lived-customer-token', expiresInSeconds: 2 } }),
   );
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.locator('.customer-login summary').click();
   await page.getByLabel('Số điện thoại', { exact: true }).fill('0901234567');
   await page.getByRole('button', { name: 'Gửi mã xác thực', exact: true }).click();
@@ -112,6 +115,7 @@ test('Customer absolute expiry clears memory without refresh or persistent perso
   await expect(page.getByText('Đã xác thực số điện thoại.', { exact: false })).toHaveCount(0, {
     timeout: 5000,
   });
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.locator('.customer-login summary').click();
   await expect(page.getByLabel('Số điện thoại', { exact: true })).toHaveValue('');
   const stored = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }));

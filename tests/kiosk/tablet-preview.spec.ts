@@ -91,6 +91,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
 
     // Click preview button
     await page.getByRole('button', { name: 'Xem giao diện mẫu' }).click();
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
 
     // Verify persistent ribbon
     await expect(page.getByText('DỮ LIỆU MINH HỌA')).toBeVisible();
@@ -225,6 +226,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
 
       // Launch Preview
       await page.getByRole('button', { name: 'Xem giao diện mẫu' }).click();
+      await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
       await expect(page.getByText('DỮ LIỆU MINH HỌA')).toBeVisible();
       await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
       await expect(page.getByRole('button', { name: 'Thoát xem mẫu' })).toBeInViewport();
@@ -258,7 +260,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
       // At 1024x768 the hero must own the first viewport; after scrolling to the first card,
       // its title, price and select control must remain complete and usable.
       if (width === 1024 && height === 768) {
-        await expect(page.locator('.preview-simulator__hero h1')).toBeInViewport();
+        await expect(page.locator('.fb-hero h1')).toBeInViewport();
 
         const firstCard = page.locator('.preview-bouquet-card').first();
         await firstCard.scrollIntoViewIfNeeded();
@@ -468,7 +470,8 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     expect(parsed.key).toBe('trimmed-api-key-12345');
 
     // Real mode entered
-    await expect(page.getByRole('heading', { name: 'Một bó hoa, một ngày vui.' })).toBeVisible();
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Chọn một bó hoa bạn thích' })).toBeVisible();
   });
 
   test('Setup with successful real API empty catalogue saves device session and enters real shopping mode with truthful no-inventory status', async ({
@@ -491,7 +494,8 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     expect(saved).not.toBeNull();
 
     // Real mode is active
-    await expect(page.getByRole('heading', { name: 'Một bó hoa, một ngày vui.' })).toBeVisible();
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Chọn một bó hoa bạn thích' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Kết thúc lượt mua' })).toBeVisible();
 
     // Truthful no-inventory message is displayed
@@ -541,6 +545,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     });
 
     await page.goto('/');
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
 
     // Initially with aborted image request, SVG fallback is shown in flowers list
     await expect(page.locator('.flowers .flower-svg-fallback')).toBeVisible();
@@ -551,6 +556,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
 
     // Re-navigating or updating with working route displays img
     await page.goto('/');
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await expect(page.locator('.flower-thumb-image')).toBeVisible();
   });
 });

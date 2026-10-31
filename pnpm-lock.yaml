@@ -77,6 +77,9 @@ importers:
       '@fontsource/be-vietnam-pro':
         specifier: ^5.2.6
         version: 5.3.0
+      '@fontsource/lora':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/nunito':
         specifier: ^5.3.0
         version: 5.3.0
@@ -993,6 +996,9 @@ packages:
 
   '@fontsource/be-vietnam-pro@5.3.0':
     resolution: {integrity: sha512-xhAQBGHDxP5BF8IJxedy5MoWUmc1DlPCcZbMLhvnPkf8TaYCbbUVs3LjpuJ4BYdTrdiCLaewNaY8z+owq/FqFw==}
+
+  '@fontsource/lora@5.3.0':
+    resolution: {integrity: sha512-OK1g1z01rHVPqO5aw/FOIoDqc46KKYZdgL3NOLkxLWDk6QhDHhdr/h2BV1cke6gTvR1tzpDfdKyUkGsC+sQLeQ==}
 
   '@fontsource/nunito@5.3.0':
     resolution: {integrity: sha512-vw9TaTQJ/zpEpKrsODuPmOvaVjXgdda6B+xXA4YqjrdeJ62MLgVoDerdRXFQHyBnSCt2yQ2nHKCHPP/Pv7Xq4Q==}
@@ -5892,6 +5898,8 @@ snapshots:
       levn: 0.4.1
 
   '@fontsource/be-vietnam-pro@5.3.0': {}
+
+  '@fontsource/lora@5.3.0': {}
 
   '@fontsource/nunito@5.3.0': {}
 

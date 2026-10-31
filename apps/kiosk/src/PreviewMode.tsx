@@ -1,3 +1,4 @@
+import { LanguagePicker, useKioskLanguage } from './kiosk-language';
 import { useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -10,7 +11,7 @@ import {
   MapPin,
   PackageCheck,
 } from '@florabot/ui';
-import { flowerPhotos } from '@florabot/ui/flower-photos';
+import { KioskBrand, KioskHero } from './KioskIdentity';
 import BouquetImage from './BouquetImage';
 import { VirtualCabinet } from './virtual-cabinet/VirtualCabinet';
 import { useVirtualCabinet } from './virtual-cabinet/useVirtualCabinet';
@@ -69,12 +70,19 @@ const DEMO_BOUQUETS: PreviewBouquet[] = [
 const money = (amount: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
-export default function PreviewMode({ onExit }: { onExit: () => void }) {
+export default function PreviewMode({
+  onExit,
+  initialTab = 'walkin',
+}: {
+  onExit: () => void;
+  initialTab?: 'walkin' | 'pickup';
+}) {
+  const { tr } = useKioskLanguage();
   const cabinet = useVirtualCabinet();
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
-  const [activeTab, setActiveTab] = useState<'walkin' | 'pickup'>('walkin');
+  const [activeTab, setActiveTab] = useState<'walkin' | 'pickup'>(initialTab);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [simulatedCheckoutOpen, setSimulatedCheckoutOpen] = useState(false);
   const [simulatedPaid, setSimulatedPaid] = useState(false);
@@ -192,22 +200,24 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
   return (
     <div className="kp-shell preview-simulator">
       <header className="kp-header">
-        <div className="kp-brand" aria-label="FloraBot">
-          <Flower2 size={30} aria-hidden="true" />
-          FloraBot<span>.</span>
-        </div>
+        <KioskBrand />
         <ol className="kp-top-steps" aria-label="Tiến trình mô phỏng kiosk">
-          {['Chọn hoa', 'Thanh toán', 'Nhận hoa'].map((label, index) => (
-            <li key={label} aria-current={stage === index ? 'step' : undefined}>
-              <span>{index < stage ? <Check size={14} aria-hidden="true" /> : index + 1}</span>
-              {label}
-            </li>
-          ))}
+          {[tr('Chọn hoa', 'Choose'), tr('Thanh toán', 'Payment'), tr('Nhận hoa', 'Collect')].map(
+            (label, index) => (
+              <li key={label} aria-current={stage === index ? 'step' : undefined}>
+                <span>{index < stage ? <Check size={14} aria-hidden="true" /> : index + 1}</span>
+                {label}
+              </li>
+            ),
+          )}
         </ol>
         <div className="preview-simulator__header-actions">
-          <span className="kp-preview-badge">DỮ LIỆU MINH HỌA · CHƯA CÓ IOT</span>
+          <LanguagePicker />
+          <span className="kp-preview-badge">
+            {tr('DỮ LIỆU MINH HỌA · CHƯA CÓ IOT', 'DEMO DATA · NO REAL HARDWARE')}
+          </span>
           <Button type="button" variant="outline" onClick={onExit}>
-            Thoát xem mẫu
+            {tr('Thoát xem mẫu', 'Exit preview')}
           </Button>
         </div>
       </header>
@@ -219,32 +229,17 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
             {SHARED_SHOP_NAME}
           </span>
           <span className="preview-context-status" role="status">
-            Chế độ xem mẫu · Không thanh toán thật, không mở khóa tủ thật
+            {tr(
+              'Không thanh toán thật, không mở khóa tủ thật · Chế độ xem mẫu',
+              'No real payments or locker commands · Preview',
+            )}
           </span>
           <button type="button" onClick={resetPreview}>
-            Làm mới
+            {tr('Làm mới', 'Reset')}
           </button>
         </div>
 
-        {activeTab === 'walkin' && !simulatedCheckoutOpen && (
-          <section className="kp-hero preview-simulator__hero">
-            <div>
-              <p className="kp-eyebrow">MỘT CHÚT HOA, MỘT CHÚT THƯƠNG</p>
-              <h1>
-                Một bó hoa,
-                <br />
-                một ngày vui.
-              </h1>
-              <p>
-                Chạm để chọn hoa có sẵn trong tủ.
-                <br />
-                Theo dõi trực tiếp trạng thái từng ô ngay trên màn hình.
-              </p>
-              <span className="kp-hero-tag">Hoa nhân tạo · Sẵn sàng nhận tại kiosk</span>
-            </div>
-            <img src={flowerPhotos.pastelBouquet.src} alt={flowerPhotos.pastelBouquet.alt} />
-          </section>
-        )}
+        {activeTab === 'walkin' && !simulatedCheckoutOpen && <KioskHero />}
 
         {/* Compact Mode Switcher (Tabs) */}
         <div className="kiosk-compact-tabs" role="tablist" aria-label="Lựa chọn phương thức">
@@ -256,7 +251,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
             role="tab"
           >
             <Flower2 size={19} aria-hidden="true" />
-            Mua hoa tại chỗ
+            {tr('Mua hoa tại chỗ', 'Buy flowers here')}
           </button>
           <button
             type="button"
@@ -266,7 +261,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
             role="tab"
           >
             <PackageCheck size={19} aria-hidden="true" />
-            Nhận đơn đặt trước
+            {tr('Nhận đơn đặt trước', 'Collect a preorder')}
           </button>
         </div>
 
@@ -280,9 +275,9 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                 {/* Short compact heading & subtitle */}
                 <div className="kp-section-heading preview-catalogue-header">
                   <div>
-                    <p className="kp-eyebrow">CHỌN MỘT NIỀM VUI</p>
+                    <p className="kp-eyebrow">{tr('CHỌN MỘT NIỀM VUI', 'PICK A LITTLE JOY')}</p>
                     <h1 id="catalog-heading" className="preview-compact-title">
-                      Hoa đang có sẵn tại tủ
+                      {tr('Hoa đang có sẵn tại tủ', 'Available at this kiosk')}
                     </h1>
                   </div>
                   <span>{availableBouquets.length} mẫu sẵn sàng</span>
@@ -364,8 +359,11 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                     }}
                   >
                     {selectedIds.length === 0
-                      ? 'Chưa chọn hoa'
-                      : `Thử nghiệm đặt hoa (${selectedIds.length}) · ${money(totalAmount)}`}
+                      ? tr('Chưa chọn hoa', 'Choose your flowers')
+                      : tr(
+                          `Thử nghiệm đặt hoa (${selectedIds.length}) · ${money(totalAmount)}`,
+                          `Test checkout (${selectedIds.length}) · ${money(totalAmount)}`,
+                        )}
                   </Button>
                 </aside>
               </section>
@@ -379,27 +377,39 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
               >
                 <header className="task-screen-header">
                   <div>
-                    <span className="task-screen-eyebrow">BƯỚC 3 · THANH TOÁN</span>
+                    <span className="task-screen-eyebrow">
+                      {tr('BƯỚC 2 · THANH TOÁN', 'STEP 2 · PAYMENT')}
+                    </span>
                     <h1
                       ref={checkoutHeadingRef}
                       id="simulated-checkout-title"
                       tabIndex={-1}
                       aria-label="Mô phỏng quy trình thanh toán"
                     >
-                      Thanh toán đơn hoa
+                      {tr('Thanh toán đơn hoa', 'Pay for your flowers')}
                     </h1>
-                    <p>Kiểm tra đơn hoa và trải nghiệm bước quét mã thanh toán.</p>
+                    <p>
+                      {tr(
+                        'Kiểm tra đơn hoa và trải nghiệm bước quét mã thanh toán.',
+                        'Review your flowers and try the QR payment screen.',
+                      )}
+                    </p>
                   </div>
                   <div className="preview-warning-box" role="note">
-                    <strong>MÔ PHỎNG: DỮ LIỆU MINH HỌA</strong>
-                    <span>Không kết nối payOS · Không trừ tiền · Không mở tủ thật</span>
+                    <strong>{tr('MÔ PHỎNG: DỮ LIỆU MINH HỌA', 'SIMULATION: DEMO DATA')}</strong>
+                    <span>
+                      {tr(
+                        'Không kết nối payOS · Không trừ tiền · Không mở tủ thật',
+                        'No payOS connection · No real charge · No real locker commands',
+                      )}
+                    </span>
                   </div>
                 </header>
 
                 <div className="simulated-checkout-card">
                   <div className="simulated-order-summary">
                     <div className="simulated-card-heading">
-                      <span>ĐƠN HÀNG</span>
+                      <span>{tr('ĐƠN HÀNG', 'YOUR ORDER')}</span>
                       <strong>{selectedBouquets.length} bó hoa</strong>
                     </div>
                     <ul className="simulated-items-list">
@@ -414,7 +424,9 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                           />
                           <span className="simulated-item-copy">
                             <strong>{b.name}</strong>
-                            <small>Ô {b.slotCode} · {b.shopName}</small>
+                            <small>
+                              Ô {b.slotCode} · {b.shopName}
+                            </small>
                           </span>
                           <strong>{money(b.price)}</strong>
                         </li>
@@ -422,7 +434,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                     </ul>
 
                     <div className="simulated-total-row">
-                      <span>Tổng thanh toán</span>
+                      <span>{tr('Tổng thanh toán', 'Total to pay')}</span>
                       <strong className="simulated-total-amount">{money(totalAmount)}</strong>
                     </div>
                   </div>
@@ -431,11 +443,14 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                     <div className="simulated-payment-box">
                       <div className="simulated-qr-wrap">
                         <div className="simulated-payment-status">
-                          <span><CreditCard size={17} aria-hidden="true" /> Đang chờ thanh toán</span>
+                          <span>
+                            <CreditCard size={17} aria-hidden="true" />{' '}
+                            {tr('Đang chờ thanh toán', 'Awaiting payment')}
+                          </span>
                           <strong aria-live="polite">{paymentTime}</strong>
                         </div>
                         <span className="simulated-watermark">
-                          MÃ MINH HỌA - KHÔNG QUÉT THANH TOÁN
+                          {tr('MÃ MINH HỌA - KHÔNG QUÉT THANH TOÁN', 'DEMO QR - DO NOT PAY')}
                         </span>
                         <QRCodeSVG
                           value="https://florabot.test/demo-nonpayment-preview"
@@ -449,10 +464,18 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                       </div>
 
                       <div className="simulated-instructions">
-                        <span className="simulated-instructions__label">THÔNG TIN GIAO DỊCH</span>
+                        <span className="simulated-instructions__label">
+                          {tr('THÔNG TIN GIAO DỊCH', 'ORDER DETAILS')}
+                        </span>
                         <dl className="simulated-code-list">
-                          <div><dt>Mã đơn</dt><dd>FB-PREVIEW-261014-01</dd></div>
-                          <div><dt>Biên nhận</dt><dd>MINHHOA1</dd></div>
+                          <div>
+                            <dt>{tr('Mã đơn', 'Order reference')}</dt>
+                            <dd>FB-PREVIEW-261014-01</dd>
+                          </div>
+                          <div>
+                            <dt>{tr('Biên nhận', 'Receipt')}</dt>
+                            <dd>MINHHOA1</dd>
+                          </div>
                         </dl>
                         <p className="quiet">
                           Giao diện minh họa: Trên thiết bị thật đã cấu hình, khách quét mã payOS để
@@ -472,14 +495,16 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                             }}
                             className="simulate-success-btn"
                           >
-                            {paymentSeconds > 0 ? 'Xác nhận thanh toán mẫu' : 'Mã thanh toán đã hết hạn'}
+                            {paymentSeconds > 0
+                              ? 'Xác nhận thanh toán mẫu'
+                              : 'Mã thanh toán đã hết hạn'}
                           </Button>
                           <Button
                             type="button"
                             variant="outline"
                             onClick={() => setSimulatedCheckoutOpen(false)}
                           >
-                            Quay lại chọn hoa
+                            {tr('Quay lại chọn hoa', 'Back to flowers')}
                           </Button>
                         </div>
                       </div>
@@ -591,7 +616,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                           aria-describedby={pickupError ? 'preview-pin-error' : undefined}
                         />
                         <Button type="button" onClick={handleSimulatePickup}>
-                          Kiểm tra mã đơn
+                          {tr('Kiểm tra mã đơn', 'Check pickup code')}
                         </Button>
                       </div>
 
@@ -629,7 +654,11 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                       >
                         Xóa
                       </button>
-                      <button type="button" aria-label="Nhập số 0" onClick={() => enterPickupDigit('0')}>
+                      <button
+                        type="button"
+                        aria-label="Nhập số 0"
+                        onClick={() => enterPickupDigit('0')}
+                      >
                         0
                       </button>
                       <button
@@ -648,7 +677,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                   </div>
 
                   <details className="quick-demo-pins">
-                    <summary>Dùng dữ liệu thử</summary>
+                    <summary>{tr('Dùng dữ liệu thử', 'Use demo data')}</summary>
                     <div>
                       <button
                         type="button"
@@ -716,7 +745,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                             }
                           }}
                         >
-                          Mô phỏng mở ô nhận hoa
+                          {tr('Mô phỏng mở ô nhận hoa', 'Simulate opening a locker')}
                         </Button>
                       ) : (
                         <div className="pickup-triggered-feedback" role="status">
@@ -742,7 +771,7 @@ export default function PreviewMode({ onExit }: { onExit: () => void }) {
                             setPickupTriggered(false);
                           }}
                         >
-                          Thử mã khác
+                          {tr('Thử mã khác', 'Try another code')}
                         </Button>
                       </div>
                     </div>

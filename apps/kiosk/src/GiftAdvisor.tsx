@@ -1,3 +1,4 @@
+import { useKioskLanguage } from './kiosk-language';
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
@@ -103,6 +104,7 @@ export default function GiftAdvisor({
   onSelect,
   onUseMessage,
 }: Props) {
+  const { tr } = useKioskLanguage();
   const [session] = useState(() => crypto.randomUUID());
   const [surveyId, setSurveyId] = useState<string>();
   const [notice, setNotice] = useState('');
@@ -147,7 +149,9 @@ export default function GiftAdvisor({
   const locked = disabled || !online || busy;
   return (
     <details className="gift-advisor">
-      <summary>Cần một chút gợi ý để chọn hoa?</summary>
+      <summary>
+        {tr('Cần một chút gợi ý để chọn hoa?', 'Need a little help choosing flowers?')}
+      </summary>
       <p>
         Nghĩ về người bạn muốn tặng. Năm câu trả lời nhỏ sẽ giúp bạn tìm một bó hoa phù hợp trong
         tủ.

@@ -29,6 +29,7 @@ async function login(page: Page, canForgetAccount = true) {
     }),
   );
   await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.locator('.customer-login summary').click();
   await page.getByLabel('Số điện thoại', { exact: true }).fill('0901234567');
   await page.getByRole('button', { name: 'Gửi mã xác thực', exact: true }).click();
@@ -120,6 +121,7 @@ for (const width of [390, 1024])
       page.getByRole('status').filter({ hasText: 'Đã xóa thông tin định danh' }),
     ).toBeVisible();
     expect(forgets).toBe(1);
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await expect(page.locator('.customer-login')).toBeVisible();
     await expect(
       page.getByRole('button', { name: 'Lịch sử mua và thông tin cá nhân' }),
@@ -192,6 +194,7 @@ test('Late history cannot appear after tab hiding ends the session', async ({ pa
   release();
   await (await response).finished();
   await page.evaluate(() => new Promise(requestAnimationFrame));
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await expect(page.locator('.customer-login')).toBeVisible();
   await expect(page.getByText('Đơn FB-PRIVATE-1')).toHaveCount(0);
 });
