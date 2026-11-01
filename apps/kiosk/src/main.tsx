@@ -464,7 +464,15 @@ function Shopping({
         url.port
       )
         throw new Error('Liên kết thanh toán chưa hợp lệ. Vui lòng thử lại.');
-      return link;
+      const qrCode = link.qrCode?.trim();
+      if (!qrCode || /^https?:\/\//i.test(qrCode))
+        throw new Error(
+          tr(
+            'Chưa lấy được mã QR ngân hàng. Vui lòng bấm “Tạo mã thanh toán” để thử lại.',
+            'The bank payment QR is unavailable. Please select “Show payment QR” to try again.',
+          ),
+        );
+      return { ...link, qrCode };
     },
   });
   const current = checkout.data;
@@ -956,30 +964,18 @@ function Shopping({
                 )}
                 {payment.data && payable && online && (
                   <div className="payment-code">
-                    <h2>
-                      {payment.data.qrCode
-                        ? tr('Quét bằng ứng dụng ngân hàng', 'Scan with your banking app')
-                        : tr('Quét bằng camera điện thoại', 'Scan with your phone camera')}
-                    </h2>
+                    <h2>{tr('Quét bằng ứng dụng ngân hàng', 'Scan with your banking app')}</h2>
                     <QRCodeSVG
-                      value={payment.data.qrCode || payment.data.checkoutUrl}
+                      value={payment.data.qrCode}
                       size={224}
-                      title={
-                        payment.data.qrCode
-                          ? tr('Mã QR thanh toán payOS', 'payOS payment QR')
-                          : tr('Mã QR mở trang thanh toán payOS', 'QR to open payOS checkout')
-                      }
+                      marginSize={4}
+                      title={tr('Mã QR thanh toán payOS', 'payOS payment QR')}
                     />
                     <p>
-                      {payment.data.qrCode
-                        ? tr(
-                            'Quét mã QR để thanh toán qua payOS. Sau khi hệ thống xác nhận tiền, ô tủ sẽ được mở.',
-                            'Scan to pay through payOS. The locker will open after the server confirms payment.',
-                          )
-                        : tr(
-                            'Mở trang payOS và làm theo hướng dẫn thanh toán.',
-                            'Open payOS and follow the payment instructions.',
-                          )}
+                      {tr(
+                        'Mở ứng dụng ngân hàng, quét mã QR và kiểm tra số tiền trước khi thanh toán. Sau khi hệ thống xác nhận tiền, ô tủ sẽ được mở.',
+                        'Open your banking app, scan the QR and check the amount before paying. The locker will open after the server confirms payment.',
+                      )}
                     </p>
                     <a href={payment.data.checkoutUrl} target="_blank" rel="noopener noreferrer">
                       {tr('Mở liên kết thanh toán (tab mới)', 'Open payment link (new tab)')}

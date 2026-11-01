@@ -61,6 +61,7 @@ for (const width of [390, 1024])
           orderCode: 123,
           amount: 350000,
           checkoutUrl: 'https://pay.payos.vn/web/124c33293c934a85be5b7f8761a27a07',
+          qrCode: '000201-signed-provider-bank-payload',
         },
       }),
     );

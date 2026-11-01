@@ -157,9 +157,58 @@ test('Walk-in shows the bank QR and follows server dispensing state without brow
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
   await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
   await expect(page.getByRole('heading', { name: 'Quét bằng ứng dụng ngân hàng' })).toBeVisible();
+  await expect(
+    page.getByRole('img', { name: 'Mã QR thanh toán payOS', exact: true }),
+  ).toBeVisible();
+  await page.screenshot({ path: 'test-results/walkin-bank-qr.png', fullPage: true });
   status = 'DISPENSING';
   await expect(page.getByRole('status').filter({ hasText: 'Tủ đang mở' })).toBeVisible();
   status = 'COMPLETED';
   await expect(page.getByRole('status').filter({ hasText: 'Đã nhận hoa' })).toBeVisible();
   expect(browserUnlocks).toEqual([]);
 });
+
+for (const qrCode of [undefined, null, '   ', 'https://pay.payos.vn/web/example'])
+  test(`Walk-in refuses a checkout-link QR and allows retry: ${String(qrCode)}`, async ({
+    page,
+  }) => {
+    let attempts = 0;
+    await page.route('**/flows/kiosk_checkout', (route) =>
+      route.fulfill({ json: { result: 'qr-retry' } }),
+    );
+    await page.route('**/checkouts/qr-retry', (route) =>
+      route.fulfill({
+        json: {
+          id: 'qr-retry',
+          amount: 350000,
+          paymentStatus: 'PENDING',
+          payBefore: new Date(Date.now() + 300000).toISOString(),
+          orders: [],
+        },
+      }),
+    );
+    await page.route('**/payment-link', (route) => {
+      attempts++;
+      return route.fulfill({
+        json: {
+          orderCode: 123,
+          amount: 350000,
+          checkoutUrl: 'https://pay.payos.vn/web/0123456789abcdef0123456789abcdef',
+          qrCode: attempts === 1 ? qrCode : '000201-signed-provider-bank-payload',
+        },
+      });
+    });
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
+    await page.getByRole('checkbox').check();
+    await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
+    await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
+    await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
+    await expect(page.getByRole('alert')).toContainText('Chưa lấy được mã QR ngân hàng');
+    await expect(page.locator('.payment-code svg')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
+    await expect(
+      page.getByRole('img', { name: 'Mã QR thanh toán payOS', exact: true }),
+    ).toBeVisible();
+    expect(attempts).toBe(2);
+  });
