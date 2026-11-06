@@ -8,6 +8,7 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
+    public code?: string,
   ) {
     super(message);
   }
@@ -84,7 +85,9 @@ export async function request<T>(
         (response.status === 429
           ? 'Bạn thử quá nhiều lần. Vui lòng chờ trước khi thử lại.'
           : 'Chưa kết nối được tủ hoa. Bạn vui lòng thử lại.'),
+      problem.detail,
     );
   }
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }

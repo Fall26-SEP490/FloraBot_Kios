@@ -34,6 +34,9 @@ for (const width of [390, 1024])
         },
       }),
     );
+    await page.route('**/checkouts/checkout-note/cancel', (route) =>
+      route.fulfill({ status: 204 }),
+    );
     await page.goto('/');
     await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await page.getByRole('checkbox').check();
