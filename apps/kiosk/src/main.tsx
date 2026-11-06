@@ -453,8 +453,15 @@ function Shopping({
     },
   });
   const payment = useMutation({
-    mutationFn: async () => {
-      const link = await shoppingRequest<PaymentLink>(`/checkouts/${checkoutId}/payment-link`, {});
+    mutationFn: async ({ id, amount }: { id: string; amount: number }) => {
+      const link = await shoppingRequest<PaymentLink>(`/checkouts/${id}/payment-link`, {});
+      if (!Number.isSafeInteger(amount) || amount <= 0 || Number(link.amount) !== amount)
+        throw new Error(
+          tr(
+            'Số tiền thanh toán không khớp với giỏ hoa.',
+            'The payment amount does not match your basket.',
+          ),
+        );
       const url = new URL(link.checkoutUrl);
       if (
         url.protocol !== 'https:' ||
@@ -465,7 +472,7 @@ function Shopping({
       )
         throw new Error('Liên kết thanh toán chưa hợp lệ. Vui lòng thử lại.');
       const qrCode = link.qrCode?.trim();
-      if (!qrCode || /^https?:\/\//i.test(qrCode))
+      if (!qrCode?.startsWith('000201'))
         throw new Error(
           tr(
             'Chưa lấy được mã QR ngân hàng. Vui lòng bấm “Tạo mã thanh toán” để thử lại.',
@@ -474,12 +481,29 @@ function Shopping({
         );
       return { ...link, qrCode };
     },
+    onError: () => void checkout.refetch(),
   });
   const current = checkout.data;
+  const cancel = useMutation({
+    networkMode: 'always',
+    mutationFn: (id: string) => shoppingRequest<void>(`/checkouts/${id}/cancel`, {}),
+    onSuccess: onReset,
+    onError: () => void checkout.refetch(),
+  });
+  const endingDisabled = buy.isPending || payment.isPending || cancel.isPending;
+  function endVisit() {
+    if (endingDisabled) return;
+    if (!checkoutId || (current && current.paymentStatus !== 'PENDING')) {
+      onReset();
+      return;
+    }
+    cancel.mutate(checkoutId);
+  }
   const remaining = current
     ? Math.max(0, Math.ceil((new Date(current.payBefore).getTime() - now) / 1000))
     : 0;
-  const payable = current?.paymentStatus === 'PENDING' && remaining > 0;
+  const hasTimeToPay = current?.paymentStatus === 'PENDING' && remaining > 0;
+  const payable = hasTimeToPay && !cancel.isPending && !cancel.isError;
   const available = new Set(catalog.data?.map((item) => item.bouquetId));
   const selectedAccessories = Object.entries(accessoryQuantities)
     .map(([id, value]) => ({ id, qty: Number(value || 0) }))
@@ -559,16 +583,16 @@ function Shopping({
   return (
     <div className="fb-app">
       <KioskHeader
-        onHome={onReset}
-        homeDisabled={buy.isPending}
+        onHome={endVisit}
+        homeDisabled={endingDisabled}
         title={tr('MUA HOA TẠI CHỖ', 'BUY FLOWERS HERE')}
       />
       <div className="ks-progress">
         <KioskSteps
           stage={!checkoutId ? 0 : checkout.data?.paymentStatus === 'SUCCEEDED' ? 2 : 1}
         />
-        <Button variant="outline" onClick={onReset} disabled={buy.isPending}>
-          {t('reset')}
+        <Button variant="outline" onClick={endVisit} disabled={endingDisabled}>
+          {cancel.isPending ? tr('Đang hủy lượt mua…', 'Cancelling checkout…') : t('reset')}
         </Button>
       </div>
       <main id="main" className="fb-main">
@@ -912,6 +936,19 @@ function Shopping({
             <h1 id="checkout-title">
               {tr('Một chút nữa là hoa đến tay bạn.', 'Your flowers are almost yours.')}
             </h1>
+            {cancel.isError && (
+              <p role="alert" className="error">
+                {cancel.error instanceof ApiError && cancel.error.status === 409
+                  ? tr(
+                      'Lượt mua không còn chờ thanh toán. Hãy kiểm tra trạng thái và giữ lại mã biên nhận.',
+                      'This checkout is no longer pending. Check its status and keep your receipt code.',
+                    )
+                  : tr(
+                      'Chưa xác nhận được việc hủy. Kiểm tra kết nối rồi bấm “Kết thúc lượt mua” để thử lại.',
+                      'Cancellation could not be confirmed. Check your connection and select “End this visit” to retry.',
+                    )}
+              </p>
+            )}
             {checkout.isPending && (
               <p role="status">{tr('Đang lấy thông tin giỏ hoa…', 'Loading your basket…')}</p>
             )}
@@ -943,7 +980,9 @@ function Shopping({
                       {String(remaining % 60).padStart(2, '0')}
                     </p>
                     <Button
-                      onClick={() => payment.mutate()}
+                      onClick={() =>
+                        payment.mutate({ id: current.id, amount: Number(current.amount) })
+                      }
                       disabled={!online || payment.isPending}
                     >
                       {payment.isPending
@@ -952,36 +991,71 @@ function Shopping({
                     </Button>
                   </>
                 )}
-                {current.paymentStatus === 'PENDING' && !payable && (
+                {current.paymentStatus === 'PENDING' && !hasTimeToPay && (
                   <p role="status">
                     Đã hết thời gian giữ giỏ. Chọn “Kết thúc lượt mua” để bắt đầu lại.
                   </p>
                 )}
-                {payment.isError && (
+                {payment.isError && current.paymentStatus === 'PENDING' && (
                   <p role="alert" className="error">
-                    {payment.error.message}
+                    {payment.error instanceof ApiError &&
+                    [
+                      'missing_seller_channel',
+                      'channel_not_active',
+                      'seller_channel_unavailable',
+                    ].includes(payment.error.code ?? '')
+                      ? tr(
+                          'Cửa hàng chưa thể nhận thanh toán cho lượt mua này. Vui lòng liên hệ cửa hàng hoặc kết thúc lượt mua.',
+                          'This shop cannot receive payment for this checkout. Contact the shop or end this visit.',
+                        )
+                      : payment.error instanceof ApiError &&
+                          payment.error.code === 'legacy_checkout'
+                        ? tr(
+                            'Không thể cấp lại mã cho lượt mua cũ. Nếu chưa chuyển tiền, hãy kết thúc lượt mua và chọn lại hoa.',
+                            'A new payment QR is unavailable for this older checkout. If you have not paid, end this visit and choose your flowers again.',
+                          )
+                        : payment.error instanceof ApiError &&
+                            payment.error.code === 'checkout_not_payable'
+                          ? tr(
+                              'Lượt mua không còn chờ thanh toán.',
+                              'This checkout is no longer awaiting payment.',
+                            )
+                          : payment.error.message}
                   </p>
                 )}
-                {payment.data && payable && online && (
-                  <div className="payment-code">
-                    <h2>{tr('Quét bằng ứng dụng ngân hàng', 'Scan with your banking app')}</h2>
-                    <QRCodeSVG
-                      value={payment.data.qrCode}
-                      size={224}
-                      marginSize={4}
-                      title={tr('Mã QR thanh toán payOS', 'payOS payment QR')}
-                    />
-                    <p>
-                      {tr(
-                        'Mở ứng dụng ngân hàng, quét mã QR và kiểm tra số tiền trước khi thanh toán. Sau khi hệ thống xác nhận tiền, ô tủ sẽ được mở.',
-                        'Open your banking app, scan the QR and check the amount before paying. The locker will open after the server confirms payment.',
+                {payment.data &&
+                  Number(payment.data.amount) === Number(current.amount) &&
+                  payable &&
+                  online && (
+                    <div className="payment-code">
+                      <h2>{tr('Quét bằng ứng dụng ngân hàng', 'Scan with your banking app')}</h2>
+                      {payment.data.recipientAccountMasked && (
+                        <p>
+                          {tr('Tài khoản nhận của cửa hàng', 'Shop’s receiving account')}{' '}
+                          <strong>
+                            {[payment.data.recipientName, payment.data.recipientAccountMasked]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </strong>
+                        </p>
                       )}
-                    </p>
-                    <a href={payment.data.checkoutUrl} target="_blank" rel="noopener noreferrer">
-                      {tr('Mở liên kết thanh toán (tab mới)', 'Open payment link (new tab)')}
-                    </a>
-                  </div>
-                )}
+                      <QRCodeSVG
+                        value={payment.data.qrCode}
+                        size={224}
+                        marginSize={4}
+                        title={tr('Mã QR thanh toán payOS', 'payOS payment QR')}
+                      />
+                      <p>
+                        {tr(
+                          'Mở ứng dụng ngân hàng, quét mã QR và kiểm tra số tiền trước khi thanh toán. Sau khi hệ thống xác nhận tiền, ô tủ sẽ được mở.',
+                          'Open your banking app, scan the QR and check the amount before paying. The locker will open after the server confirms payment.',
+                        )}
+                      </p>
+                      <a href={payment.data.checkoutUrl} target="_blank" rel="noopener noreferrer">
+                        {tr('Mở liên kết thanh toán (tab mới)', 'Open payment link (new tab)')}
+                      </a>
+                    </div>
+                  )}
                 <h2>{tr('Biên nhận của bạn', 'Your receipt')}</h2>
                 <p className="quiet">
                   {tr(

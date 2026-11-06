@@ -129,6 +129,68 @@ for (const width of [390, 1024])
     await expect(page.getByRole('checkbox')).not.toBeChecked();
   });
 
+for (const paymentWins of [false, true]) {
+  test(`End visit ${paymentWins ? 'preserves the paid checkout' : 'releases the hold before going home'}`, async ({
+    page,
+  }) => {
+    let state = 'PENDING';
+    let attempts = 0;
+    await page.route('**/flows/kiosk_checkout', (route) =>
+      route.fulfill({ json: { result: 'checkout-id' } }),
+    );
+    await page.route('**/checkouts/checkout-id', (route) =>
+      route.fulfill({
+        json: {
+          id: 'checkout-id',
+          amount: 350000,
+          paymentStatus: state,
+          payBefore: new Date(Date.now() + 420000).toISOString(),
+          orders: [
+            {
+              id: orderId,
+              status: state === 'SUCCEEDED' ? 'DISPENSING' : 'AWAITING_PAYMENT',
+              trackingToken: 'ABCD2345',
+              amount: 350000,
+            },
+          ],
+        },
+      }),
+    );
+    await page.route('**/checkouts/checkout-id/cancel', (route) => {
+      expect(route.request().method()).toBe('POST');
+      expect(route.request().headers()['x-kiosk-key']).toBe('test-device-key');
+      attempts++;
+      if (paymentWins) {
+        state = 'SUCCEEDED';
+        return route.fulfill({ status: 409 });
+      }
+      return attempts === 1 ? route.abort() : route.fulfill({ status: 204 });
+    });
+    await page.goto('/');
+    const shop = page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true });
+    await shop.click();
+    await page.getByRole('checkbox').check();
+    await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
+    await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
+    await expect(page.getByText('ABCD2345')).toBeVisible();
+    const end = page.getByRole('button', { name: 'Kết thúc lượt mua' });
+    await end.click();
+
+    if (paymentWins) {
+      await expect(page.getByRole('alert')).toContainText('giữ lại mã biên nhận');
+      await expect(page.getByText('ABCD2345')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Tạo mã thanh toán' })).toHaveCount(0);
+      expect(attempts).toBe(1);
+    } else {
+      await expect(page.getByRole('alert')).toContainText('Chưa xác nhận được việc hủy');
+      await expect(shop).toHaveCount(0);
+      await end.click();
+      await expect(shop).toBeVisible();
+      expect(attempts).toBe(2);
+    }
+  });
+}
+
 test('No automatic checkout retry after response loss and idle clears selection', async ({
   page,
 }) => {
