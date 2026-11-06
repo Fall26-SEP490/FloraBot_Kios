@@ -73,10 +73,6 @@ for (const width of [390, 1024])
         },
       }),
     );
-    await page.route('**/checkouts/checkout-one/cancel', (route) => {
-      expect(route.request().headers().authorization).toBe('Bearer loyalty-token');
-      return route.fulfill({ status: 204 });
-    });
     await login(page);
     await page.getByRole('button', { name: 'Xem điểm có thể dùng' }).click();
     await expect(page.getByText('Bạn có 80.000 điểm. Mỗi điểm giảm 1 đồng.')).toBeVisible();
@@ -112,7 +108,6 @@ for (const width of [390, 1024])
     await expect(page.locator('.receipts')).toContainText('Đã dùng 50.000 điểm');
     await expect(page.locator('.receipts')).toContainText('Giảm 50.000');
     await page.getByRole('button', { name: 'Kết thúc lượt mua' }).click();
-    await expect(page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true })).toBeVisible();
     await expect(page.getByLabel('Số điểm muốn dùng')).toHaveCount(0);
     expect(attempts).toBe(2);
   });

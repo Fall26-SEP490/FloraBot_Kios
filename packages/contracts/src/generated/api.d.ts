@@ -9667,58 +9667,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/kiosks/{kioskId}/checkouts/{checkoutId}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    kioskId: string;
-                    checkoutId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/problem+json": components["schemas"]["ProblemDetails"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/kiosks/{kioskId}/checkouts/{checkoutId}/payment-link": {
         parameters: {
             query?: never;
@@ -11359,8 +11307,6 @@ export interface components {
             amount: number | string;
             checkoutUrl: string;
             qrCode?: null | string;
-            recipientName?: null | string;
-            recipientAccountMasked?: null | string;
         };
         PayOsWebhook: {
             data: components["schemas"]["JsonElement"];

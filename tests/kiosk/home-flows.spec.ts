@@ -147,8 +147,6 @@ test('Walk-in shows the bank QR and follows server dispensing state without brow
         amount: 350000,
         checkoutUrl: 'https://pay.payos.vn/web/0123456789abcdef0123456789abcdef',
         qrCode: '000201-signed-provider-bank-payload',
-        recipientName: 'TIEM HOA CUA BAN',
-        recipientAccountMasked: '******7766',
       },
     }),
   );
@@ -159,7 +157,6 @@ test('Walk-in shows the bank QR and follows server dispensing state without brow
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
   await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
   await expect(page.getByRole('heading', { name: 'Quét bằng ứng dụng ngân hàng' })).toBeVisible();
-  await expect(page.getByText('TIEM HOA CUA BAN · ******7766', { exact: true })).toBeVisible();
   await expect(
     page.getByRole('img', { name: 'Mã QR thanh toán payOS', exact: true }),
   ).toBeVisible();
@@ -171,15 +168,10 @@ test('Walk-in shows the bank QR and follows server dispensing state without brow
   expect(browserUnlocks).toEqual([]);
 });
 
-for (const failure of [
-  'missing',
-  'null',
-  'empty',
-  'url',
-  'wrong-amount',
-  'seller-unavailable',
-] as const)
-  test(`Walk-in rejects unsafe payment links and allows retry: ${failure}`, async ({ page }) => {
+for (const qrCode of [undefined, null, '   ', 'https://pay.payos.vn/web/example'])
+  test(`Walk-in refuses a checkout-link QR and allows retry: ${String(qrCode)}`, async ({
+    page,
+  }) => {
     let attempts = 0;
     await page.route('**/flows/kiosk_checkout', (route) =>
       route.fulfill({ json: { result: 'qr-retry' } }),
@@ -197,23 +189,12 @@ for (const failure of [
     );
     await page.route('**/payment-link', (route) => {
       attempts++;
-      if (attempts === 1 && failure === 'seller-unavailable')
-        return route.fulfill({ status: 503, json: { detail: 'seller_channel_unavailable' } });
-      const nativeQr = '000201-signed-provider-bank-payload';
-      const qrCodes = {
-        missing: undefined,
-        null: null,
-        empty: '   ',
-        url: 'https://pay.payos.vn/web/example',
-        'wrong-amount': nativeQr,
-        'seller-unavailable': nativeQr,
-      };
       return route.fulfill({
         json: {
           orderCode: 123,
-          amount: attempts === 1 && failure === 'wrong-amount' ? 360000 : 350000,
+          amount: 350000,
           checkoutUrl: 'https://pay.payos.vn/web/0123456789abcdef0123456789abcdef',
-          qrCode: attempts === 1 ? qrCodes[failure] : nativeQr,
+          qrCode: attempts === 1 ? qrCode : '000201-signed-provider-bank-payload',
         },
       });
     });
@@ -223,13 +204,7 @@ for (const failure of [
     await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
     await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
     await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
-    const expectedError =
-      failure === 'wrong-amount'
-        ? 'Số tiền thanh toán không khớp với giỏ hoa'
-        : failure === 'seller-unavailable'
-          ? 'Cửa hàng chưa thể nhận thanh toán'
-          : 'Chưa lấy được mã QR ngân hàng';
-    await expect(page.getByRole('alert')).toContainText(expectedError);
+    await expect(page.getByRole('alert')).toContainText('Chưa lấy được mã QR ngân hàng');
     await expect(page.locator('.payment-code svg')).toHaveCount(0);
     await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
     await expect(

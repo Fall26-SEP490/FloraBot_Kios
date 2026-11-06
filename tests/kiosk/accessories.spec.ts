@@ -55,9 +55,6 @@ for (const width of [390, 1024]) {
         },
       }),
     );
-    await page.route('**/checkouts/flower-checkout/cancel', (route) =>
-      route.fulfill({ status: 204 }),
-    );
     await page.goto('/');
     await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await expect(
@@ -85,7 +82,6 @@ for (const width of [390, 1024]) {
     expect(checkoutBody).toEqual({ p_bouquets: ['b1'] });
     expect(accessoryReads).toBe(0);
     await page.getByRole('button', { name: 'Kết thúc lượt mua' }).click();
-    await expect(page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Xem phụ kiện tại tủ' })).toHaveCount(0);
   });
 }

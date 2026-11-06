@@ -9416,51 +9416,6 @@
         }
       }
     },
-    "/api/kiosks/{kioskId}/checkouts/{checkoutId}/cancel": {
-      "post": {
-        "tags": [
-          "Payment"
-        ],
-        "parameters": [
-          {
-            "name": "kioskId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "checkoutId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemDetails"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/kiosks/{kioskId}/checkouts/{checkoutId}/payment-link": {
       "post": {
         "tags": [
@@ -14793,18 +14748,6 @@
             "type": "string"
           },
           "qrCode": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "recipientName": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "recipientAccountMasked": {
             "type": [
               "null",
               "string"
