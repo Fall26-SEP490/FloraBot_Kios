@@ -157,12 +157,12 @@ test('Walk-in shows the bank QR and follows server dispensing state without brow
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
-  await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
   await expect(page.getByRole('heading', { name: 'Quét bằng ứng dụng ngân hàng' })).toBeVisible();
   await expect(page.getByText('TIEM HOA CUA BAN · ******7766', { exact: true })).toBeVisible();
   await expect(
     page.getByRole('img', { name: 'Mã QR thanh toán payOS', exact: true }),
   ).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Mở liên kết thanh toán (tab mới)' })).toHaveCount(0);
   await page.screenshot({ path: 'test-results/walkin-bank-qr.png', fullPage: true });
   status = 'DISPENSING';
   await expect(page.getByRole('status').filter({ hasText: 'Tủ đang mở' })).toBeVisible();
@@ -222,7 +222,6 @@ for (const failure of [
     await page.getByRole('checkbox').check();
     await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
     await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
-    await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
     const expectedError =
       failure === 'wrong-amount'
         ? 'Số tiền thanh toán không khớp với giỏ hoa'
@@ -231,7 +230,7 @@ for (const failure of [
           : 'Chưa lấy được mã QR ngân hàng';
     await expect(page.getByRole('alert')).toContainText(expectedError);
     await expect(page.locator('.payment-code svg')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
+    await page.getByRole('button', { name: 'Tải lại mã QR', exact: true }).click();
     await expect(
       page.getByRole('img', { name: 'Mã QR thanh toán payOS', exact: true }),
     ).toBeVisible();

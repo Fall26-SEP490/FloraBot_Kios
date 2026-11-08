@@ -354,6 +354,7 @@ function Shopping({
   const [accessoriesOpen] = useState(false);
   const [accessoryQuantities] = useState<Record<string, string>>({});
   const [checkoutId, setCheckoutId] = useState<string>();
+  const requestedPaymentQr = React.useRef<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [idleSoon, setIdleSoon] = useState(false);
   const [uncertain, setUncertain] = useState(false);
@@ -475,8 +476,8 @@ function Shopping({
       if (!qrCode?.startsWith('000201'))
         throw new Error(
           tr(
-            'Chưa lấy được mã QR ngân hàng. Vui lòng bấm “Tạo mã thanh toán” để thử lại.',
-            'The bank payment QR is unavailable. Please select “Show payment QR” to try again.',
+            'Chưa lấy được mã QR ngân hàng. Vui lòng bấm “Tải lại mã QR” để thử lại.',
+            'The bank payment QR is unavailable. Please select “Retry payment QR” to try again.',
           ),
         );
       return { ...link, qrCode };
@@ -504,6 +505,21 @@ function Shopping({
     : 0;
   const hasTimeToPay = current?.paymentStatus === 'PENDING' && remaining > 0;
   const payable = hasTimeToPay && !cancel.isPending && !cancel.isError;
+  const paymentCheckoutId = current?.id;
+  const paymentAmount = Number(current?.amount);
+  const requestPaymentQr = payment.mutate;
+  useEffect(() => {
+    if (
+      !paymentCheckoutId ||
+      !payable ||
+      !online ||
+      requestedPaymentQr.current === paymentCheckoutId
+    )
+      return;
+    // One automatic attempt per checkout; failures require an explicit retry.
+    requestedPaymentQr.current = paymentCheckoutId;
+    requestPaymentQr({ id: paymentCheckoutId, amount: paymentAmount });
+  }, [paymentCheckoutId, paymentAmount, payable, online, requestPaymentQr]);
   const available = new Set(catalog.data?.map((item) => item.bouquetId));
   const selectedAccessories = Object.entries(accessoryQuantities)
     .map(([id, value]) => ({ id, qty: Number(value || 0) }))
@@ -979,16 +995,19 @@ function Shopping({
                       {tr('Thời gian còn lại:', 'Time remaining:')} {Math.floor(remaining / 60)}:
                       {String(remaining % 60).padStart(2, '0')}
                     </p>
-                    <Button
-                      onClick={() =>
-                        payment.mutate({ id: current.id, amount: Number(current.amount) })
-                      }
-                      disabled={!online || payment.isPending}
-                    >
-                      {payment.isPending
-                        ? tr('Đang tạo liên kết…', 'Creating payment…')
-                        : tr('Tạo mã thanh toán', 'Show payment QR')}
-                    </Button>
+                    {payment.isPending && (
+                      <p role="status">{tr('Đang tải mã QR…', 'Loading payment QR…')}</p>
+                    )}
+                    {payment.isError && (
+                      <Button
+                        onClick={() =>
+                          payment.mutate({ id: current.id, amount: Number(current.amount) })
+                        }
+                        disabled={!online}
+                      >
+                        {tr('Tải lại mã QR', 'Retry payment QR')}
+                      </Button>
+                    )}
                   </>
                 )}
                 {current.paymentStatus === 'PENDING' && !hasTimeToPay && (
@@ -1051,9 +1070,6 @@ function Shopping({
                           'Open your banking app, scan the QR and check the amount before paying. The locker will open after the server confirms payment.',
                         )}
                       </p>
-                      <a href={payment.data.checkoutUrl} target="_blank" rel="noopener noreferrer">
-                        {tr('Mở liên kết thanh toán (tab mới)', 'Open payment link (new tab)')}
-                      </a>
                     </div>
                   )}
                 <h2>{tr('Biên nhận của bạn', 'Your receipt')}</h2>

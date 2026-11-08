@@ -92,10 +92,12 @@ for (const width of [390, 1024])
       .toBe(width);
     await page.screenshot({ path: `.impeccable/review/kiosk-cart-${width}.png` });
     await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
-    await page.getByRole('button', { name: 'Tạo mã thanh toán' }).click();
     await expect(
-      page.getByRole('link', { name: 'Mở liên kết thanh toán (tab mới)' }),
-    ).toHaveAttribute('href', 'https://pay.payos.vn/web/124c33293c934a85be5b7f8761a27a07');
+      page.getByRole('img', { name: 'Mã QR thanh toán payOS', exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Mở liên kết thanh toán (tab mới)' })).toHaveCount(
+      0,
+    );
     await expect(page.getByText('ABCD2345')).toBeVisible();
     const receiptLink = new URL(
       (await page.getByRole('link', { name: 'Xem biên nhận (tab mới)' }).getAttribute('href'))!,
@@ -166,6 +168,16 @@ for (const paymentWins of [false, true]) {
       }
       return attempts === 1 ? route.abort() : route.fulfill({ status: 204 });
     });
+    await page.route('**/checkouts/checkout-id/payment-link', (route) =>
+      route.fulfill({
+        json: {
+          checkoutUrl: 'https://pay.payos.vn/web/test-cancellation',
+          amount: 350000,
+          orderCode: 123,
+          qrCode: '000201-signed-provider-bank-payload',
+        },
+      }),
+    );
     await page.goto('/');
     const shop = page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true });
     await shop.click();
