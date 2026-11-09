@@ -92,9 +92,13 @@ test('Invalid code and offline kiosk never claim collection or fall back to rece
   await expect(page.getByRole('button', { name: 'Tiếp tục', exact: true })).toBeDisabled();
   await context.setOffline(false);
 });
-for (const width of [390, 1024])
+for (const [width, height] of [
+  [390, 844],
+  [834, 1057],
+  [1024, 768],
+])
   test(`Email pickup is readable and accessible at ${width}`, async ({ page }) => {
-    await page.setViewportSize({ width, height: width === 1024 ? 768 : 844 });
+    await page.setViewportSize({ width, height });
     await page.goto('/');
     await page.getByRole('button', { name: /Nhận đơn đặt trước/ }).click();
     await expect(page.getByLabel('OTP nhận hoa', { exact: true })).toBeVisible();
@@ -107,7 +111,13 @@ for (const width of [390, 1024])
     ).toEqual([]);
     const next = page.getByRole('button', { name: 'Tiếp tục', exact: true });
     await expect(next).toBeDisabled();
-    if (width === 1024) await expect(next).toBeInViewport();
+    if (width >= 834) await expect(next).toBeInViewport();
+    if (width === 834) {
+      const panel = await page.locator('.pickup-console').boundingBox();
+      expect(panel).not.toBeNull();
+      expect(height - panel!.y - panel!.height).toBeLessThan(130);
+      expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBe(height);
+    }
     for (const digit of '01234567') {
       await page.getByRole('button', { name: digit, exact: true }).click();
     }

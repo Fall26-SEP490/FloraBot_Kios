@@ -14,17 +14,7 @@ import { z } from 'zod';
 import i18n from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
-import {
-  Button,
-  Flower2,
-  PackageCheck,
-  ShieldCheck,
-  Zap,
-  ArrowRight,
-  MapPin,
-  ShoppingCart,
-  X,
-} from '@florabot/ui';
+import { Button, Flower2, ShieldCheck, ShoppingCart, X } from '@florabot/ui';
 import type { components } from '../../../packages/contracts/src/generated/api';
 import {
   ApiError,
@@ -127,13 +117,7 @@ const stateNames: Record<string, string> = {
   DISPUTED: 'Đang xử lý phản ánh',
 };
 
-function Setup({
-  onReady,
-  onPreview,
-}: {
-  onReady: (device: Device) => void;
-  onPreview: () => void;
-}) {
+function Setup({ onReady }: { onReady: (device: Device) => void }) {
   const [showDeviceKey, setShowDeviceKey] = useState(false);
   const form = useForm<Device>({
     resolver: zodResolver(setupSchema),
@@ -161,7 +145,7 @@ function Setup({
   return (
     <main id="main" className="setup setup-container fb-setup">
       <div className="setup-grid">
-        {/* Left column: Branded Welcome & Preview trigger */}
+        {/* Left column: Branded Welcome */}
         <section className="setup-welcome-col" aria-labelledby="welcome-hero-title">
           <div className="setup-brand-row">
             <KioskBrand />
@@ -186,53 +170,6 @@ function Setup({
           <p className="setup-hero-desc">
             Chạm để chọn. Trao gửi yêu thương. Khám phá trải nghiệm mua hoa tại tủ FloraBot.
           </p>
-
-          <div className="setup-preview-card">
-            <div>
-              <span className="setup-preview-eyebrow">KHÔNG CẦN THIẾT BỊ THẬT</span>
-              <h3>Trải nghiệm ngay giao diện kiosk</h3>
-              <p>Xem danh mục, thanh toán và nhận hoa bằng dữ liệu minh họa an toàn.</p>
-            </div>
-            <Button
-              id="preview-open"
-              type="button"
-              variant="outline"
-              className="setup-preview-button"
-              onClick={onPreview}
-            >
-              Xem giao diện mẫu <ArrowRight size={19} aria-hidden="true" />
-            </Button>
-          </div>
-
-          <div className="setup-highlights-list">
-            <div className="setup-highlight-item">
-              <span className="setup-highlight-icon" aria-hidden="true">
-                <Flower2 size={22} />
-              </span>
-              <div>
-                <strong>100% Hoa nhân tạo cao cấp</strong>
-                <p className="quiet">Bền đẹp, an toàn và luôn sẵn sàng tại tủ.</p>
-              </div>
-            </div>
-            <div className="setup-highlight-item">
-              <span className="setup-highlight-icon" aria-hidden="true">
-                <Zap size={22} />
-              </span>
-              <div>
-                <strong>Mua tại chỗ không cần đăng nhập</strong>
-                <p className="quiet">Chọn hoa có sẵn và thanh toán trực tiếp tại kiosk.</p>
-              </div>
-            </div>
-            <div className="setup-highlight-item">
-              <span className="setup-highlight-icon" aria-hidden="true">
-                <PackageCheck size={22} />
-              </span>
-              <div>
-                <strong>Nhận đơn bằng PIN / QR</strong>
-                <p className="quiet">Mở đúng ô nhận hoa bằng mã đã được cấp.</p>
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* Right column: Staff-only Device Setup Form */}
@@ -246,17 +183,6 @@ function Setup({
             Nhập thông tin được cấp để đồng bộ kiosk với hệ thống FloraBot.
           </p>
 
-          <details className="setup-guidance-callout">
-            <summary>Xem hướng dẫn lấy mã kết nối</summary>
-            <p>
-              Mã kiosk là chuỗi định danh duy nhất (UUID/id). Mã hiển thị như{' '}
-              <code>K-DEMO-SIM</code> chỉ là nhãn nhận diện dán trên tủ (display code/label), tuyệt
-              đối <strong>không phải</strong> khóa bí mật (API key/apiKey). Việc kết nối chỉ xác
-              thực giao tiếp API và đồng bộ danh mục, không tự động kích hoạt phần cứng chốt khóa
-              tủ.
-            </p>
-          </details>
-
           <form
             noValidate
             onSubmit={form.handleSubmit((value) => {
@@ -267,17 +193,12 @@ function Setup({
             })}
           >
             <label htmlFor="device-id">Mã kiosk (UUID / ID)</label>
-            <p id="device-id-hint" className="setup-field-hint">
-              Chuỗi UUID 36 ký tự định danh kiosk (ví dụ: 40000000-0000-0000-0000-000000000001).
-            </p>
             <input
               id="device-id"
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
               {...form.register('id')}
               aria-invalid={!!form.formState.errors.id}
-              aria-describedby={
-                form.formState.errors.id ? 'device-id-hint device-id-error' : 'device-id-hint'
-              }
+              aria-describedby={form.formState.errors.id ? 'device-id-error' : undefined}
             />
             {form.formState.errors.id && (
               <p id="device-id-error" className="error">
@@ -286,9 +207,6 @@ function Setup({
             )}
 
             <label htmlFor="device-key">Khóa thiết bị (API key / apiKey)</label>
-            <p id="device-key-hint" className="setup-field-hint">
-              Khóa API key bí mật được cấp cho thiết bị (không dùng mã nhãn dán như K-DEMO-SIM).
-            </p>
             <div className="setup-secret-field">
               <input
                 id="device-key"
@@ -297,9 +215,7 @@ function Setup({
                 placeholder="Khóa bí mật API key"
                 {...form.register('key')}
                 aria-invalid={!!form.formState.errors.key}
-                aria-describedby={
-                  form.formState.errors.key ? 'device-key-hint device-key-error' : 'device-key-hint'
-                }
+                aria-describedby={form.formState.errors.key ? 'device-key-error' : undefined}
               />
               <button
                 type="button"
@@ -638,68 +554,6 @@ function Shopping({
         )}
         {!checkoutId ? (
           <>
-            <div className="fb-context">
-              <span>
-                <MapPin size={16} aria-hidden="true" />{' '}
-                {catalog.data?.[0]?.shopName || 'Tủ hoa FloraBot'}
-              </span>
-              <span>
-                {tr('Không cần đăng nhập để mua hoa', 'No account needed to buy flowers')}
-              </span>
-            </div>
-            <div className="ks-catalog-intro">
-              <h1>{tr('Chọn một bó hoa bạn thích', 'Find your little joy')}</h1>
-              <p>
-                {tr(
-                  'Mỗi bó hoa tương ứng một ô tủ. Chọn hoa, thêm vào giỏ rồi thanh toán.',
-                  'Each bouquet belongs to a locker. Choose your flowers, add to your basket and pay.',
-                )}
-              </p>
-            </div>
-            <Button
-              id="pickup-open"
-              variant="outline"
-              disabled={buy.isPending || uncertain}
-              onClick={() => {
-                setEcard('');
-                setPoints(0);
-                setPickupOpen(true);
-              }}
-            >
-              {tr('Đã thanh toán nhưng chưa nhận hoa?', 'Paid but have not received your flowers?')}
-            </Button>
-            <div className="fb-member-tools">
-              {!customer && (
-                <CustomerLogin
-                  device={device}
-                  online={online}
-                  onReady={(session) =>
-                    setCustomer({
-                      ...session,
-                      expiresAt:
-                        Date.now() + Math.min(600, Number(session.expiresInSeconds)) * 1000,
-                    })
-                  }
-                />
-              )}
-              {customer && (
-                <Button
-                  id="customer-account-open"
-                  variant="outline"
-                  disabled={buy.isPending || uncertain}
-                  onClick={() => {
-                    setPoints(0);
-                    setEcard('');
-                    setAccountOpen(true);
-                  }}
-                >
-                  {tr(
-                    'Lịch sử mua và thông tin cá nhân',
-                    'Purchase history and personal information',
-                  )}
-                </Button>
-              )}
-            </div>
             <button
               type="button"
               className="fb-cart-trigger"
@@ -716,28 +570,39 @@ function Shopping({
             </button>
             <div className="fb-shop-grid">
               <div className="fb-catalog-column">
-                <GiftAdvisor
-                  onUseMessage={setEcard}
-                  key={customer ? 'customer' : 'guest'}
-                  request={shoppingRequest}
-                  online={online}
-                  disabled={buy.isPending || uncertain || catalog.isError}
-                  available={available}
-                  selected={selected}
-                  onSelect={(id) => setSelected((ids) => (ids.includes(id) ? ids : [...ids, id]))}
-                />
                 <section aria-labelledby="flowers-title">
-                  <div className="fb-section-heading">
+                  <header className="shop-catalog-heading">
                     <div>
-                      <p className="fb-eyebrow">{tr('CHỌN MỘT NIỀM VUI', 'PICK A LITTLE JOY')}</p>
-                      <h2 id="flowers-title">
+                      <h1 id="flowers-title">
                         {tr('Hoa đang đợi bạn', 'Flowers waiting for you')}
-                      </h2>
+                      </h1>
+                      <p>
+                        {tr(
+                          'Chạm vào bó hoa bạn thích để thêm vào giỏ.',
+                          'Touch a bouquet to add it to your basket.',
+                        )}
+                      </p>
                     </div>
-                    <span>
-                      {catalog.data?.length || 0} {tr('bó có sẵn', 'available')}
-                    </span>
-                  </div>
+                    <div className="shop-catalog-tools">
+                      {catalog.data && (
+                        <span>
+                          {catalog.data.length} {tr('bó có sẵn', 'available')}
+                        </span>
+                      )}
+                      <GiftAdvisor
+                        onUseMessage={setEcard}
+                        key={customer ? 'customer' : 'guest'}
+                        request={shoppingRequest}
+                        online={online}
+                        disabled={buy.isPending || uncertain || catalog.isError}
+                        available={available}
+                        selected={selected}
+                        onSelect={(id) =>
+                          setSelected((ids) => (ids.includes(id) ? ids : [...ids, id]))
+                        }
+                      />
+                    </div>
+                  </header>
                   {catalog.isPending && <p role="status">{t('loading')}</p>}
                   {catalog.isError && (
                     <div>
@@ -827,12 +692,56 @@ function Shopping({
                     </p>
                   )}
                 </section>
-                <p className="fb-accessory-note">
-                  {tr(
-                    'Bó hoa mua tại chỗ đã được chuẩn bị sẵn. Phụ kiện đi kèm chỉ áp dụng cho đơn đặt trước.',
-                    'Walk-in bouquets are ready to collect. Accessories are prepared for preorders only.',
-                  )}
-                </p>
+                <section className="shop-help" aria-labelledby="shop-help-title">
+                  <h2 id="shop-help-title">{tr('Bạn cần giúp đỡ?', 'Need a hand?')}</h2>
+                  <Button
+                    id="pickup-open"
+                    variant="outline"
+                    disabled={buy.isPending || uncertain}
+                    onClick={() => {
+                      setEcard('');
+                      setPoints(0);
+                      setPickupOpen(true);
+                    }}
+                  >
+                    {tr(
+                      'Đã thanh toán nhưng chưa nhận hoa?',
+                      'Paid but have not received your flowers?',
+                    )}
+                  </Button>
+                  <div className="fb-member-tools">
+                    {!customer && (
+                      <CustomerLogin
+                        device={device}
+                        online={online}
+                        onReady={(session) =>
+                          setCustomer({
+                            ...session,
+                            expiresAt:
+                              Date.now() + Math.min(600, Number(session.expiresInSeconds)) * 1000,
+                          })
+                        }
+                      />
+                    )}
+                    {customer && (
+                      <Button
+                        id="customer-account-open"
+                        variant="outline"
+                        disabled={buy.isPending || uncertain}
+                        onClick={() => {
+                          setPoints(0);
+                          setEcard('');
+                          setAccountOpen(true);
+                        }}
+                      >
+                        {tr(
+                          'Lịch sử mua và thông tin cá nhân',
+                          'Purchase history and personal information',
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </section>
               </div>
               <dialog
                 ref={basketDialog}
@@ -1193,10 +1102,6 @@ function App() {
       <Setup
         onReady={(value) => {
           setDevice(value);
-          setScreen('home');
-        }}
-        onPreview={() => {
-          setPreviewOpen(true);
           setScreen('home');
         }}
       />

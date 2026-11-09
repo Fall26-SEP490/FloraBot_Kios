@@ -23,16 +23,13 @@ test.describe('Virtual Cabinet 3D Simulator Interactive & Responsive Verificatio
     });
 
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
-
-    // Launch preview mode from setup screen
-    await page.getByRole('button', { name: 'Xem giao diện mẫu' }).click();
+    await page.goto('/?preview=1');
     await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
 
     // Verify 3D container / canvas is mounted or fallback is rendered
     const simulator = page.locator('.virtual-cabinet-simulator');
     await expect(simulator).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Tủ hoa FloraBot' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Hoa đang đợi bạn' })).toBeVisible();
 
     const canvasOrFallback = simulator.locator('canvas, .virtual-cabinet-fallback-notice');
     await expect(canvasOrFallback.first()).toBeVisible();
@@ -102,11 +99,9 @@ test.describe('Virtual Cabinet 3D Simulator Interactive & Responsive Verificatio
   for (const width of [390, 768, 1024, 1280, 1680]) {
     test(`Responsive layout and touch target compliance at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 850 });
-      await page.goto('/');
-
-      await page.getByRole('button', { name: 'Xem giao diện mẫu' }).click();
+      await page.goto('/?preview=1');
       await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
-      await expect(page.getByRole('heading', { name: 'Tủ hoa FloraBot' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Hoa đang đợi bạn' })).toBeVisible();
 
       // Verify no horizontal overflow
       const noOverflow = await page.evaluate(

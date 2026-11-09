@@ -38,6 +38,7 @@ export {
   Plus,
   Minus,
   ShoppingCart,
+  Bot,
   Flower2,
   PackageCheck,
   ShieldCheck,

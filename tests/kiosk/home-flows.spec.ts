@@ -49,19 +49,30 @@ for (const width of [390, 1024, 1366])
       return route.abort();
     });
     await page.goto('/');
-    await expect(page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: false })).toBeVisible();
-    await expect(
-      page.getByRole('button', { name: 'Nhận đơn đặt trước', exact: false }),
-    ).toBeVisible();
+    const buyButton = page.getByRole('button', { name: 'Mua hoa tại chỗ' });
+    const pickupButton = page.getByRole('button', { name: 'Nhận đơn đặt trước' });
+    await expect(buyButton).toBeVisible();
+    await expect(pickupButton).toBeVisible();
+    await expect(page.getByText('Tủ hoa Quận 1 · K-Q1-01')).toBeVisible();
+    await expect(page.getByText('Shop hoa của bạn')).toBeVisible();
     await expect(page.getByRole('img', { name: 'QR báo lỗi thiết bị' })).toBeVisible();
     await expect(page.getByRole('img', { name: 'QR hỗ trợ cửa hàng' })).toBeVisible();
-    await page.getByRole('button', { name: 'Tôi là nhân viên' }).click();
+    await expect(page.getByRole('button', { name: 'Tôi là khách hàng' })).toHaveCount(0);
+    const staffToggle = page.getByRole('banner').getByRole('button', { name: 'Tôi là nhân viên' });
+    const staffLink = page.getByRole('link', { name: 'Đăng nhập nhân viên' });
+    await expect(staffLink).toBeHidden();
+    await staffToggle.click();
+    await expect(buyButton).toBeHidden();
+    await expect(pickupButton).toBeHidden();
     await expect(page.getByRole('link', { name: 'Đăng nhập nhân viên' })).toHaveAttribute(
       'href',
       'https://florabot-fe.vercel.app/workspace',
     );
     expect(mutations).toEqual([]);
-    await page.getByRole('button', { name: 'Tôi là khách hàng' }).click();
+    await staffToggle.click();
+    await expect(staffLink).toBeHidden();
+    await expect(buyButton).toBeVisible();
+    await expect(pickupButton).toBeVisible();
     await page.screenshot({ path: `artifacts/kiosk-home-vi-${width}.png`, fullPage: true });
     await page.getByRole('button', { name: 'English', exact: true }).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -80,7 +91,7 @@ for (const width of [390, 1024, 1366])
     );
     await page.screenshot({ path: `artifacts/kiosk-home-${width}.png`, fullPage: true });
     await page.getByRole('button', { name: /Buy flowers here/ }).click();
-    await expect(page.getByRole('heading', { name: 'Find your little joy' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Flowers waiting for you' })).toBeVisible();
     await expect(page.getByRole('checkbox', { name: /Bó hồng lụa/ })).toBeVisible();
     await page.getByRole('checkbox', { name: /Bó hồng lụa/ }).check();
     await page.getByRole('button', { name: /^Open basket/ }).click();

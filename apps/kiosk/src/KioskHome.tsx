@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@florabot/ui';
 import { KioskBrand } from './KioskIdentity';
 import { LanguagePicker, useKioskLanguage } from './kiosk-language';
+import { DEMO_SHOP_NAME } from './preview-data';
 import type { Device } from './api';
 import type { components } from '../../../packages/contracts/src/generated/api';
 
@@ -31,10 +32,12 @@ export function KioskHeader({
   onHome,
   title,
   homeDisabled = false,
+  children,
 }: {
   onHome?: () => void;
   title?: string;
   homeDisabled?: boolean;
+  children?: ReactNode;
 }) {
   const { tr } = useKioskLanguage();
   return (
@@ -47,6 +50,7 @@ export function KioskHeader({
             {tr('Trang chủ', 'Home')}
           </Button>
         )}
+        {children}
         <LanguagePicker />
       </div>
     </header>
@@ -71,7 +75,7 @@ export default function KioskHome({
   useEffect(() => {
     if (notice) noticeRef.current?.focus();
   }, [notice]);
-  const [role, setRole] = useState<'customer' | 'staff'>('customer');
+  const [staffOpen, setStaffOpen] = useState(false);
   const info = useQuery({
     queryKey: ['kiosk-home', device.id],
     enabled: !preview,
@@ -86,9 +90,20 @@ export default function KioskHome({
     },
     refetchInterval: 30000,
   });
+  const shopName = preview ? DEMO_SHOP_NAME : info.data?.shopName;
   return (
     <div className="kh-shell">
-      <KioskHeader />
+      <KioskHeader>
+        <button
+          className="kh-staff-toggle"
+          type="button"
+          aria-expanded={staffOpen}
+          aria-controls="kh-staff"
+          onClick={() => setStaffOpen((open) => !open)}
+        >
+          {tr('Tôi là nhân viên', 'I am staff')}
+        </button>
+      </KioskHeader>
       <main id="main" className="kh-main">
         {notice && (
           <p className="notice" role="status" ref={noticeRef} tabIndex={-1}>
@@ -103,10 +118,29 @@ export default function KioskHome({
               : info.data?.name || tr('Tủ hoa FloraBot', 'FloraBot flower kiosk')}
             {info.data?.code && ` · ${info.data.code}`}
           </span>
-          <span>
-            {info.data?.shopName || tr('Hoa nhân tạo cao cấp', 'Premium artificial flowers')}
-          </span>
+          {shopName && <span>{shopName}</span>}
         </div>
+        <section id="kh-staff" className="kh-staff" hidden={!staffOpen}>
+          <ShieldCheck size={32} aria-hidden="true" />
+          <div>
+            <h2>{tr('Khu vực dành cho nhân viên', 'Staff workspace')}</h2>
+            <p>
+              {tr(
+                'Đăng nhập bằng tài khoản được cấp để xem công việc, nhập hoa và kiểm tra tủ.',
+                'Sign in with your assigned account to manage tasks, stock flowers and inspect the kiosk.',
+              )}
+            </p>
+            <a
+              className="button button-primary"
+              href={portalUrl('/workspace')}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <KeyRound size={18} aria-hidden="true" />
+              {tr('Đăng nhập nhân viên', 'Staff sign in')}
+            </a>
+          </div>
+        </section>
         <section className="kh-welcome">
           <div>
             <p className="fb-eyebrow">
@@ -123,14 +157,6 @@ export default function KioskHome({
                 'Pick a bouquet at the kiosk or collect your order. Your next little joy starts here.',
               )}
             </p>
-            <div className="kh-role" role="group" aria-label={tr('Bạn là ai?', 'Who are you?')}>
-              <button aria-pressed={role === 'customer'} onClick={() => setRole('customer')}>
-                {tr('Tôi là khách hàng', 'I am a customer')}
-              </button>
-              <button aria-pressed={role === 'staff'} onClick={() => setRole('staff')}>
-                {tr('Tôi là nhân viên', 'I am staff')}
-              </button>
-            </div>
           </div>
           <div className="kh-welcome-image">
             <img
@@ -145,7 +171,7 @@ export default function KioskHome({
             <span>{tr('Một món quà, ngàn lời thương.', 'A little gift, a thousand words.')}</span>
           </div>
         </section>
-        {role === 'customer' ? (
+        {!staffOpen && (
           <section className="kh-actions" aria-label={tr('Chọn dịch vụ', 'Choose a service')}>
             <button
               className="kh-action kh-action-buy"
@@ -187,28 +213,6 @@ export default function KioskHome({
               </span>
               <ArrowRight size={27} aria-hidden="true" />
             </button>
-          </section>
-        ) : (
-          <section className="kh-staff">
-            <ShieldCheck size={32} aria-hidden="true" />
-            <div>
-              <h2>{tr('Khu vực dành cho nhân viên', 'Staff workspace')}</h2>
-              <p>
-                {tr(
-                  'Đăng nhập bằng tài khoản được cấp để xem công việc, nhập hoa và kiểm tra tủ. Chọn vai trò tại đây không cấp quyền mở khóa.',
-                  'Sign in with your assigned account to manage tasks, stock flowers and inspect the kiosk. Selecting staff does not grant locker access.',
-                )}
-              </p>
-              <a
-                className="button button-primary"
-                href={portalUrl('/workspace')}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <KeyRound size={18} aria-hidden="true" />
-                {tr('Đăng nhập nhân viên', 'Staff sign in')}
-              </a>
-            </div>
           </section>
         )}
         <section className="kh-help" aria-labelledby="kh-help-title">
@@ -266,9 +270,11 @@ export default function KioskHome({
           <span>
             FloraBot · {tr('Một chút hoa, một chút thương', 'A little flower, a little love')}
           </span>
-          <span>
-            {tr('Chọn dịch vụ trên màn hình để bắt đầu', 'Touch a service to get started')}
-          </span>
+          {!staffOpen && (
+            <span>
+              {tr('Chọn dịch vụ trên màn hình để bắt đầu', 'Touch a service to get started')}
+            </span>
+          )}
         </footer>
       </main>
     </div>

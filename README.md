@@ -41,7 +41,7 @@ Build-time kiosk configuration:
 
 ## UI preview without IoT
 
-Open `/?preview=1`, or choose “Xem giao diện mẫu” from setup, to view the Home screen and isolated simulator. This mode never uses the provisioned device credentials, creates a payment or sends a hardware command. Its sample codes are isolated demo data; the connected kiosk uses the email pickup flow above. Exiting preview returns to the provisioned Home, or setup if no device is connected.
+Open `/?preview=1` to view the Home screen and isolated simulator. The simulator uses sample codes and operates without device credentials, payments, or hardware commands. The connected kiosk uses the email pickup flow above. Exiting preview returns to the provisioned Home, or setup if no device is connected.
 
 ## Contract generation
 
