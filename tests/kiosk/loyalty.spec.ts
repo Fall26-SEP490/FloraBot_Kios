@@ -77,6 +77,16 @@ for (const width of [390, 1024])
       expect(route.request().headers().authorization).toBe('Bearer loyalty-token');
       return route.fulfill({ status: 204 });
     });
+    await page.route('**/checkouts/checkout-one/payment-link', (route) =>
+      route.fulfill({
+        json: {
+          orderCode: 123,
+          amount: 150000,
+          checkoutUrl: 'https://pay.payos.vn/web/0123456789abcdef0123456789abcdef',
+          qrCode: '000201-test-bank-qr',
+        },
+      }),
+    );
     await login(page);
     await page.getByRole('button', { name: 'Xem điểm có thể dùng' }).click();
     await expect(page.getByText('Bạn có 80.000 điểm. Mỗi điểm giảm 1 đồng.')).toBeVisible();
@@ -111,6 +121,7 @@ for (const width of [390, 1024])
     await expect(page.locator('.total')).toContainText('150.000');
     await expect(page.locator('.receipts')).toContainText('Đã dùng 50.000 điểm');
     await expect(page.locator('.receipts')).toContainText('Giảm 50.000');
+    await expect(page.getByRole('img', { name: 'Mã QR thanh toán payOS' })).toBeVisible();
     await page.getByRole('button', { name: 'Kết thúc lượt mua' }).click();
     await expect(page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true })).toBeVisible();
     await expect(page.getByLabel('Số điểm muốn dùng')).toHaveCount(0);
