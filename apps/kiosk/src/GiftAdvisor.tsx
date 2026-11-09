@@ -4,7 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Button } from '@florabot/ui';
+import { Bot, Button, X } from '@florabot/ui';
 import type { components } from '../../../packages/contracts/src/generated/api';
 import { ApiError } from './api';
 
@@ -77,15 +77,22 @@ const schema = z.object({
     .max(1_000_000_000, 'Ngân sách tối đa 1 tỷ đồng.'),
 });
 type Values = z.infer<typeof schema>;
+type Suggestion = Omit<components['schemas']['GiftSuggestionResponse'], 'productId'>;
+type DemoBouquet = { id: string; name: string; price: number; description: string };
 type Props = {
-  request: <T>(path: string, body?: unknown) => Promise<T>;
   online: boolean;
   disabled: boolean;
   available: Set<string>;
   selected: string[];
   onSelect: (id: string) => void;
-  onUseMessage: (message: string) => void;
-};
+} & (
+  | {
+      request: <T>(path: string, body?: unknown) => Promise<T>;
+      onUseMessage: (message: string) => void;
+      demoBouquets?: never;
+    }
+  | { demoBouquets: DemoBouquet[]; request?: never; onUseMessage?: never }
+);
 const labels = {
   recipient: 'Bạn muốn tặng ai?',
   age: 'Người ấy bao nhiêu tuổi?',
@@ -103,11 +110,14 @@ export default function GiftAdvisor({
   selected,
   onSelect,
   onUseMessage,
+  demoBouquets,
 }: Props) {
   const { tr } = useKioskLanguage();
   const [session] = useState(() => crypto.randomUUID());
   const [surveyId, setSurveyId] = useState<string>();
+  const [demoSuggestions, setDemoSuggestions] = useState<Suggestion[]>();
   const [notice, setNotice] = useState('');
+  const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const form = useForm<Values>({
     resolver: zodResolver(schema),
@@ -121,6 +131,7 @@ export default function GiftAdvisor({
   });
   const create = useMutation({
     mutationFn: async (values: Values) => {
+      if (!request) throw new Error('Gợi ý trực tuyến chưa sẵn sàng.');
       const input: components['schemas']['AiSuggestRequest'] = {
         p_session: session,
         p_recipient: values.recipient,
@@ -138,157 +149,214 @@ export default function GiftAdvisor({
   });
   const survey = useQuery({
     queryKey: ['gift-survey', session, surveyId],
-    queryFn: () => request<components['schemas']['GiftSurveyResponse']>(`/surveys/${surveyId}`),
-    enabled: !!surveyId && online,
+    queryFn: request
+      ? () => request<components['schemas']['GiftSurveyResponse']>(`/surveys/${surveyId}`)
+      : undefined,
+    enabled: !!request && !!surveyId && online,
     refetchOnWindowFocus: false,
   });
+  const suggestions = demoSuggestions ?? survey.data?.suggestions;
   useEffect(() => {
-    if (survey.data?.id) heading.current?.focus();
-  }, [survey.data?.id]);
+    if (suggestions && dialog.current?.open) heading.current?.focus();
+  }, [suggestions]);
   const busy = create.isPending || (!!surveyId && survey.isFetching);
   const locked = disabled || !online || busy;
   return (
-    <details className="gift-advisor">
-      <summary>
-        {tr('Cần một chút gợi ý để chọn hoa?', 'Need a little help choosing flowers?')}
-      </summary>
-      <p>
-        Nghĩ về người bạn muốn tặng. Năm câu trả lời nhỏ sẽ giúp bạn tìm một bó hoa phù hợp trong
-        tủ.
-      </p>
-      <form
-        noValidate
-        onSubmit={form.handleSubmit((values) => {
-          setSurveyId(undefined);
-          setNotice('');
-          create.mutate(values);
-        })}
+    <>
+      <Button
+        type="button"
+        variant="outline"
+        className="gift-advisor-trigger"
+        aria-haspopup="dialog"
+        aria-controls="gift-advisor"
+        onClick={() => dialog.current?.showModal()}
       >
-        <fieldset disabled={locked}>
-          <legend className="sr-only">Sở thích và ngân sách tặng hoa</legend>
-          <div className="advisor-fields">
-            {(Object.keys(choices) as Array<keyof typeof choices>).map((field) => (
-              <div key={field}>
-                <label htmlFor={`gift-${field}`}>{labels[field]}</label>
-                <select id={`gift-${field}`} {...form.register(field)}>
-                  {choices[field].map(([value, label]) => (
-                    <option value={value} key={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ))}
-            <div>
-              <label htmlFor="gift-budget">Ngân sách tối đa (đồng)</label>
-              <input
-                id="gift-budget"
-                type="number"
-                inputMode="numeric"
-                min="1"
-                max="1000000000"
-                step="1"
-                {...form.register('budget', { valueAsNumber: true })}
-                aria-invalid={!!form.formState.errors.budget}
-                aria-describedby="gift-budget-error"
-              />
-              <p id="gift-budget-error" className="error">
-                {form.formState.errors.budget?.message}
-              </p>
-            </div>
-          </div>
-          <Button type="submit">{busy ? 'Đang tìm hoa phù hợp…' : 'Tìm hoa phù hợp'}</Button>
-        </fieldset>
-      </form>
-      {busy && <p role="status">Đang xem những bó hoa dành cho bạn…</p>}
-      {create.isError && (
-        <p role="alert" className="error">
-          {create.error instanceof ApiError
-            ? create.error.message
-            : 'Chưa nhận được gợi ý. Câu trả lời vẫn được giữ, bạn thử lại nhé.'}
-        </p>
-      )}
-      {surveyId && survey.isError && (
-        <div>
-          <p role="alert" className="error">
-            Chưa tải được gợi ý đã tạo. Bạn có thể tải lại mà không cần trả lời lần nữa.
-          </p>
-          <Button
-            variant="outline"
-            disabled={!online || disabled}
-            onClick={() => void survey.refetch()}
-          >
-            Tải lại gợi ý
-          </Button>
-        </div>
-      )}
-      {survey.data && (
-        <section aria-labelledby="gift-result-title">
-          <h2 id="gift-result-title" ref={heading} tabIndex={-1}>
-            Một chút cảm hứng cho món quà
+        <Bot size={22} aria-hidden="true" />
+        {tr('Gợi ý chọn hoa', 'Flower suggestions')}
+      </Button>
+      <dialog
+        ref={dialog}
+        id="gift-advisor"
+        className="gift-advisor"
+        aria-labelledby="gift-advisor-title"
+      >
+        <header className="gift-advisor-heading">
+          <h2 id="gift-advisor-title">
+            {tr('Cần một chút gợi ý để chọn hoa?', 'Need a little help choosing flowers?')}
           </h2>
-          <p className="quiet">
-            {survey.data.source === 'FALLBACK'
-              ? 'Gợi ý dựa trên dịp tặng và ngân sách bạn chọn.'
-              : 'Gợi ý có hỗ trợ AI, đã được kiểm tra theo hoa trong tủ.'}{' '}
-            Hoa chỉ được giữ khi bạn chuyển sang thanh toán.
+          <button
+            type="button"
+            className="fb-cart-close"
+            aria-label={tr('Đóng gợi ý', 'Close suggestions')}
+            onClick={() => dialog.current?.close()}
+          >
+            <X size={21} aria-hidden="true" />
+          </button>
+        </header>
+        <p>
+          {demoBouquets
+            ? tr(
+                'Bản mô phỏng gợi ý hoa đang có theo ngân sách bạn chọn.',
+                'The demo suggests available flowers within your budget.',
+              )
+            : tr(
+                'Chọn người nhận, dịp tặng và ngân sách để tìm hoa phù hợp trong tủ.',
+                'Choose a recipient, occasion and budget to find flowers at this kiosk.',
+              )}
+        </p>
+        <form
+          noValidate
+          onSubmit={form.handleSubmit((values) => {
+            setSurveyId(undefined);
+            setNotice('');
+            if (demoBouquets) {
+              setDemoSuggestions(
+                demoBouquets
+                  .filter((bouquet) => bouquet.price <= values.budget)
+                  .map((bouquet) => ({
+                    bouquetId: bouquet.id,
+                    name: bouquet.name,
+                    price: bouquet.price,
+                    reason: bouquet.description,
+                    cardMessage: null,
+                  })),
+              );
+            } else {
+              create.mutate(values);
+            }
+          })}
+        >
+          <fieldset disabled={locked}>
+            <legend className="sr-only">Sở thích và ngân sách tặng hoa</legend>
+            <div className="advisor-fields">
+              {!demoBouquets &&
+                (Object.keys(choices) as Array<keyof typeof choices>).map((field) => (
+                  <div key={field}>
+                    <label htmlFor={`gift-${field}`}>{labels[field]}</label>
+                    <select id={`gift-${field}`} {...form.register(field)}>
+                      {choices[field].map(([value, label]) => (
+                        <option value={value} key={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              <div>
+                <label htmlFor="gift-budget">Ngân sách tối đa (đồng)</label>
+                <input
+                  id="gift-budget"
+                  type="number"
+                  inputMode="numeric"
+                  min="1"
+                  max="1000000000"
+                  step="1"
+                  {...form.register('budget', { valueAsNumber: true })}
+                  aria-invalid={!!form.formState.errors.budget}
+                  aria-describedby="gift-budget-error"
+                />
+                <p id="gift-budget-error" className="error">
+                  {form.formState.errors.budget?.message}
+                </p>
+              </div>
+            </div>
+            <Button type="submit">{busy ? 'Đang tìm hoa phù hợp…' : 'Tìm hoa phù hợp'}</Button>
+          </fieldset>
+        </form>
+        {busy && <p role="status">Đang xem những bó hoa dành cho bạn…</p>}
+        {create.isError && (
+          <p role="alert" className="error">
+            {create.error instanceof ApiError
+              ? create.error.message
+              : 'Chưa nhận được gợi ý. Câu trả lời vẫn được giữ, bạn thử lại nhé.'}
           </p>
-          {survey.data.suggestions.length === 0 && (
-            <p>
-              Chưa có bó hoa phù hợp lúc này. Bạn thử đổi ngân sách hoặc xem hoa đang có trong tủ
-              nhé.
+        )}
+        {surveyId && survey.isError && (
+          <div>
+            <p role="alert" className="error">
+              Chưa tải được gợi ý đã tạo. Bạn có thể tải lại mà không cần trả lời lần nữa.
             </p>
-          )}
-          <ol className="advisor-results">
-            {survey.data.suggestions.map((item) => (
-              <li key={item.bouquetId}>
-                <div>
-                  <h3>{item.name}</h3>
-                  <p>{item.reason}</p>
-                  {item.cardMessage && (
-                    <div>
-                      <p className="gift-message">Lời nhắn gợi ý: “{item.cardMessage}”</p>
-                      <Button
-                        variant="outline"
-                        disabled={locked}
-                        onClick={() => {
-                          onUseMessage(item.cardMessage!);
-                          setNotice(
-                            'Đã điền lời nhắn vào giỏ. Bạn có thể sửa trước khi thanh toán.',
-                          );
-                        }}
-                      >
-                        Dùng lời nhắn này
-                      </Button>
-                    </div>
-                  )}
-                  <p>
-                    <strong>{money(item.price)}</strong>
-                  </p>
-                </div>
-                <div>
-                  <Button
-                    variant="outline"
-                    disabled={
-                      locked || !available.has(item.bouquetId) || selected.includes(item.bouquetId)
-                    }
-                    onClick={() => {
-                      onSelect(item.bouquetId);
-                      setNotice(`Đã thêm ${item.name} vào giỏ hoa.`);
-                    }}
-                  >
-                    {selected.includes(item.bouquetId) ? 'Đã chọn bó này' : `Chọn ${item.name}`}
-                  </Button>
-                  {!available.has(item.bouquetId) && (
-                    <p className="quiet">Bó này hiện không còn sẵn sàng.</p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
-      <p role="status">{notice}</p>
-    </details>
+            <Button
+              variant="outline"
+              disabled={!online || disabled}
+              onClick={() => void survey.refetch()}
+            >
+              Tải lại gợi ý
+            </Button>
+          </div>
+        )}
+        {suggestions && (
+          <section aria-labelledby="gift-result-title">
+            <h2 id="gift-result-title" ref={heading} tabIndex={-1}>
+              Một chút cảm hứng cho món quà
+            </h2>
+            <p className="quiet">
+              {demoBouquets
+                ? tr('Hoa mẫu phù hợp với ngân sách bạn chọn.', 'Demo flowers within your budget.')
+                : survey.data?.source === 'FALLBACK'
+                  ? 'Gợi ý dựa trên dịp tặng và ngân sách bạn chọn.'
+                  : 'Gợi ý có hỗ trợ AI, đã được kiểm tra theo hoa trong tủ.'}
+              {!demoBouquets && ' Hoa chỉ được giữ khi bạn chuyển sang thanh toán.'}
+            </p>
+            {suggestions.length === 0 && (
+              <p>
+                Chưa có bó hoa phù hợp lúc này. Bạn thử đổi ngân sách hoặc xem hoa đang có trong tủ
+                nhé.
+              </p>
+            )}
+            <ol className="advisor-results">
+              {suggestions.map((item) => (
+                <li key={item.bouquetId}>
+                  <div>
+                    <h3>{item.name}</h3>
+                    <p>{item.reason}</p>
+                    {item.cardMessage && onUseMessage && (
+                      <div>
+                        <p className="gift-message">Lời nhắn gợi ý: “{item.cardMessage}”</p>
+                        <Button
+                          variant="outline"
+                          disabled={locked}
+                          onClick={() => {
+                            onUseMessage(item.cardMessage!);
+                            setNotice(
+                              'Đã điền lời nhắn vào giỏ. Bạn có thể sửa trước khi thanh toán.',
+                            );
+                          }}
+                        >
+                          Dùng lời nhắn này
+                        </Button>
+                      </div>
+                    )}
+                    <p>
+                      <strong>{money(item.price)}</strong>
+                    </p>
+                  </div>
+                  <div>
+                    <Button
+                      variant="outline"
+                      disabled={
+                        locked ||
+                        !available.has(item.bouquetId) ||
+                        selected.includes(item.bouquetId)
+                      }
+                      onClick={() => {
+                        onSelect(item.bouquetId);
+                        setNotice(`Đã thêm ${item.name} vào giỏ hoa.`);
+                      }}
+                    >
+                      {selected.includes(item.bouquetId) ? 'Đã chọn bó này' : `Chọn ${item.name}`}
+                    </Button>
+                    {!available.has(item.bouquetId) && (
+                      <p className="quiet">Bó này hiện không còn sẵn sàng.</p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+        <p role="status">{notice}</p>
+      </dialog>
+    </>
   );
 }

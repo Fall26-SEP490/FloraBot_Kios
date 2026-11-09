@@ -58,7 +58,7 @@ for (const width of [390, 1024])
     await page.route('**/surveys/*', (route) => route.fulfill({ json: answer }));
     await page.goto('/');
     await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
-    await page.getByText('Cần một chút gợi ý để chọn hoa?', { exact: true }).click();
+    await page.getByRole('button', { name: 'Gợi ý chọn hoa', exact: true }).click();
     await page.getByLabel('Ngân sách tối đa (đồng)').fill('0');
     await page.getByRole('button', { name: 'Tìm hoa phù hợp', exact: true }).click();
     await expect(page.getByLabel('Ngân sách tối đa (đồng)')).toBeFocused();
@@ -69,8 +69,20 @@ for (const width of [390, 1024])
       page.getByRole('heading', { name: 'Một chút cảm hứng cho món quà' }),
     ).toBeFocused();
     await expect(page.getByText('Gợi ý dựa trên dịp tặng', { exact: false })).toBeVisible();
+    const advisor = page.getByRole('dialog', { name: 'Cần một chút gợi ý để chọn hoa?' });
+    await expect(advisor).toBeVisible();
+    expect(
+      (
+        await new AxeBuilder({ page })
+          .include('#gift-advisor')
+          .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+          .analyze()
+      ).violations,
+    ).toEqual([]);
+    await page.screenshot({ path: `.impeccable/review/kiosk-advisor-${width}.png`, fullPage: true });
     await page.getByRole('button', { name: 'Dùng lời nhắn này' }).click();
     await expect(page.locator('#walkin-basket')).toBeHidden();
+    await page.getByRole('button', { name: 'Đóng gợi ý' }).click();
     await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
     await expect(page.getByLabel('Lời nhắn tặng hoa (không bắt buộc)')).toHaveValue(
       answer.suggestions[0].cardMessage,
@@ -86,20 +98,19 @@ for (const width of [390, 1024])
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
-    await page.screenshot({
-      path: `.impeccable/review/kiosk-advisor-${width}.png`,
-      fullPage: true,
-    });
     await page.getByRole('button', { name: 'Đóng giỏ hoa' }).click();
+    await page.getByRole('button', { name: 'Gợi ý chọn hoa', exact: true }).click();
     await page.getByRole('button', { name: 'Chọn Bó hồng dịu dàng' }).click();
-    await expect(page.getByRole('checkbox')).toBeChecked();
-    await expect(page.getByLabel('Lời nhắn tặng hoa (không bắt buộc)')).toHaveValue(
-      'Lời nhắn do khách chỉnh sửa',
-    );
     await expect(
       page.getByRole('status').filter({ hasText: 'Đã thêm Bó hồng dịu dàng' }),
     ).toBeVisible();
     await expect(page.getByRole('button', { name: 'Đã chọn bó này' })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Gợi ý chọn hoa', exact: true })).toBeFocused();
+    await expect(page.getByRole('checkbox')).toBeChecked();
+    await expect(page.getByLabel('Lời nhắn tặng hoa (không bắt buộc)')).toHaveValue(
+      'Lời nhắn do khách chỉnh sửa',
+    );
     await page.getByRole('button', { name: 'Kết thúc lượt mua' }).click();
     await expect(page.getByRole('heading', { name: 'Một chút cảm hứng cho món quà' })).toHaveCount(
       0,
@@ -119,7 +130,7 @@ test('Retry reads an existing survey, and offline blocks selection', async ({ pa
   });
   await page.goto('/');
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
-  await page.getByText('Cần một chút gợi ý để chọn hoa?', { exact: true }).click();
+  await page.getByRole('button', { name: 'Gợi ý chọn hoa', exact: true }).click();
   await page.getByRole('button', { name: 'Tìm hoa phù hợp', exact: true }).click();
   await page.getByRole('button', { name: 'Tải lại gợi ý' }).click();
   await expect(page.getByRole('button', { name: 'Chọn Bó hồng dịu dàng' })).toBeEnabled();
@@ -154,7 +165,7 @@ test('Empty, stale and failed suggestions keep answers and purchase authority', 
   );
   await page.goto('/');
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
-  await page.getByText('Cần một chút gợi ý để chọn hoa?', { exact: true }).click();
+  await page.getByRole('button', { name: 'Gợi ý chọn hoa', exact: true }).click();
   await page.getByLabel('Bạn muốn tặng ai?').selectOption('FRIEND');
   await page.getByRole('button', { name: 'Tìm hoa phù hợp', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('Hãy chờ một phút');
@@ -166,6 +177,7 @@ test('Empty, stale and failed suggestions keep answers and purchase authority', 
   await page.getByRole('button', { name: 'Tìm hoa phù hợp', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Chọn Bó hồng dịu dàng' })).toBeDisabled();
   await expect(page.getByText('Bó này hiện không còn sẵn sàng.')).toBeVisible();
+  await page.getByRole('button', { name: 'Đóng gợi ý' }).click();
   await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
 });

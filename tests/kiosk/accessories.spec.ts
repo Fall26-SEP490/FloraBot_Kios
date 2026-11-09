@@ -64,7 +64,7 @@ for (const width of [390, 1024]) {
       page.getByText(
         'Bó hoa mua tại chỗ đã được chuẩn bị sẵn. Phụ kiện đi kèm chỉ áp dụng cho đơn đặt trước.',
       ),
-    ).toBeVisible();
+    ).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Xem phụ kiện tại tủ' })).toHaveCount(0);
     await page.getByRole('checkbox').check();
     await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
@@ -99,11 +99,7 @@ test('Empty bouquet catalogue cannot become an accessory-only checkout', async (
   });
   await page.goto('/');
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
-  await expect(
-    page.getByText(
-      'Bó hoa mua tại chỗ đã được chuẩn bị sẵn. Phụ kiện đi kèm chỉ áp dụng cho đơn đặt trước.',
-    ),
-  ).toBeVisible();
+  await expect(page.getByText('Tủ chưa có hoa sẵn sàng. Bạn ghé lại sau nhé.')).toBeVisible();
   await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
   await expect(page.getByRole('spinbutton')).toHaveCount(0);

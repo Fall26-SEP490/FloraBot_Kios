@@ -88,9 +88,10 @@ test('OTP validation, error, bearer checkout, then session end clears token', as
   expect(
     await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage })),
   ).not.toContain('customer-token');
-  await page.getByText('Cần một chút gợi ý để chọn hoa?', { exact: true }).click();
+  await page.getByRole('button', { name: 'Gợi ý chọn hoa', exact: true }).click();
   await page.getByRole('button', { name: 'Tìm hoa phù hợp', exact: true }).click();
   await expect(page.getByText('Chưa có bó hoa phù hợp lúc này.', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: 'Đóng gợi ý' }).click();
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();

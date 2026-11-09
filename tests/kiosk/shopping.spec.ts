@@ -67,7 +67,7 @@ for (const width of [390, 1024])
     );
     await page.goto('/');
     await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Chọn một bó hoa bạn thích' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Hoa đang đợi bạn' })).toBeVisible();
     await page.screenshot({
       path: `.impeccable/review/kiosk-catalog-${width}.png`,
       fullPage: true,
@@ -243,7 +243,7 @@ test('Installed offline shell does not cache checkout or enable purchase', async
   await context.setOffline(true);
   await page.reload();
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Chọn một bó hoa bạn thích' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Hoa đang đợi bạn' })).toBeVisible();
   await expect(page.getByRole('alert')).toContainText('mất kết nối');
   await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();

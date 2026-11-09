@@ -9,7 +9,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     });
   });
 
-  test('Setup screen displays branded two-column layout with staff-only notice and preview CTA', async ({
+  test('Setup screen displays a branded welcome and staff-only connection form', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
@@ -19,7 +19,12 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await expect(
       page.getByRole('heading', { name: 'Hệ thống Tủ Hoa Thông Minh FloraBot' }),
     ).toBeVisible();
-    await expect(page.getByText('100% Hoa nhân tạo cao cấp')).toBeVisible();
+    await expect(page.getByText('100% Hoa nhân tạo cao cấp', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Mua tại chỗ không cần đăng nhập', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('Nhận đơn bằng PIN / QR', { exact: true })).toHaveCount(0);
+    await expect(
+      page.getByRole('heading', { name: 'Trải nghiệm ngay giao diện kiosk' }),
+    ).toHaveCount(0);
 
     // Verify staff-only badge and setup form
     await expect(page.getByText('Dành riêng cho nhân viên kỹ thuật')).toBeVisible();
@@ -27,7 +32,8 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await expect(page.getByLabel('Mã kiosk')).toBeVisible();
     const deviceKeyInput = page.getByLabel('Khóa thiết bị');
     await expect(deviceKeyInput).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Kết nối tủ' })).toBeVisible();
+    const connectButton = page.getByRole('button', { name: 'Kết nối tủ' });
+    await expect(connectButton).toBeVisible();
 
     // Validation is shown on blur and corrected immediately while typing.
     await deviceKeyInput.fill('short');
@@ -42,13 +48,11 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     await page.getByRole('button', { name: 'Ẩn API key' }).click();
     await expect(deviceKeyInput).toHaveAttribute('type', 'password');
 
-    // Verify preview button
-    const previewBtn = page.getByRole('button', { name: 'Xem giao diện mẫu' });
-    await expect(previewBtn).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Xem giao diện mẫu' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Xem mẫu và danh mục website' })).toHaveCount(0);
 
     // Verify touch target >= 44px
-    const btnBox = await previewBtn.boundingBox();
+    const btnBox = await connectButton.boundingBox();
     expect(btnBox).not.toBeNull();
     expect(btnBox!.height).toBeGreaterThanOrEqual(44);
     expect(btnBox!.width).toBeGreaterThanOrEqual(44);
@@ -87,16 +91,13 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
       return route.abort();
     });
 
-    await page.goto('/');
-
-    // Click preview button
-    await page.getByRole('button', { name: 'Xem giao diện mẫu' }).click();
+    await page.goto('/?preview=1');
     await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
 
     // Verify persistent ribbon
     await expect(page.getByText('DỮ LIỆU MINH HỌA')).toBeVisible();
     await expect(page.getByText(/Không thanh toán thật, không mở khóa tủ thật/)).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Tủ hoa FloraBot' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Hoa đang đợi bạn' })).toBeVisible();
     await expect(page.locator('.slot-tab-btn')).toHaveCount(3);
     await expect(page.locator('.virtual-slot')).toHaveCount(0);
 
@@ -205,7 +206,6 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     // Test Exit Preview Mode returns to Setup
     await page.getByRole('button', { name: 'Thoát xem mẫu' }).click();
     await expect(page.getByRole('heading', { name: 'Kết nối tủ FloraBot' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Xem giao diện mẫu' })).toBeVisible();
 
     // CRITICAL: Assert zero network API calls were made during the entire preview!
     expect(apiCallCount).toBe(0);
@@ -222,10 +222,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
     }) => {
       test.setTimeout(180000);
       await page.setViewportSize({ width, height });
-      await page.goto('/');
-
-      // Launch Preview
-      await page.getByRole('button', { name: 'Xem giao diện mẫu' }).click();
+      await page.goto('/?preview=1');
       await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
       await expect(page.getByText('DỮ LIỆU MINH HỌA')).toBeVisible();
       await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
@@ -256,13 +253,12 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
       expect(exitBox!.height).toBeGreaterThanOrEqual(44);
       expect(exitBox!.width).toBeGreaterThanOrEqual(44);
 
-      // The shared catalogue design intentionally puts a full hero before the product grid.
-      // At 1024x768 the hero must own the first viewport; after scrolling to the first card,
-      // its title, price and select control must remain complete and usable.
+      // Keep the catalogue title and first bouquet in the initial tablet viewport.
       if (width === 1024 && height === 768) {
-        await expect(page.locator('.fb-hero h1')).toBeInViewport();
+        await expect(page.getByRole('heading', { name: 'Hoa đang đợi bạn' })).toBeInViewport();
 
         const firstCard = page.locator('.preview-bouquet-card').first();
+        await expect(firstCard).toBeInViewport();
         await firstCard.scrollIntoViewIfNeeded();
         const cardTitle = firstCard.locator('.card-title');
         const cardPrice = firstCard.locator('.card-price');
@@ -471,7 +467,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
 
     // Real mode entered
     await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Chọn một bó hoa bạn thích' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Hoa đang đợi bạn' })).toBeVisible();
   });
 
   test('Setup with successful real API empty catalogue saves device session and enters real shopping mode with truthful no-inventory status', async ({
@@ -495,7 +491,7 @@ test.describe('Kiosk Tablet UI and Preview Mode Isolation', () => {
 
     // Real mode is active
     await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Chọn một bó hoa bạn thích' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Hoa đang đợi bạn' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Kết thúc lượt mua' })).toBeVisible();
 
     // Truthful no-inventory message is displayed

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Two-column Branded Setup Screen (Staff Only + Customer Preview CTA)
+   Two-column Branded Setup Screen
    ========================================================================== */
 .setup-container {
   max-width: 1140px;
@@ -49,67 +49,7 @@
   font-size: 0.98rem;
   line-height: 1.55;
   color: var(--color-muted);
-  margin-bottom: 1.5rem;
-}
-.setup-highlights-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.75rem;
-}
-.setup-highlight-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.85rem;
-}
-.setup-highlight-icon {
-  font-size: 1.4rem;
-  line-height: 1;
-  flex-shrink: 0;
-  margin-top: 0.15rem;
-}
-.setup-highlight-item strong {
-  display: block;
-  font-size: 0.98rem;
-  color: var(--color-ink);
-}
-.setup-highlight-item p {
-  margin: 0.15rem 0 0 0;
-  font-size: 0.86rem;
-  line-height: 1.45;
-}
-.setup-preview-card {
-  background: white;
-  border: 2px dashed var(--color-line);
-  border-radius: 16px;
-  padding: 1.35rem;
-  margin-top: 1rem;
-}
-.setup-preview-card h3 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-}
-.setup-preview-card p {
-  font-size: 0.88rem;
-  color: var(--color-muted);
-  margin-bottom: 1rem;
-  line-height: 1.5;
-}
-.setup-preview-button {
-  width: 100%;
-  min-height: 48px;
-  min-width: 44px;
-  font-size: 1rem;
-  font-weight: 700;
-  border-width: 2px;
-}
-.preview-help-text {
-  font-size: 0.8rem !important;
-  color: var(--color-muted) !important;
-  margin-top: 0.5rem !important;
-  margin-bottom: 0 !important;
+  margin: 0;
 }
 .setup-form-col {
   background: white;
@@ -133,39 +73,6 @@
   font-size: 0.95rem;
   color: var(--color-muted);
   margin-bottom: 1.25rem;
-}
-.setup-guidance-callout {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
-  font-size: 0.88rem;
-  line-height: 1.45;
-  color: #166534;
-  margin-bottom: 1.25rem;
-}
-.setup-guidance-callout strong {
-  color: #14532d;
-}
-.setup-guidance-callout p {
-  margin: 0.35rem 0 0;
-  color: #166534;
-}
-.setup-guidance-callout code {
-  background: #dcfce7;
-  padding: 0.1rem 0.35rem;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 0.85em;
-  font-weight: 700;
-  color: #14532d;
-}
-.setup-field-hint {
-  font-size: 0.82rem;
-  color: var(--color-muted);
-  margin-top: 0.2rem;
-  margin-bottom: 0.35rem;
-  line-height: 1.4;
 }
 .setup-form-col label {
   display: block;
@@ -875,61 +782,6 @@
 
 .setup-hero-desc {
   max-width: 42rem;
-  margin: 0 0 1.5rem;
-}
-
-.setup-preview-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 1rem;
-  margin: 0 0 1.75rem;
-  padding: 1.25rem;
-  border: 1px solid var(--color-line);
-  box-shadow: 0 12px 30px rgb(20 62 44 / 7%);
-}
-
-.setup-preview-card p {
-  margin: 0;
-}
-
-.setup-preview-button {
-  width: auto;
-}
-
-.setup-preview-eyebrow {
-  display: block;
-  margin-bottom: 0.35rem;
-  color: #6a744e;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-}
-
-.setup-highlights-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin: auto 0 0;
-}
-
-.setup-highlight-item {
-  min-width: 0;
-  gap: 0.65rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-divider);
-}
-
-.setup-highlight-icon {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
-  place-items: center;
-  border-radius: 12px;
-  background: white;
-  color: var(--color-ink);
-  box-shadow: 0 6px 16px rgb(20 62 44 / 7%);
 }
 
 .setup-form-col {
@@ -947,14 +799,6 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-}
-
-.setup-guidance-callout summary {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  cursor: pointer;
-  font-weight: 700;
 }
 
 .setup-secret-field {
@@ -1150,20 +994,6 @@
   font-weight: 400;
 }
 
-@media (max-width: 1100px) and (min-width: 961px) {
-  .setup-preview-card {
-    grid-template-columns: 1fr;
-  }
-
-  .setup-preview-button {
-    width: 100%;
-  }
-
-  .setup-highlights-list {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 960px) {
   .setup-grid {
     grid-template-columns: 1fr;
@@ -1176,15 +1006,9 @@
 }
 
 @media (max-width: 720px) {
-  .setup-preview-card,
-  .setup-highlights-list,
   .pickup-entry-panel,
   .simulated-payment-box {
     grid-template-columns: 1fr;
-  }
-
-  .setup-preview-button {
-    width: 100%;
   }
 
   .task-screen-header {

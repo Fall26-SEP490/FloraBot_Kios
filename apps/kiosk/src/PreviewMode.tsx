@@ -11,8 +11,10 @@ import {
   MapPin,
   PackageCheck,
 } from '@florabot/ui';
-import { KioskBrand, KioskHero } from './KioskIdentity';
+import { KioskBrand } from './KioskIdentity';
 import BouquetImage from './BouquetImage';
+import GiftAdvisor from './GiftAdvisor';
+import { DEMO_SHOP_NAME } from './preview-data';
 import { VirtualCabinet } from './virtual-cabinet/VirtualCabinet';
 import { useVirtualCabinet } from './virtual-cabinet/useVirtualCabinet';
 import './preview.css';
@@ -30,17 +32,13 @@ export type PreviewBouquet = {
   description: string;
 };
 
-// Business Invariant: One Seller leases the WHOLE kiosk.
-// All bouquets at this kiosk belong to the single shop: "Hoa Sài Gòn (Minh họa)".
-const SHARED_SHOP_NAME = 'Hoa Sài Gòn (Minh họa)';
-
 const DEMO_BOUQUETS: PreviewBouquet[] = [
   {
     id: 'demo-b1',
     name: 'Bó hồng lụa dịu dàng',
     price: 350000,
     slotCode: 'A01',
-    shopName: SHARED_SHOP_NAME,
+    shopName: DEMO_SHOP_NAME,
     image: 'images/demo-silk-rose.png',
     tag: 'Hoa lụa nghệ thuật',
     description: 'Hoa hồng lụa thủ công tông phấn ấm áp, cánh hoa tạo hình tỉ mỉ.',
@@ -50,7 +48,7 @@ const DEMO_BOUQUETS: PreviewBouquet[] = [
     name: 'Tulip vải pastel cao cấp',
     price: 280000,
     slotCode: 'A02',
-    shopName: SHARED_SHOP_NAME,
+    shopName: DEMO_SHOP_NAME,
     image: 'images/demo-pastel-bouquet.png',
     tag: 'Vải lụa trang trí',
     description: 'Bó tulip vải phối lá xanh thanh lịch cho không gian trang nhã.',
@@ -60,7 +58,7 @@ const DEMO_BOUQUETS: PreviewBouquet[] = [
     name: 'Hướng dương lụa đặt trước',
     price: 320000,
     slotCode: 'A03',
-    shopName: SHARED_SHOP_NAME,
+    shopName: DEMO_SHOP_NAME,
     image: 'images/demo-sunflower.png',
     tag: 'Hoa nhân tạo',
     description: 'Hoa hướng dương lụa vàng tươi sáng ngập tràn năng lượng tích cực.',
@@ -83,6 +81,7 @@ export default function PreviewMode({
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
   const [activeTab, setActiveTab] = useState<'walkin' | 'pickup'>(initialTab);
+  const [previewVisit, setPreviewVisit] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [simulatedCheckoutOpen, setSimulatedCheckoutOpen] = useState(false);
   const [simulatedPaid, setSimulatedPaid] = useState(false);
@@ -143,6 +142,7 @@ export default function PreviewMode({
   };
 
   const resetPreview = () => {
+    setPreviewVisit((visit) => visit + 1);
     setSelectedIds([]);
     setSimulatedCheckoutOpen(false);
     setSimulatedPaid(false);
@@ -224,10 +224,6 @@ export default function PreviewMode({
 
       <main id="main" className="kp-main preview-compact-main">
         <div className="preview-context-bar">
-          <span>
-            <MapPin size={16} aria-hidden="true" />
-            {SHARED_SHOP_NAME}
-          </span>
           <span className="preview-context-status" role="status">
             {tr(
               'Không thanh toán thật, không mở khóa tủ thật · Chế độ xem mẫu',
@@ -238,8 +234,6 @@ export default function PreviewMode({
             {tr('Làm mới', 'Reset')}
           </button>
         </div>
-
-        {activeTab === 'walkin' && !simulatedCheckoutOpen && <KioskHero />}
 
         {/* Compact Mode Switcher (Tabs) */}
         <div className="kiosk-compact-tabs" role="tablist" aria-label="Lựa chọn phương thức">
@@ -272,19 +266,33 @@ export default function PreviewMode({
             {/* Tab 1: Walk-in shopping - Catalogue first */}
             {activeTab === 'walkin' && !simulatedCheckoutOpen && (
               <section className="preview-catalogue-section" aria-labelledby="catalog-heading">
-                {/* Short compact heading & subtitle */}
-                <div className="kp-section-heading preview-catalogue-header">
+                <header className="shop-catalog-heading">
                   <div>
-                    <p className="kp-eyebrow">{tr('CHỌN MỘT NIỀM VUI', 'PICK A LITTLE JOY')}</p>
-                    <h1 id="catalog-heading" className="preview-compact-title">
-                      {tr('Hoa đang có sẵn tại tủ', 'Available at this kiosk')}
+                    <h1 id="catalog-heading">
+                      {tr('Hoa đang đợi bạn', 'Flowers waiting for you')}
                     </h1>
+                    <p>
+                      {tr(
+                        'Chạm vào bó hoa bạn thích để thêm vào giỏ.',
+                        'Touch a bouquet to add it to your basket.',
+                      )}
+                    </p>
                   </div>
-                  <span>{availableBouquets.length} mẫu sẵn sàng</span>
-                </div>
-                <p className="kp-data-note preview-compact-subtitle">
-                  100% hoa nhân tạo cao cấp · Chỉ hiển thị các ô có thể mua tại chỗ.
-                </p>
+                  <div className="shop-catalog-tools">
+                    <span>
+                      {availableBouquets.length} {tr('bó có sẵn', 'available')}
+                    </span>
+                    <GiftAdvisor
+                      key={previewVisit}
+                      demoBouquets={availableBouquets}
+                      online
+                      disabled={false}
+                      available={new Set(availableBouquets.map((bouquet) => bouquet.id))}
+                      selected={selectedIds}
+                      onSelect={toggleSelect}
+                    />
+                  </div>
+                </header>
 
                 {/* Compact Bouquet Cards Grid */}
                 <div className="preview-bouquet-grid">
@@ -366,6 +374,18 @@ export default function PreviewMode({
                         )}
                   </Button>
                 </aside>
+                <section className="shop-help" aria-labelledby="preview-help-title">
+                  <h2 id="preview-help-title">{tr('Bạn cần giúp đỡ?', 'Need a hand?')}</h2>
+                  <div className="fb-context">
+                    <span>
+                      <MapPin size={16} aria-hidden="true" />
+                      {DEMO_SHOP_NAME}
+                    </span>
+                    <span>
+                      {tr('Không cần đăng nhập để mua hoa', 'No account needed to buy flowers')}
+                    </span>
+                  </div>
+                </section>
               </section>
             )}
 
@@ -536,7 +556,7 @@ export default function PreviewMode({
                           </strong>
                         </p>
                         <p>
-                          Cửa hàng: <strong>{SHARED_SHOP_NAME}</strong>
+                          Cửa hàng: <strong>{DEMO_SHOP_NAME}</strong>
                         </p>
                       </div>
 

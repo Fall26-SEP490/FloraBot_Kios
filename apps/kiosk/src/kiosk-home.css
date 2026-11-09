@@ -95,27 +95,21 @@
   color: #52614e;
   max-width: 45ch;
 }
-.kh-role {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 22px;
-}
-.kh-role button {
-  min-height: 46px;
-  border: 1px solid #aebfa7;
+.kh-staff-toggle {
+  min-height: 44px;
+  border: 1px solid #d9e0d3;
   border-radius: 9px;
-  padding: 10px 15px;
+  padding: 8px 12px;
   background: transparent;
   color: #38543e;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
-.kh-role button[aria-pressed='true'] {
-  background: #fffefa;
-  border-color: #254e3d;
-  box-shadow: 0 2px 6px #1e3f2d09;
+.kh-staff-toggle:hover,
+.kh-staff-toggle[aria-expanded='true'] {
+  background: #f7f8f2;
+  border-color: #aebfa7;
 }
 .kh-welcome-image {
   height: 100%;
@@ -224,7 +218,6 @@
   line-height: 1.7;
 }
 .kh-staff {
-  display: flex;
   align-items: flex-start;
   gap: 20px;
   padding: 28px;
@@ -232,6 +225,9 @@
   border: 1px solid #d8e0d0;
   border-radius: 16px;
   background: #fffefa;
+}
+.kh-staff:not([hidden]) {
+  display: flex;
 }
 .kh-staff > svg {
   flex-shrink: 0;
@@ -597,9 +593,6 @@
   .kh-help-card svg {
     width: 96px;
     height: 96px;
-  }
-  .kh-role button {
-    font-size: 12px;
   }
   .ko-entry {
     grid-template-columns: 1fr;
