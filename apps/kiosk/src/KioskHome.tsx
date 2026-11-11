@@ -11,6 +11,7 @@ import {
   ShieldCheck,
 } from '@florabot/ui';
 import { KioskBrand } from './KioskIdentity';
+import { MaintenanceAccess } from './MaintenanceAccess';
 import { LanguagePicker, useKioskLanguage } from './kiosk-language';
 import { DEMO_SHOP_NAME } from './preview-data';
 import type { Device } from './api';
@@ -94,6 +95,7 @@ export default function KioskHome({
   return (
     <div className="kh-shell">
       <KioskHeader>
+        {!preview && <MaintenanceAccess key={device.id} device={device} />}
         <button
           className="kh-staff-toggle"
           type="button"

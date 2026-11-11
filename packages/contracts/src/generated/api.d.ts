@@ -1902,6 +1902,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sellers/{sellerId}/staff/{staffId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    staffId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerStaffProfile"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    staffId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EditSellerStaffProfile"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerStaffProfile"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/account/profile": {
         parameters: {
             query?: never;
@@ -2303,6 +2367,145 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/account/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CloseCustomerAccountRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/shop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Seller xem hồ sơ shop, kể cả khi kỳ thuê đã hết hạn
+         * @description Chỉ chủ shop có tài khoản ACTIVE và Seller ACTIVE hoặc PAST_DUE. Hiệu lực thuê kiosk được kiểm tra riêng ở các thao tác bán hàng.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerShopProfileResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Seller cập nhật thông tin chung của shop, kể cả khi kỳ thuê đã hết hạn
+         * @description Chỉ chủ shop có tài khoản ACTIVE và Seller ACTIVE hoặc PAST_DUE. Email liên hệ mới vẫn cần được xác minh; ngân hàng shop cập nhật qua API set_seller_bank hiện có.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateSellerShopProfileRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerShopProfileResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
     "/api/auth/register": {
         parameters: {
             query?: never;
@@ -2615,6 +2818,7 @@ export interface paths {
             };
         };
         put?: never;
+        /** @description Chỉ nhận preorder CUSTOM theo mẫu hoa đang ACTIVE và còn tồn tại shop. Nếu quantity = 0, trả 409 với detail PREORDER_PRODUCT_OUT_OF_STOCK. Số lượng không bị giữ chỗ khi tạo yêu cầu; được trừ khi Seller/nhân viên nạp hoa vào kiosk. */
         post: {
             parameters: {
                 query?: never;
@@ -2635,6 +2839,15 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["FlowResult"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -2964,6 +3177,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sellers/{sellerId}/preorders/{requestId}/assignment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Giao đơn đã thanh toán và ô PREORDER cụ thể cho nhân viên của shop */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    requestId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AssignStaffPreorderInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StaffTaskResult"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/staff/tasks/{taskId}/preorders": {
         parameters: {
             query?: never;
@@ -3039,6 +3295,127 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/preorders/{requestId}/pickup-otp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Seller gửi OTP nhận preorder tới email đăng nhập của khách */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    requestId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PreorderPickupOtpSent"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kiosks/{kioskId}/preorders/pickup-otp/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Nhập OTP email tại đúng kiosk và yêu cầu mở ô preorder */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PreorderPickupOtpOpenRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PreorderPickupOtpOpened"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kiosks/{kioskId}/preorders/pickup-otp/attempts/{attemptId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Theo dõi lệnh nhận hoa; gửi X-Pickup-Token từ kết quả mở ô */
+        get: {
+            parameters: {
+                query?: never;
+                header?: {
+                    "X-Pickup-Token"?: string;
+                };
+                path: {
+                    kioskId: string;
+                    attemptId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PreorderPickupOtpStatus"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -4251,11 +4628,13 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description preorderAvailable cho biết mẫu còn hàng tại shop. availablePreorderOnly lọc thêm theo sức chứa của kiosk. */
         get: {
             parameters: {
                 query?: {
                     page?: number | string;
                     search?: string;
+                    availablePreorderOnly?: boolean;
                 };
                 header?: never;
                 path?: never;
@@ -4553,41 +4932,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/packages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["PackageResponse"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/sellers/{sellerId}": {
         parameters: {
             query?: never;
@@ -4704,6 +5048,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * Danh sách mẫu hoa và tồn bó tại shop
+         * @description quantity là số bó còn tại shop; không bao gồm các bó đã nạp trong kiosk và không được tính từ số ô tủ.
+         */
         get: {
             parameters: {
                 query?: never;
@@ -4725,6 +5073,10 @@ export interface paths {
             };
         };
         put?: never;
+        /**
+         * Tạo mẫu hoa và khai báo tồn bó tại shop
+         * @description quantity là số bó còn tại shop, số nguyên không âm; bỏ qua mặc định 0. Nạp thành công vào kiosk hoặc fulfill preorder trừ một bó. Thu hồi không tự cộng lại.
+         */
         post: {
             parameters: {
                 query?: never;
@@ -4834,7 +5186,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Danh sách các ô trong kiosk đang được Seller đăng nhập quản lý */
+        /**
+         * Danh sách các ô trong kiosk đang được Seller đăng nhập quản lý
+         * @description status là trạng thái ô; bouquetStatus là trạng thái bó đang nằm trong ô. orderId/orderCode/orderStatus/paymentStatus mô tả đơn đang giữ bó này, hoặc đơn gần nhất khi ô chờ thu hồi. paymentStatus chỉ lấy từ khoản CHARGE. Ô trống hoặc hoa đang bán lại không mang trạng thái đơn cũ.
+         */
         get: {
             parameters: {
                 query?: never;
@@ -6031,6 +6386,374 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/staff-tasks/{taskId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    taskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EditStaffTaskInstructions"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StaffTaskResult"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/operations/staff-tasks/{taskId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number | string;
+                };
+                header?: never;
+                path: {
+                    taskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StaffTaskDetail"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    taskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EditStaffTaskInstructions"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StaffTaskResult"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/admin/staff-tasks/{taskId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number | string;
+                };
+                header?: never;
+                path: {
+                    taskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StaffTaskDetail"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    taskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EditStaffTaskInstructions"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StaffTaskResult"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/admin/kiosk-manager-assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    managerId?: string;
+                    page?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/kiosks/{kioskId}/operations-manager": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AssignKioskManagerRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskManagerAssignment"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/audit-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    actorId?: string;
+                    action?: string;
+                    entityType?: string;
+                    entityId?: string;
+                    from?: string;
+                    to?: string;
+                    page?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuditPage"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/audit-logs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AuditEntry"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/inventory-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    kioskId?: string;
+                    slotId?: string;
+                    bouquetId?: string;
+                    from?: string;
+                    to?: string;
+                    page?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerInventoryHistoryPage"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/staff/tasks/{taskId}/stock": {
         parameters: {
             query?: never;
@@ -6085,6 +6808,36 @@ export interface paths {
                         "application/json": components["schemas"]["StaffStockResult"];
                     };
                 };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -6094,84 +6847,6 @@ export interface paths {
         trace?: never;
     };
     "/api/staff/tasks/{taskId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    page?: number | string;
-                };
-                header?: never;
-                path: {
-                    taskId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["StaffTaskDetail"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/admin/staff-tasks/{taskId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    page?: number | string;
-                };
-                header?: never;
-                path: {
-                    taskId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["StaffTaskDetail"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/operations/staff-tasks/{taskId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -7178,6 +7853,33 @@ export interface paths {
                         "application/json": components["schemas"]["CustomerPointsResponse"];
                     };
                 };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
         put?: never;
@@ -7255,11 +7957,136 @@ export interface paths {
             };
         };
         put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateSellerAccessory"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/accessories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerAccessoryResponse"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateSellerAccessory"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/accessories/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ChangeAccessoryStatus"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         trace?: never;
     };
     "/api/kiosk-locations": {
@@ -7394,7 +8221,7 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Cập nhật địa chỉ và tọa độ ghim bản đồ cho kiosk do shop quản lý toàn quyền */
+        /** Gửi yêu cầu đổi địa chỉ và tọa độ kiosk tới Operations Manager */
         put: {
             parameters: {
                 query?: never;
@@ -7417,7 +8244,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["SellerKioskDto"];
+                        "application/json": components["schemas"]["KioskLocationChangeResponse"];
                     };
                 };
                 /** @description Bad Request */
@@ -7456,8 +8283,167 @@ export interface paths {
                         "application/problem+json": components["schemas"]["ProblemDetails"];
                     };
                 };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
             };
         };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/kiosks/{kioskId}/location-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    kioskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosk-location-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosk-location-requests/{id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReviewKioskLocationChangeRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskLocationChangeResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kiosks/{id}/flower-presence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tín hiệu cảm biến hoa theo ô, chưa xác nhận hoàn tất lấy hàng */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FlowerPresenceResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -7558,6 +8544,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me/products/{productId}/photos/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    productId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReorderProductPhotosRequest"];
+                };
+            };
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/products/{productId}/photos/{photoId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    productId: string;
+                    photoId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sellers/{sellerId}/products/{productId}": {
         parameters: {
             query?: never;
@@ -7566,6 +8652,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
+        /**
+         * Sửa mẫu hoa và tồn bó tại shop
+         * @description quantity là tồn thực tế tại shop, số nguyên không âm. Bỏ qua hoặc null giữ nguyên tồn hiện tại; gửi số mới là chốt lại tồn, không phải cộng thêm.
+         */
         put: {
             parameters: {
                 query?: never;
@@ -8128,6 +9218,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Xem đơn giá thuê một năm cho mỗi ô kiosk */
         get: {
             parameters: {
                 query?: never;
@@ -8143,12 +9234,77 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["KioskPackageResponse"][];
+                        "application/json": components["schemas"]["KioskSlotPricingResponse"];
                     };
                 };
             };
         };
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosk-pricing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Operations Manager cập nhật đơn giá thuê một năm chung cho mọi ô */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateKioskSlotPricingRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskSlotPricingResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         post?: never;
         delete?: never;
         options?: never;
@@ -8713,6 +9869,7 @@ export interface paths {
             parameters: {
                 query?: {
                     packageId?: string;
+                    applicationId?: string;
                 };
                 header?: never;
                 path?: never;
@@ -8748,6 +9905,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** @description Kiosk được tạo OFFLINE. Khi bật tự cấp ESP32, yêu cầu cấp MQTT/HMAC được lưu cùng transaction; provisioning PENDING/PROVISIONING/READY/FAILED tách biệt trạng thái ONLINE. Không trả bí mật ESP32 trong response đăng ký. */
         post: {
             parameters: {
                 query?: never;
@@ -8773,6 +9931,81 @@ export interface paths {
             };
         };
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Lưu trữ kiosk OFFLINE đã kết thúc thuê
+         * @description Lưu trữ mềm: chỉ Operations Manager được thao tác khi kiosk OFFLINE, không còn Seller/lease, tồn kho, đơn hàng hoặc công việc đang chờ. Kiosk được chuyển sang DISABLED; dữ liệu, đơn hàng, thanh toán và nhật ký lịch sử được giữ nguyên. Trả 409 nếu còn điều kiện chưa hoàn tất.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -9511,7 +10744,211 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/me/kiosks/{kioskId}/slots/{slotId}/zone": {
+    "/api/operations/kiosks/{id}/esp32-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read ESP32 metadata for a currently assigned Operations Manager kiosk.
+         * @description Cache-Control: no-store. No MQTT password or HMAC is read or returned. canDownload describes role/scope and public deployment readiness, not secret-store completeness. Foreign/missing/ended installations return the same 404. Current role and assignment are rechecked on every request. Error responses have a stable code extension.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Esp32ConfigMetadata"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/kiosk-installations/{installationId}/esp32-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read ESP32 metadata for the assigned Technician's live installation (SCHEDULED, INSTALLING, AWAITING_HANDOVER).
+         * @description Cache-Control: no-store. No MQTT password or HMAC is read or returned. canDownload describes role/scope and public deployment readiness, not secret-store completeness. Foreign/missing/ended installations return the same 404. Current role and assignment are rechecked on every request. Error responses have a stable code extension.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    installationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Esp32ConfigMetadata"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/kiosks/{id}/esp32-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Admin oversight metadata only. Admin cannot download ESP32 secrets.
+         * @description Cache-Control: no-store. No MQTT password or HMAC is read or returned. canDownload describes role/scope and public deployment readiness, not secret-store completeness. Foreign/missing/ended installations return the same 404. Current role and assignment are rechecked on every request. Error responses have a stable code extension.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Esp32ConfigMetadata"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosks/{id}/esp32-config/download": {
         parameters: {
             query?: never;
             header?: never;
@@ -9519,7 +10956,1088 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Seller phân loại ô trống thuộc kiosk mình quản lý */
+        put?: never;
+        /**
+         * Download the assigned kiosk's config.local.h after verifying the current Operations Manager password.
+         * @description JSON body {password}: current account password, verified for this download only. Returns attachment config.local.h, Cache-Control: no-store; Wi-Fi fields are blank. Admin/other roles: 403. Foreign/missing/ended installation: 404. Wrong/missing password: 401 ESP32_CONFIG_REAUTHENTICATION_FAILED. 409 codes: ESP32_CONFIG_DEPLOYMENT_NOT_CONFIGURED, ESP32_CONFIG_NOT_PROVISIONED, ESP32_CONFIG_HMAC_MISMATCH. No secret values are included in errors or audit payloads.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": null | components["schemas"]["Esp32ConfigDownloadRequest"];
+                };
+            };
+            responses: {
+                /** @description Private config.local.h attachment; fill in local Wi-Fi before flashing. */
+                200: {
+                    headers: {
+                        /** @description attachment; filename=config.local.h */
+                        "Content-Disposition"?: string;
+                        /** @description no-store */
+                        "Cache-Control"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/x-c++hdr": string;
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/kiosk-installations/{installationId}/esp32-config/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Download config.local.h after verifying the assigned Technician's current password and live installation.
+         * @description JSON body {password}: current account password, verified for this download only. Returns attachment config.local.h, Cache-Control: no-store; Wi-Fi fields are blank. Admin/other roles: 403. Foreign/missing/ended installation: 404. Wrong/missing password: 401 ESP32_CONFIG_REAUTHENTICATION_FAILED. 409 codes: ESP32_CONFIG_DEPLOYMENT_NOT_CONFIGURED, ESP32_CONFIG_NOT_PROVISIONED, ESP32_CONFIG_HMAC_MISMATCH. No secret values are included in errors or audit payloads.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    installationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": null | components["schemas"]["Esp32ConfigDownloadRequest"];
+                };
+            };
+            responses: {
+                /** @description Private config.local.h attachment; fill in local Wi-Fi before flashing. */
+                200: {
+                    headers: {
+                        /** @description attachment; filename=config.local.h */
+                        "Content-Disposition"?: string;
+                        /** @description no-store */
+                        "Cache-Control"?: string;
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/x-c++hdr": string;
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosks/{id}/esp32-config/provision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Queue or retry ESP32 provisioning for the currently assigned kiosk/installation
+         * @description No request body or secrets. Current Manager/assigned live Technician only. New enrollment queues automatically when enabled. Retry keeps the original device credentials; READY/in-flight work is not reset. Poll the existing esp32-config GET. No heartbeat or ONLINE status is fabricated.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Accepted */
+                202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Esp32ProvisioningStatus"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/kiosk-installations/{installationId}/esp32-config/provision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Queue or retry ESP32 provisioning for the currently assigned kiosk/installation
+         * @description No request body or secrets. Current Manager/assigned live Technician only. New enrollment queues automatically when enabled. Retry keeps the original device credentials; READY/in-flight work is not reset. Poll the existing esp32-config GET. No heartbeat or ONLINE status is fabricated.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    installationId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Accepted */
+                202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Esp32ProvisioningStatus"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/layout-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotLayoutRequestView"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RequestSlotLayout"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosk-layout-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotLayoutRequestView"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosk-layout-requests/{requestId}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    requestId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReviewSlotLayout"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/slots/{slotId}/bouquet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Seller thu hồi bó hoa khỏi ô để nạp hoa mới
+         * @description Chỉ STOCKED/PENDING_REMOVAL chưa giữ cho đơn. Xác nhận đã lấy hoa thật khỏi ô. Giữ zone, trả RENTED_EMPTY; không gửi lệnh mở cửa. bouquetId giúp chặn thao tác từ dữ liệu ô đã cũ.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RemoveSlotBouquetRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RemoveSlotBouquetResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/slots/{slotId}/maintenance-sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/slots/{slotId}/maintenance-sessions/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Xem chi tiết trạng thái phiên bảo trì ô tủ */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                    sessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotMaintenanceSessionResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/slots/{slotId}/maintenance-sessions/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tìm phiên bảo trì chưa hoàn tất của ô để tiếp tục sau khi tải lại trang */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotMaintenanceSessionResponse"];
+                    };
+                };
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/slots/{slotId}/maintenance-sessions/{sessionId}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Đồng bộ và kiểm tra tiến trình phiên bảo trì dựa trên cảm biến cửa và hoa */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                    sessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotMaintenanceSessionResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/slots/{slotId}/maintenance-sessions/{sessionId}/open-next": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                    sessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/slots/{slotId}/maintenance-sessions/{sessionId}/open-for-check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                    sessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/slots/{slotId}/maintenance-sessions/{sessionId}/report-issue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Báo lỗi trong phiên bảo trì để chuyển sang NeedsInspection */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                    sessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReportIssueRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotMaintenanceSessionResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/kiosks/{kioskId}/slots/{slotId}/sensor-capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Đọc cấu hình cảm biến hiện tại của ô tủ (Admin) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotSensorCapabilityResponse"];
+                    };
+                };
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        /** Cấu hình năng lực cảm biến cho ô tủ (Admin) */
         put: {
             parameters: {
                 query?: never;
@@ -9532,7 +12050,7 @@ export interface paths {
             };
             requestBody: {
                 content: {
-                    "application/json": components["schemas"]["SellerSetSlotZoneRequest"];
+                    "application/json": components["schemas"]["UpdateSensorCapabilityRequest"];
                 };
             };
             responses: {
@@ -9542,12 +12060,677 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["SellerSlotZoneResponse"];
+                        "application/json": components["schemas"]["SlotSensorCapabilityResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/maintenance-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MaintenanceAccessRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MaintenanceAccessIssued"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kiosks/{kioskId}/maintenance-access/pending": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MaintenanceAccessPending"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kiosks/{kioskId}/maintenance-access/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ConfirmMaintenanceAccessRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AcceptedMaintenanceAccess"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/preorders/{requestId}/loading-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    requestId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PreorderLoadingAccessInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PreorderLoadingAccessSent"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/tasks/{taskId}/preorders/{requestId}/loading-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    taskId: string;
+                    requestId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PreorderLoadingAccessInput"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PreorderLoadingAccessSent"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/inventory-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AssignInventoryTask"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StaffTaskResult"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/tasks/{taskId}/inventory-maintenance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    taskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StaffInventoryScope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/tasks/{taskId}/inventory-maintenance/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    taskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["StaffInventoryOperation"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MaintenanceAccessIssued"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/technical-repairs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TechnicalRepairRow"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/technical-repairs/{taskId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    taskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["TechnicalRepairApproval"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/staff/tasks/{taskId}/repair-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    taskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MaintenanceAccessIssued"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/kiosks/{kioskId}/slots/{slotId}/manual-unlock-retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Cấu hình quyền thử lại lệnh mở khóa thủ công (Admin)
+         * @description Bật hoặc tắt supports_manual_retry cho ô tủ sau khi xác nhận phiên bản firmware và cảm biến cửa.
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ManualUnlockRetryEnrollmentRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SlotSensorCapabilityResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
         };
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/slots/{slotId}/maintenance-sessions/{sessionId}/retry-unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    slotId: string;
+                    sessionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kiosks/{kioskId}/pickup/orders/{orderId}/commands/{cmdId}/retry-unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                    orderId: string;
+                    cmdId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ManualUnlockRetryRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ManualUnlockRetryResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -9591,6 +12774,1447 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/payments/channels/{versionId}/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    attempt?: string;
+                };
+                header?: never;
+                path: {
+                    versionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PayOsWebhook"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/payment-channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerPaymentChannelResponse"];
+                    };
+                };
+            };
+        };
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BindPaymentChannelRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerPaymentChannelResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/payment-channel/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ChannelVerificationResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/payment-channel/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateChannelStatusRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerPaymentChannelResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/admin/payment-channels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminPaymentChannelItemResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                    orderCode?: number | string;
+                    from?: string;
+                    to?: string;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerPaymentsListResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/payments/{paymentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    paymentId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerPaymentDetailResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/payments/{paymentId}/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    paymentId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReconcilePaymentResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/reports/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    from?: string;
+                    to?: string;
+                    kioskId?: string;
+                };
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerSalesReportResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/loyalty-settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lấy cài đặt tích điểm của shop (chỉ chủ shop đang hoạt động) */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerLoyaltySettingsResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        /** Bật/tắt chương trình tích điểm của shop (tỷ lệ cố định 1%, mặc định tắt) */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateSellerLoyaltySettingsRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerLoyaltySettingsResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/member/loyalty": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Xem danh sách số dư điểm của thành viên tại các shop */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MemberLoyaltyPageResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/member/loyalty/{sellerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Xem số dư điểm và thông tin tích điểm của thành viên tại một shop cụ thể */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ShopLoyaltyBalanceItem"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách các khoản hoàn tiền trực tiếp của shop */
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerRefundPageResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/refunds/{refundId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Chi tiết khoản hoàn tiền trực tiếp của shop */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    refundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerRefundDetailResponse"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/refunds/{refundId}/bank-details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Xem thông tin tài khoản ngân hàng của khách để chuyển tiền hoàn (bắt buộc nêu lý do) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    refundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SellerBankAccessRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["RefundBankResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/refunds/{refundId}/evidence/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    refundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "image/png": string;
+                    "image/jpeg": string;
+                    "image/webp": string;
+                };
+            };
+            responses: {
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Payload Too Large */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unsupported Media Type */
+                415: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Service Unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/refunds/{refundId}/submit-transfer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Gửi thông tin xác nhận chuyển khoản hoàn tiền trực tiếp của người bán (chờ Admin duyệt) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    refundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SellerSubmitTransferRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SellerRefundTransferSubmissionResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/refunds/{refundId}/seller-submission": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin xem chi tiết chuyển khoản hoàn tiền trực tiếp của người bán gửi duyệt */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    refundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/refunds/{refundId}/seller-submission/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    refundId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RejectSellerRefundEvidenceRequest"];
+                };
+            };
+            responses: {
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/kiosks/{kioskId}/termination-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    kioskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateKioskTerminationRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskTerminationResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/kiosks/{kioskId}/termination-requests/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    kioskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskTerminationResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/kiosks/{kioskId}/termination-requests/{id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                    kioskId: string;
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["WithdrawKioskTerminationRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskTerminationResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosk-termination-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    status?: string;
+                    page?: number | string;
+                    limit?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskTerminationPage"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosk-termination-requests/{id}/evidence/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EvidenceUploadResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosk-termination-requests/{id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ReviewKioskTerminationRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskTerminationResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/operations/kiosk-termination-requests/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CompleteKioskTerminationRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskTerminationResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/kiosks/{kioskId}/preorder-availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    pickupAt?: string;
+                };
+                header?: never;
+                path: {
+                    kioskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskPreorderAvailabilityResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sellers/{sellerId}/subscriptions/{subscriptionId}/payment-link": {
         parameters: {
             query?: never;
@@ -9619,6 +14243,70 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["PaymentLinkResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/me/kiosks/{kioskId}/renewals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    kioskId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["KioskRenewalResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Service Unavailable */
+                503: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
                     };
                 };
             };
@@ -9773,6 +14461,240 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sellers/{sellerId}/ai/seasonal-sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Thống kê doanh số bán hàng theo mùa và ngày lễ */
+        get: {
+            parameters: {
+                query?: {
+                    from?: string;
+                    to?: string;
+                    year?: number | string;
+                    month?: number | string;
+                    season?: string;
+                    holiday?: string;
+                };
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonalSalesResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/ai/sales.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tải dữ liệu bán hàng định dạng CSV (bảo vệ công thức và loại bỏ PII) */
+        get: {
+            parameters: {
+                query?: {
+                    from?: string;
+                    to?: string;
+                };
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sellers/{sellerId}/ai/seasonal-forecast": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dự báo nhu cầu bán hàng theo mùa bằng mô hình Poisson và giải thích Gemini */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    sellerId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SeasonalForecastRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SeasonalForecastResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/problem+json": components["schemas"]["ProblemDetails"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sellers/{sellerId}/flows/set_seller_bank": {
         parameters: {
             query?: never;
@@ -9799,22 +14721,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["set_seller_tone"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/sellers/{sellerId}/flows/subscribe": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["subscribe"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10401,6 +15307,10 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AcceptedMaintenanceAccess: {
+            /** @default ACCEPTED */
+            status: string;
+        };
         AccountDetailResponse: {
             /** Format: uuid */
             id: string;
@@ -10578,6 +15488,21 @@ export interface components {
             /** Format: int32 */
             slotCount: number | string;
         };
+        AdminPaymentChannelItemResponse: {
+            /** Format: uuid */
+            sellerId: string;
+            shopName: string;
+            /** Format: int32 */
+            currentVersion: number | string;
+            state: string;
+            expectedBankBin: string;
+            expectedBankAccountMasked: string;
+            expectedBankName: null | string;
+            /** Format: date-time */
+            verifiedAt: null | string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
         AdminRefundDetail: {
             refund: components["schemas"]["AdminRefundResponse"];
             bankStatus: string;
@@ -10714,11 +15639,40 @@ export interface components {
             /** Format: uuid */
             p_w: string;
         };
+        AssignInventoryTask: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assigneeId: string;
+            /** Format: uuid */
+            kioskId: string;
+            /** Format: uuid */
+            slotId: string;
+            action: string;
+            /** Format: uuid */
+            expectedBouquetId: null | string;
+            /** Format: uuid */
+            productId: null | string;
+            instructions: string;
+        };
+        AssignKioskManagerRequest: {
+            /** Format: uuid */
+            managerId: null | string;
+        };
         AssignKioskRequest: {
             /** Format: uuid */
             p_kiosk: string;
             /** Format: uuid */
             p_seller: string;
+        };
+        AssignStaffPreorderInput: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            assigneeId: string;
+            /** Format: uuid */
+            slotId: string;
+            instructions: string;
         };
         AssignStaffTask: {
             /** Format: uuid */
@@ -10747,13 +15701,44 @@ export interface components {
             p_url: string;
             p_phase: string;
         };
+        AuditEntry: {
+            /** Format: int64 */
+            id: number | string;
+            actorType: string;
+            /** Format: uuid */
+            actorId: null | string;
+            action: string;
+            entityType: string;
+            /** Format: uuid */
+            entityId: null | string;
+            /** Format: date-time */
+            createdAt: string;
+            payloadRedacted: boolean;
+        };
+        AuditPage: {
+            items: components["schemas"]["AuditEntry"][];
+            /** Format: int32 */
+            page: number | string;
+            hasMore: boolean;
+        };
         AuthConfigResponse: {
             googleClientId: null | string;
             googleEnabled: boolean;
             registrationEmailEnabled: boolean;
         };
+        BindPaymentChannelRequest: {
+            secretRef: string;
+        };
         CancelKioskApplicationRequest: {
             reason: null | string;
+        };
+        ChangeAccessoryStatus: {
+            status: string;
+        };
+        ChannelVerificationResponse: {
+            verified: boolean;
+            state: string;
+            message: string;
         };
         CheckoutOrderResponse: {
             /** Format: uuid */
@@ -10778,12 +15763,22 @@ export interface components {
             payBefore: string;
             orders: components["schemas"]["CheckoutOrderResponse"][];
         };
+        CloseCustomerAccountRequest: {
+            password: string;
+        };
+        CompleteKioskTerminationRequest: {
+            notes: null | string;
+            evidenceReference: null | string;
+        };
         ConfirmKioskApplicationRequest: {
             note: string;
         };
         ConfirmKioskRefundRequest: {
             reference: string;
             evidenceReference: string;
+        };
+        ConfirmMaintenanceAccessRequest: {
+            code: string;
         };
         ConfirmRefundRequest: {
             /** Format: uuid */
@@ -10806,16 +15801,22 @@ export interface components {
         };
         CreateAdditionalKioskApplicationRequest: {
             /** Format: uuid */
-            packageId: string;
+            packageId: null | string;
             installationAddress: string;
             /** Format: double */
             latitude: null | number | string;
             /** Format: double */
             longitude: null | number | string;
+            /** Format: int32 */
+            walkInSlots?: null | number | string;
+            /** Format: int32 */
+            preorderSlots?: null | number | string;
+            /** Format: int32 */
+            pricingVersion?: null | number | string;
         };
         CreateKioskApplicationRequest: {
             /** Format: uuid */
-            packageId: string;
+            packageId: null | string;
             shopName: string;
             phone: string;
             contactEmail: string;
@@ -10827,6 +15828,15 @@ export interface components {
             bankName: string;
             bankHolder: string;
             bankAccountNumber: string;
+            /** Format: int32 */
+            walkInSlots?: null | number | string;
+            /** Format: int32 */
+            preorderSlots?: null | number | string;
+            /** Format: int32 */
+            pricingVersion?: null | number | string;
+        };
+        CreateKioskTerminationRequest: {
+            reason: string;
         };
         CreateProductRequest: {
             /** Format: uuid */
@@ -10842,6 +15852,11 @@ export interface components {
             widthCm: number | string;
             /** Format: double */
             heightCm: number | string;
+            /**
+             * Format: int32
+             * @default 0
+             */
+            quantity: number | string;
         };
         CreateRefundRequest: {
             /** Format: uuid */
@@ -10850,6 +15865,13 @@ export interface components {
             p_amount: number | string;
             p_reason: string;
             p_gateway?: null | string;
+        };
+        CreateSellerAccessory: {
+            /** Format: uuid */
+            kioskId: string;
+            name: string;
+            /** Format: int64 */
+            price: number | string;
         };
         CreateSellerDeliveryTask: {
             /** Format: uuid */
@@ -10984,6 +16006,16 @@ export interface components {
             /** Format: uuid */
             id: string;
         };
+        EditSellerStaffProfile: {
+            fullName: string;
+            phone: null | string;
+            address: null | string;
+        };
+        EditStaffTaskInstructions: {
+            /** Format: int32 */
+            version: number | string;
+            instructions: string;
+        };
         EligibleKioskResponse: {
             /** Format: uuid */
             id: string;
@@ -10992,6 +16024,21 @@ export interface components {
             /** Format: int32 */
             slotCount: number | string;
             status: string;
+            /**
+             * Format: int32
+             * @default 0
+             */
+            walkInSlots: number | string;
+            /**
+             * Format: int32
+             * @default 0
+             */
+            preorderSlots: number | string;
+            /**
+             * Format: int32
+             * @default 0
+             */
+            unclassifiedSlots: number | string;
         };
         EnrollKioskRequest: {
             code: string;
@@ -11000,7 +16047,9 @@ export interface components {
             mqttClientId: null | string;
             region: null | string;
             /** Format: int32 */
-            slotCount: number | string;
+            slotCount?: null | number | string;
+            /** Format: uuid */
+            applicationId?: null | string;
         };
         EnrollKioskResponse: {
             /** Format: uuid */
@@ -11011,16 +16060,103 @@ export interface components {
             slotCount: number | string;
             status: string;
             apiKey: string;
+            /**
+             * Format: int32
+             * @default 0
+             */
+            walkInSlots: number | string;
+            /**
+             * Format: int32
+             * @default 0
+             */
+            preorderSlots: number | string;
+            /** Format: uuid */
+            applicationId?: null | string;
+            provisioning?: null | components["schemas"]["Esp32ProvisioningStatus"];
+        };
+        Esp32ConfigDownloadRequest: {
+            password: null | string;
+        };
+        Esp32ConfigMetadata: {
+            /** Format: uuid */
+            kioskId: string;
+            kioskCode: string;
+            status: string;
+            hardwareId: string;
+            mqttClientId: string;
+            firmwareMqttClientId: string;
+            mqttClientIdsMatch: boolean;
+            mqttHost: null | string;
+            /** Format: int32 */
+            mqttTlsPort: null | number | string;
+            caCertificatePem: null | string;
+            canDownload: boolean;
+            requiresReauthentication: boolean;
+            downloadUnavailableCode: null | string;
+            provisioning?: null | components["schemas"]["Esp32ProvisioningStatus"];
+        };
+        Esp32ProvisioningStatus: {
+            state: string;
+            errorCode: null | string;
+            /** Format: int32 */
+            attempts: number | string;
+            /** Format: date-time */
+            readyAt: null | string;
         };
         EvidenceUploadResponse: {
             reference: string;
             /** Format: date-time */
             expiresAt: string;
         };
+        FlowerPresenceResponse: {
+            /** Format: uuid */
+            kioskId: string;
+            /** Format: date-time */
+            observedAt: null | string;
+            /** Format: date-time */
+            receivedAt: null | string;
+            isFresh: boolean;
+            slots: components["schemas"]["FlowerSlotPresence"][];
+        };
+        FlowerSlotPresence: {
+            /** Format: uuid */
+            slotId: string;
+            slotCode: string;
+            /** Format: int32 */
+            relayChannel: number | string;
+            hasFlowers: null | boolean;
+        };
         FlowResult: {
             result: null | components["schemas"]["JsonElement"];
             /** Format: uuid */
             batchId?: null | string;
+        };
+        ForecastProductItem: {
+            /** Format: uuid */
+            productId: string;
+            name: string;
+            status: string;
+            /** Format: int64 */
+            price: number | string;
+            tags: string[];
+            /** Format: date */
+            availableSince: string;
+            photos: string[];
+            /** Format: int32 */
+            observedInvoiceCount: number | string;
+            /** Format: int32 */
+            observedUnits: number | string;
+            /** Format: int32 */
+            sameSeasonInvoiceCount: number | string;
+            /** Format: double */
+            forecastInvoiceCount: null | number | string;
+            /** Format: double */
+            forecastUnits: null | number | string;
+            modelStatus: string;
+            annualSeasonalityValidated: boolean;
+            validation: null | components["schemas"]["ProductForecastValidation"];
+            explanation: string;
+            explanationSource: string;
         };
         ForgetCustomerRequest: Record<string, never>;
         GatewayReconciliationResult: {
@@ -11054,6 +16190,12 @@ export interface components {
         };
         GoogleAuthRequest: {
             idToken: string;
+        };
+        HolidayInfo: {
+            code: string;
+            name: string;
+            /** Format: date */
+            day: string;
         };
         IncidentEvidenceResponse: {
             items: components["schemas"]["IncidentPhoto"][];
@@ -11152,6 +16294,17 @@ export interface components {
             /** Format: uuid */
             sellerId: null | string;
             canVoluntaryCancel: boolean;
+            /** Format: int32 */
+            walkInSlots: null | number | string;
+            /** Format: int32 */
+            preorderSlots: null | number | string;
+            pricingMode: string;
+            /** Format: int64 */
+            walkInAnnualPrice: null | number | string;
+            /** Format: int64 */
+            preorderAnnualPrice: null | number | string;
+            /** Format: int32 */
+            pricingVersion: null | number | string;
         };
         KioskCatalogResponse: {
             /** Format: uuid */
@@ -11188,6 +16341,28 @@ export interface components {
             sellerId: null | string;
             shopName: null | string;
         };
+        KioskLocationChangeResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            kioskId: string;
+            /** Format: uuid */
+            sellerId: string;
+            address: string;
+            /** Format: double */
+            latitude: number | string;
+            /** Format: double */
+            longitude: number | string;
+            reason: string;
+            status: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            reviewedBy: null | string;
+            /** Format: date-time */
+            reviewedAt: null | string;
+            reviewNote: null | string;
+        };
         KioskLocationItem: {
             /** Format: uuid */
             id: string;
@@ -11206,18 +16381,15 @@ export interface components {
             distanceKm: null | number | string;
             directionsUrl: null | string;
         };
-        KioskPackageResponse: {
+        KioskManagerAssignment: {
             /** Format: uuid */
-            id: string;
-            name: string;
-            /** Format: int64 */
-            annualFee: number | string;
-            /** Format: int32 */
-            totalSlots: number | string;
-            /** Format: int32 */
-            termMonths: number | string;
-            status: string;
-            description: string;
+            kioskId: string;
+            kioskCode: string;
+            /** Format: uuid */
+            managerId: null | string;
+            managerName: null | string;
+            /** Format: date-time */
+            assignedAt: null | string;
         };
         KioskPickupOrder: {
             /** Format: uuid */
@@ -11228,20 +16400,193 @@ export interface components {
             /** Format: date-time */
             pickupBefore: string;
         };
+        KioskPreorderAvailabilityResponse: {
+            /** Format: uuid */
+            kioskId: string;
+            kioskCode: null | string;
+            kioskName: null | string;
+            available: boolean;
+            /** Format: int32 */
+            totalPreorderCapacity: number | string;
+            /** Format: int32 */
+            occupiedPreorderCount: number | string;
+            /** Format: int32 */
+            availablePreorderCapacity: number | string;
+            status: string;
+            message: string;
+            /** @default true */
+            isEstimateOnly: boolean;
+        };
         KioskRefundBankResponse: {
             bankName: string;
             holder: string;
             accountNumber: string;
         };
+        KioskRenewalResponse: {
+            /** Format: uuid */
+            subscriptionId: string;
+            /** Format: uuid */
+            kioskId: string;
+            /** Format: uuid */
+            sellerId: string;
+            /** Format: int64 */
+            amount: number | string;
+            /** Format: date-time */
+            periodFrom: string;
+            /** Format: date-time */
+            periodTo: string;
+            status: string;
+            paymentLinkPath: string;
+        };
+        KioskSalesSummary: {
+            /** Format: uuid */
+            kioskId: string;
+            kioskCode: string;
+            kioskName: string;
+            /** Format: int64 */
+            grossPaid: number | string;
+            /** Format: int32 */
+            orderCount: number | string;
+        };
+        KioskSlotPricingResponse: {
+            /** Format: int64 */
+            annualSlotPrice: null | number | string;
+            /** Format: int32 */
+            version: number | string;
+            configured: boolean;
+            /** Format: date-time */
+            updatedAt: null | string;
+            /**
+             * Format: int32
+             * @default 12
+             */
+            termMonths: number | string;
+            /**
+             * Format: int32
+             * @default 1
+             */
+            minSlots: number | string;
+            /**
+             * Format: int32
+             * @default 50
+             */
+            maxSlots: number | string;
+        };
+        KioskTerminationPage: {
+            items: components["schemas"]["KioskTerminationResponse"][];
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            limit: number | string;
+            hasMore: boolean;
+        };
+        KioskTerminationResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            kioskId: string;
+            kioskCode: null | string;
+            kioskName: null | string;
+            /** Format: uuid */
+            sellerId: string;
+            shopName: null | string;
+            status: string;
+            reason: string;
+            /** Format: date-time */
+            requestedAt: string;
+            /** Format: uuid */
+            requestedBy: string;
+            reviewAction: null | string;
+            reviewReason: null | string;
+            /** Format: date-time */
+            reviewedAt: null | string;
+            /** Format: uuid */
+            reviewedBy: null | string;
+            /** Format: uuid */
+            correlatedTaskId: null | string;
+            /** Format: date-time */
+            completedAt: null | string;
+            /** Format: uuid */
+            completedBy: null | string;
+            completionNotes: null | string;
+            /** Format: int32 */
+            version: number | string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
         LoginRequest: {
             email: string;
             password: string;
+        };
+        MaintenanceAccessIssued: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        MaintenanceAccessPending: {
+            /** Format: uuid */
+            id: string;
+            slotCode: string;
+            operation: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        MaintenanceAccessRequest: {
+            /** Format: uuid */
+            kioskId: string;
+            /** Format: uuid */
+            slotId: string;
+            operation: string;
+            /** Format: uuid */
+            sessionId: string;
+            action: null | string;
+            /** Format: uuid */
+            expectedBouquetId: null | string;
+            /** Format: uuid */
+            productId: null | string;
+            reason: null | string;
+            /** Format: uuid */
+            requestId?: null | string;
+        };
+        ManualUnlockRetryEnrollmentRequest: {
+            enabled: boolean;
+            firmwareVerified: boolean;
+        };
+        ManualUnlockRetryRequest: {
+            /** Format: uuid */
+            requestId: string;
+            trackingToken?: null | string;
+        };
+        ManualUnlockRetryResponse: {
+            /** Format: uuid */
+            requestId: string;
+            /** Format: uuid */
+            commandId: string;
+            state: string;
+            /** Format: int64 */
+            requestedAt: number | string;
+            /** Format: int64 */
+            expiresAt: number | string;
+            /** Format: int64 */
+            remainingSeconds: number | string;
         };
         MaskedBankSummary: {
             bankName: null | string;
             accountHolder: null | string;
             accountLast4: null | string;
             hasBank: boolean;
+        };
+        MemberLoyaltyPageResponse: {
+            items: components["schemas"]["ShopLoyaltyBalanceItem"][];
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+            hasMore: boolean;
         };
         MemberProfile: {
             /** Format: uuid */
@@ -11332,15 +16677,6 @@ export interface components {
             phone: string;
             code: string;
         };
-        PackageResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            /** Format: int64 */
-            monthlyFee: number | string;
-            /** Format: int32 */
-            maxSlots: number | string;
-        };
         PasswordChange: {
             currentPassword: string;
             newPassword: string;
@@ -11390,6 +16726,60 @@ export interface components {
         PlatformFailureRequest: {
             reason: string;
         };
+        PreorderLoadingAccessInput: {
+            /** Format: uuid */
+            slotId: string;
+        };
+        PreorderLoadingAccessSent: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** Format: int32 */
+            resendAfterSeconds: number | string;
+            /** @default true */
+            requiresCode: boolean;
+        };
+        PreorderPickupOtpOpened: {
+            /** Format: uuid */
+            attemptId: string;
+            /** Format: uuid */
+            orderId: string;
+            orderCode: string;
+            productName: string;
+            slotCode: string;
+            orderStatus: string;
+            /** Format: uuid */
+            commandId: string;
+            watchToken: string;
+            /** Format: date-time */
+            watchExpiresAt: string;
+        };
+        PreorderPickupOtpOpenRequest: {
+            code: string;
+            /** Format: uuid */
+            attemptId: string;
+        };
+        PreorderPickupOtpSent: {
+            /** Format: uuid */
+            requestId: string;
+            /** Format: uuid */
+            orderId: string;
+            recipientMasked: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** Format: int32 */
+            resendAfterSeconds: number | string;
+        };
+        PreorderPickupOtpStatus: {
+            /** Format: uuid */
+            orderId: string;
+            orderCode: string;
+            productName: string;
+            slotCode: string;
+            orderStatus: string;
+            commandStatus: string;
+        };
         ProblemDetails: {
             type?: null | string;
             title?: null | string;
@@ -11397,6 +16787,20 @@ export interface components {
             status?: null | number | string;
             detail?: null | string;
             instance?: null | string;
+        };
+        ProductForecastValidation: {
+            /** Format: int32 */
+            trainingDays: number | string;
+            /** Format: int32 */
+            holdoutDays: number | string;
+            /** Format: double */
+            mae: null | number | string;
+            /** Format: double */
+            baselineMae: null | number | string;
+            /** Format: double */
+            wape: null | number | string;
+            /** Format: double */
+            baselineWape: null | number | string;
         };
         ProductIdResponse: {
             /** Format: uuid */
@@ -11414,6 +16818,13 @@ export interface components {
             /** Format: int32 */
             sizeBytes: number | string;
             sha256: string;
+            /** @default false */
+            isCover: boolean;
+            /**
+             * Format: int32
+             * @default 0
+             */
+            sortOrder: number | string;
         };
         ProductResponse: {
             /** Format: uuid */
@@ -11433,6 +16844,11 @@ export interface components {
             widthCm?: null | number | string;
             /** Format: double */
             heightCm?: null | number | string;
+            /**
+             * Format: int32
+             * @default 0
+             */
+            quantity: number | string;
         };
         ProvisionKioskKeyResponse: {
             /** Format: uuid */
@@ -11513,6 +16929,17 @@ export interface components {
             p_date: string;
             p_statement?: unknown;
         };
+        ReconcilePaymentResponse: {
+            /** Format: uuid */
+            paymentId: string;
+            previousStatus: string;
+            currentStatus: string;
+            providerStatus: string;
+            /** Format: int64 */
+            amount: number | string;
+            transactionReference: null | string;
+            transitioned: boolean;
+        };
         RefundBankResponse: {
             bankName: string;
             holder: string;
@@ -11542,6 +16969,9 @@ export interface components {
         RejectKioskApplicationRequest: {
             reason: string;
         };
+        RejectSellerRefundEvidenceRequest: {
+            reason: string;
+        };
         RejectWithdrawalRequest: {
             /** Format: uuid */
             p_w: string;
@@ -11552,6 +16982,27 @@ export interface components {
             p_slot: string;
             p_reason: string;
         };
+        RemoveSlotBouquetRequest: {
+            /** Format: uuid */
+            bouquetId: string;
+            reason: string;
+            confirmedRemoved: boolean;
+        };
+        RemoveSlotBouquetResponse: {
+            /** Format: uuid */
+            kioskId: string;
+            /** Format: uuid */
+            slotId: string;
+            status: string;
+            /** Format: uuid */
+            bouquetId: null | string;
+            /** Format: uuid */
+            removedBouquetId: string;
+            zone: null | string;
+        };
+        ReorderProductPhotosRequest: {
+            photoIds: string[];
+        };
         ReportDeviceFaultRequest: {
             /** Format: uuid */
             p_kiosk: string;
@@ -11560,6 +17011,9 @@ export interface components {
             p_desc: string;
             p_photo: string;
         };
+        ReportIssueRequest: {
+            reason: string;
+        };
         RequestContactEmailInput: {
             email: string;
         };
@@ -11567,6 +17021,13 @@ export interface components {
             /** Format: uuid */
             p_order: string;
             p_tracking: string;
+        };
+        RequestSlotLayout: {
+            /** Format: int32 */
+            walkInSlots: number | string;
+            /** Format: int32 */
+            preorderSlots: number | string;
+            reason: string;
         };
         RequestWithdrawalRequest: {
             /** Format: int64 */
@@ -11600,6 +17061,18 @@ export interface components {
         RevealBankResponse: {
             accountNumber: string;
         };
+        ReviewKioskLocationChangeRequest: {
+            decision: string;
+            note: null | string;
+        };
+        ReviewKioskTerminationRequest: {
+            action: string;
+            reason: string;
+        };
+        ReviewSlotLayout: {
+            preorderSlotIds: null | string[];
+            note: null | string;
+        };
         ReworkKioskApplicationRequest: {
             reason: string;
         };
@@ -11611,6 +17084,68 @@ export interface components {
             timeWindow: string;
             /** Format: uuid */
             kioskId: string;
+        };
+        SeasonalForecastRequest: {
+            /** Format: int32 */
+            year: number | string;
+            /** Format: int32 */
+            month: number | string;
+            /** Format: date */
+            historyFrom: string;
+            /** Format: date */
+            historyTo?: null | string;
+        };
+        SeasonalForecastResponse: {
+            /** Format: uuid */
+            sellerId: string;
+            contractVersion: string;
+            aggregationLevel: string;
+            dataSource: string;
+            /** Format: date */
+            historyStart: string;
+            /** Format: date */
+            historyEnd: string;
+            /** Format: date */
+            forecastStart: string;
+            /** Format: date */
+            forecastEnd: string;
+            season: string;
+            holidays: components["schemas"]["HolidayInfo"][];
+            warnings: string[];
+            products: components["schemas"]["ForecastProductItem"][];
+        };
+        SeasonalSalesProduct: {
+            /** Format: uuid */
+            productId: string;
+            name: string;
+            status: string;
+            /** Format: int64 */
+            price: number | string;
+            tags: string[];
+            /** Format: date */
+            availableSince: string;
+            photos: string[];
+            /** Format: int32 */
+            totalInvoices: number | string;
+            /** Format: int32 */
+            totalUnits: number | string;
+        };
+        SeasonalSalesResponse: {
+            /** Format: uuid */
+            sellerId: string;
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            season: null | string;
+            holiday: null | string;
+            /** Format: int32 */
+            totalInvoices: number | string;
+            /** Format: int32 */
+            totalUnits: number | string;
+            products: components["schemas"]["SeasonalSalesProduct"][];
+            /** @default PRODUCT */
+            aggregationLevel: string;
         };
         SellerAccessoryResponse: {
             /** Format: uuid */
@@ -11644,11 +17179,40 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
+        SellerBankAccessRequest: {
+            reason: string;
+        };
         SellerBankResponse: {
             status: string;
             bankName: null | string;
             holder: null | string;
             accountSuffix: null | string;
+        };
+        SellerInventoryEvent: {
+            /** Format: int64 */
+            seq: number | string;
+            /** Format: uuid */
+            bouquetId: string;
+            /** Format: uuid */
+            slotId: string;
+            /** Format: uuid */
+            kioskId: string;
+            slotCode: string;
+            movementType: string;
+            /** Format: uuid */
+            orderId: null | string;
+            orderCode: null | string;
+            /** Format: uuid */
+            performedBy: null | string;
+            actorName: null | string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        SellerInventoryHistoryPage: {
+            items: components["schemas"]["SellerInventoryEvent"][];
+            /** Format: int32 */
+            page: number | string;
+            hasMore: boolean;
         };
         SellerKioskDto: {
             /** Format: uuid */
@@ -11666,16 +17230,192 @@ export interface components {
             locationComplete: boolean;
             canEditLocation: boolean;
         };
+        SellerLoyaltySettingsResponse: {
+            /** Format: uuid */
+            sellerId: string;
+            enabled: boolean;
+            /** Format: double */
+            earnRatePercent: number | string;
+        };
         SellerPackageResponse: {
             name: string;
             /** Format: int64 */
-            monthlyFee: number | string;
+            annualFee: number | string;
             /** Format: int32 */
             maxSlots: number | string;
             status: string;
         };
-        SellerSetSlotZoneRequest: {
-            zone: string;
+        SellerPaymentChannelResponse: {
+            /** Format: uuid */
+            sellerId: string;
+            /** Format: int32 */
+            version: number | string;
+            state: string;
+            expectedBankBin: string;
+            expectedBankAccountMasked: string;
+            expectedBankName: null | string;
+            /** Format: date-time */
+            verifiedAt: null | string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        SellerPaymentDetailResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            sellerId: string;
+            /** Format: uuid */
+            channelId: null | string;
+            /** Format: int32 */
+            channelVersion: null | number | string;
+            /** Format: int64 */
+            orderCode: null | number | string;
+            /** Format: int64 */
+            amount: number | string;
+            status: string;
+            purpose: string;
+            gateway: string;
+            gatewayTxnId: null | string;
+            receiverSnapshotMasked: unknown;
+            /** Format: date-time */
+            paidAt: null | string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            reconciled: boolean;
+            orders: components["schemas"]["CheckoutOrderResponse"][];
+        };
+        SellerPaymentListItem: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int64 */
+            orderCode: null | number | string;
+            /** Format: int64 */
+            amount: number | string;
+            status: string;
+            /** Format: date-time */
+            paidAt: null | string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: int32 */
+            channelVersion: null | number | string;
+            receiverAccountMasked: null | string;
+            /** Format: uuid */
+            checkoutId: null | string;
+        };
+        SellerPaymentsListResponse: {
+            payments: components["schemas"]["SellerPaymentListItem"][];
+            /** Format: int32 */
+            totalCount: number | string;
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+        };
+        SellerRefundDetailResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            orderCode: string;
+            /** Format: int64 */
+            amount: number | string;
+            status: string;
+            reason: null | string;
+            /** Format: date-time */
+            createdAt: string;
+            isApproved: boolean;
+            canAccessBank: boolean;
+            canSubmitTransfer: boolean;
+            submission: null | components["schemas"]["SellerRefundSubmissionDetail"];
+        };
+        SellerRefundPageResponse: {
+            items: components["schemas"]["SellerRefundSummary"][];
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+            hasMore: boolean;
+        };
+        SellerRefundSubmissionDetail: {
+            /** Format: uuid */
+            id: string;
+            providerReference: string;
+            /** Format: date-time */
+            transferredAt: string;
+            status: string;
+            note: null | string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            reviewedBy: null | string;
+            /** Format: date-time */
+            reviewedAt: null | string;
+            /** Format: int32 */
+            attemptCount: number | string;
+            reviewReason: null | string;
+        };
+        SellerRefundSummary: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            orderCode: string;
+            /** Format: int64 */
+            amount: number | string;
+            status: string;
+            submissionStatus: null | string;
+            reason: null | string;
+            /** Format: date-time */
+            createdAt: string;
+            isApproved: boolean;
+            /** Format: date-time */
+            transferredAt: null | string;
+        };
+        SellerRefundTransferSubmissionResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            refundId: string;
+            providerReference: string;
+            status: string;
+            /** Format: date-time */
+            transferredAt: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        SellerSalesReportResponse: {
+            /** Format: uuid */
+            sellerId: string;
+            /** Format: date-time */
+            from: null | string;
+            /** Format: date-time */
+            to: null | string;
+            /** Format: int64 */
+            grossPaid: number | string;
+            /** Format: int64 */
+            totalRefunded: number | string;
+            /** Format: int64 */
+            netReceipts: number | string;
+            /** Format: int32 */
+            paidOrders: number | string;
+            /** Format: int32 */
+            unclaimedOrders: number | string;
+            /** Format: int64 */
+            pendingAmount: number | string;
+            byKiosk: components["schemas"]["KioskSalesSummary"][];
+        };
+        SellerShopProfileResponse: {
+            /** Format: uuid */
+            id: string;
+            shopName: string;
+            phone: string;
+            contactEmail: null | string;
+            address: null | string;
+            status: string;
         };
         SellerSlotResponse: {
             /** Format: uuid */
@@ -11697,13 +17437,18 @@ export interface components {
             priceSnapshot: null | number | string;
             /** Format: date-time */
             sellableUntil: null | string;
-        };
-        SellerSlotZoneResponse: {
+            bouquetStatus?: null | string;
             /** Format: uuid */
-            kioskId: string;
-            /** Format: uuid */
-            slotId: string;
-            zone: string;
+            orderId?: null | string;
+            orderCode?: null | string;
+            orderStatus?: null | string;
+            paymentStatus?: null | string;
+            /** @default false */
+            sensorEnabled: boolean;
+            /** @default false */
+            sensorReady: boolean;
+            /** @default false */
+            manualRetryEnabled: boolean;
         };
         SellerStaffChatItem: {
             /** Format: uuid */
@@ -11763,6 +17508,17 @@ export interface components {
             /** Format: date-time */
             readAt: null | string;
         };
+        SellerStaffProfile: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            sellerId: string;
+            email: string;
+            fullName: string;
+            phone: null | string;
+            address: null | string;
+            status: string;
+        };
         SellerStatusHistoryItem: {
             id: string;
             /** Format: uuid */
@@ -11779,6 +17535,19 @@ export interface components {
             /** Format: int32 */
             page: number | string;
             hasMore: boolean;
+        };
+        SellerSubmitTransferRequest: {
+            /** Format: int64 */
+            amount: number | string;
+            currency: string;
+            bankName: string;
+            bankHolder: string;
+            accountNumber: string;
+            providerReference: string;
+            /** Format: date-time */
+            transferredAt: string;
+            evidenceTicket: string;
+            note?: null | string;
         };
         SessionResponse: {
             /** Format: uuid */
@@ -11818,6 +17587,82 @@ export interface components {
         };
         SetSellerToneRequest: {
             p_tone: string;
+        };
+        ShopLoyaltyBalanceItem: {
+            /** Format: uuid */
+            sellerId: string;
+            shopName: string;
+            /** Format: int64 */
+            balance: number | string;
+            /** Format: int64 */
+            debt: number | string;
+            loyaltyEnabled: boolean;
+            /** Format: double */
+            earnRatePercent: number | string;
+        };
+        SlotLayoutRequestView: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            kioskId: string;
+            /** Format: uuid */
+            sellerId: string;
+            /** Format: int32 */
+            walkInSlots: number | string;
+            /** Format: int32 */
+            preorderSlots: number | string;
+            reason: string;
+            status: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            reviewedAt: null | string;
+            reviewNote: null | string;
+        };
+        SlotMaintenanceSessionResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            kioskId: string;
+            /** Format: uuid */
+            slotId: string;
+            action: string;
+            stage: string;
+            substate: null | string;
+            /** Format: uuid */
+            currentCmdId: null | string;
+            /** Format: date-time */
+            phaseStartedAt: string;
+            /** Format: date-time */
+            expiresAt: string;
+            inspectionReason: null | string;
+            /** Format: date-time */
+            inspectedAt: null | string;
+            /** Format: uuid */
+            oldBouquetId: null | string;
+            /** Format: uuid */
+            newProductId: null | string;
+            /** Format: uuid */
+            newBouquetId: null | string;
+            availableActions: string[];
+            /** Format: int32 */
+            retryAfterSeconds?: null | number | string;
+        };
+        SlotSensorCapabilityResponse: {
+            /** Format: uuid */
+            slotId: string;
+            /** Format: uuid */
+            kioskId: string;
+            /** Format: int32 */
+            relayChannel: number | string;
+            enabled: boolean;
+            doorVerified: boolean;
+            presenceVerified: boolean;
+            supportsManualRetry: boolean;
+            /** Format: uuid */
+            enrolledBy: null | string;
+            /** Format: date-time */
+            updatedAt: string;
         };
         StaffDeliveryScope: {
             /** Format: uuid */
@@ -11875,6 +17720,28 @@ export interface components {
             /** Format: int32 */
             version: number | string;
         };
+        StaffInventoryOperation: {
+            operation: string;
+            reason: null | string;
+        };
+        StaffInventoryScope: {
+            /** Format: uuid */
+            kioskId: string;
+            /** Format: uuid */
+            slotId: string;
+            slotCode: string;
+            /** Format: uuid */
+            sellerId: string;
+            action: string;
+            /** Format: uuid */
+            expectedBouquetId: null | string;
+            /** Format: uuid */
+            productId: null | string;
+            instructions: string;
+            status: string;
+            sessionStage: null | string;
+            sessionSubstate: null | string;
+        };
         StaffPreorderCandidate: {
             /** Format: uuid */
             requestId: string;
@@ -11895,6 +17762,8 @@ export interface components {
             /** Format: uuid */
             slotId: string;
             qrCode: string;
+            /** Format: uuid */
+            loadingAccessId?: null | string;
         };
         StaffPreorderFulfillResult: {
             /** Format: uuid */
@@ -12033,12 +17902,6 @@ export interface components {
             p_account_enc: string;
             p_holder: string;
         };
-        SubscribeRequest: {
-            /** Format: int32 */
-            p_months: number | string;
-            /** Format: date */
-            p_from?: null | string;
-        };
         SubscriptionOverviewResponse: {
             package: null | components["schemas"]["SellerPackageResponse"];
             subscriptions: components["schemas"]["SubscriptionResponse"][];
@@ -12056,6 +17919,19 @@ export interface components {
             status: string;
             /** Format: uuid */
             kioskId: null | string;
+        };
+        TechnicalRepairApproval: {
+            /** Format: date-time */
+            expiresAt: string;
+        };
+        TechnicalRepairRow: {
+            /** Format: uuid */
+            id: string;
+            kioskName: string;
+            slotCode: string;
+            reason: string;
+            /** Format: date-time */
+            expiresAt: null | string;
         };
         TechnicianInstallationDetail: {
             /** Format: uuid */
@@ -12111,12 +17987,22 @@ export interface components {
         UpdateAccountStatusRequest: {
             status: string;
         };
+        UpdateChannelStatusRequest: {
+            status: string;
+        };
         UpdateKioskLocationRequest: {
             address: null | string;
             /** Format: double */
             latitude: null | number | string;
             /** Format: double */
             longitude: null | number | string;
+            reason?: null | string;
+        };
+        UpdateKioskSlotPricingRequest: {
+            /** Format: int64 */
+            annualSlotPrice: number | string;
+            /** Format: int32 */
+            expectedVersion: number | string;
         };
         UpdateProductPriceRequest: {
             /** Format: uuid */
@@ -12136,6 +18022,21 @@ export interface components {
             widthCm: number | string;
             /** Format: double */
             heightCm: number | string;
+            /** Format: int32 */
+            quantity?: null | number | string;
+        };
+        UpdateSellerAccessory: {
+            name: string;
+            /** Format: int64 */
+            price: number | string;
+        };
+        UpdateSellerLoyaltySettingsRequest: {
+            enabled: boolean;
+        };
+        UpdateSellerShopProfileRequest: {
+            shopName: null | string;
+            phone: null | string;
+            contactEmail: null | string;
         };
         UpdateSellerShopRequest: {
             shopName: string;
@@ -12145,6 +18046,11 @@ export interface components {
         UpdateSellerStatusRequest: {
             status: string;
             reason: string;
+        };
+        UpdateSensorCapabilityRequest: {
+            enabled: boolean;
+            doorVerified: boolean;
+            presenceVerified: boolean;
         };
         UpdateUserProfileRequest: {
             fullName: string;
@@ -12239,6 +18145,7 @@ export interface components {
             zone: null | string;
             photo: null | string;
             bouquets: string[];
+            preorderAvailable: boolean;
         };
         WebCatalogPage: {
             items: components["schemas"]["WebCatalogItem"][];
@@ -12250,6 +18157,8 @@ export interface components {
             /** Format: uuid */
             slotId: string;
             qrCode: string;
+            /** Format: uuid */
+            loadingAccessId?: null | string;
         };
         WebQuoteInput: {
             /** Format: int64 */
@@ -12333,6 +18242,11 @@ export interface components {
             paidAt: null | string;
             rejectReason: null | string;
         };
+        WithdrawKioskTerminationRequest: {
+            /** Format: int32 */
+            version: number | string;
+            reason: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -12403,32 +18317,6 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SetSellerToneRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FlowResult"];
-                };
-            };
-        };
-    };
-    subscribe: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                sellerId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SubscribeRequest"];
             };
         };
         responses: {
