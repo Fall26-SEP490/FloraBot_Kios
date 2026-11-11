@@ -21,10 +21,12 @@ export default function CustomerLogin({
   device,
   online,
   onReady,
+  pickupRetry = false,
 }: {
   device: Device;
   online: boolean;
   onReady: (session: CustomerSession) => void;
+  pickupRetry?: boolean;
 }) {
   const { tr } = useKioskLanguage();
   const [phone, setPhone] = useState<string>();
@@ -69,13 +71,22 @@ export default function CustomerLogin({
     onSuccess: onReady,
   });
   return (
-    <details className="customer-login">
+    <details className="customer-login" open={pickupRetry || undefined}>
       <summary>
-        {tr('Đăng nhập bằng số điện thoại (không bắt buộc)', 'Sign in with your phone (optional)')}
+        {pickupRetry
+          ? tr('Đăng nhập để thử mở lại', 'Sign in to retry opening')
+          : tr(
+              'Đăng nhập bằng số điện thoại (không bắt buộc)',
+              'Sign in with your phone (optional)',
+            )}
       </summary>
       <p>
-        Bạn vẫn có thể chọn hoa và thanh toán không cần đăng nhập. Phiên xác thực trên tủ kéo dài
-        tối đa 10 phút.
+        {pickupRetry
+          ? tr(
+              'Dùng số điện thoại của tài khoản đã đặt hoa để xác minh quyền mở lại ô.',
+              'Use the phone number on the account that placed this order.',
+            )
+          : 'Bạn vẫn có thể chọn hoa và thanh toán không cần đăng nhập. Phiên xác thực trên tủ kéo dài tối đa 10 phút.'}
       </p>
       {!phone ? (
         <form noValidate onSubmit={phoneForm.handleSubmit((value) => send.mutate(value.phone))}>

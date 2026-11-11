@@ -481,6 +481,7 @@ function Shopping({
           <PickupRecovery
             device={device}
             online={online}
+            accessToken={customer?.accessToken}
             onExit={onReset}
             onBack={() => {
               setPickupOpen(false);

@@ -2,21 +2,29 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@florabot/ui';
 import type { components } from '../../../packages/contracts/src/generated/api';
 import { ApiError, request, type Device } from './api';
+import PickupUnlockRetry from './PickupUnlockRetry';
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export default function PickupRecovery({
   device,
   online,
+  accessToken,
   onBack,
   onExit,
 }: {
   device: Device;
   online: boolean;
+  accessToken?: string;
   onBack: () => void;
   onExit: () => void;
 }) {
   const [order, setOrder] = useState('');
   const [tracking, setTracking] = useState('');
+  const [retryCommand, setRetryCommand] = useState<{
+    orderId: string;
+    commandId: string;
+    trackingToken: string;
+  }>();
   const [stage, setStage] = useState<'entry' | 'review' | 'sending' | 'accepted' | 'uncertain'>(
     'entry',
   );
@@ -85,6 +93,9 @@ export default function PickupRecovery({
         setError('Mã biên nhận chưa đúng. Kiểm tra mã rồi thử lại.');
         requestAnimationFrame(() => document.getElementById('pickup-tracking')?.focus());
         return;
+      }
+      if (typeof result.result === 'string' && uuid.test(result.result)) {
+        setRetryCommand({ orderId: order, commandId: result.result, trackingToken: tracking });
       }
       setOrder('');
       setTracking('');
@@ -190,10 +201,20 @@ export default function PickupRecovery({
         </div>
       )}
       {stage === 'accepted' && (
-        <p ref={outcome} tabIndex={-1} role="status">
-          Đã tiếp nhận yêu cầu mở ô. Hãy quan sát tủ và nhận hoa khi cửa mở. Nếu cửa vẫn không mở,
-          giữ biên nhận để báo sự cố; trạng thái này chưa xác nhận bạn đã nhận hoa.
-        </p>
+        <>
+          <p ref={outcome} tabIndex={-1} role="status">
+            Đã tiếp nhận yêu cầu mở ô. Hãy quan sát tủ và nhận hoa khi cửa mở. Nếu cửa vẫn không mở,
+            giữ biên nhận để báo sự cố; trạng thái này chưa xác nhận bạn đã nhận hoa.
+          </p>
+          {retryCommand && (
+            <PickupUnlockRetry
+              device={device}
+              online={online}
+              accessToken={accessToken}
+              {...retryCommand}
+            />
+          )}
+        </>
       )}
       {stage === 'uncertain' && (
         <p ref={outcome} tabIndex={-1} role="alert" className="error">

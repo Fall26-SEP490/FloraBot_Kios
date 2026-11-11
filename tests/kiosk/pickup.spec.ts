@@ -67,6 +67,37 @@ for (const width of [390, 1024])
     await expect(page.getByLabel('ID biên nhận', { exact: true })).toHaveValue('');
   });
 
+test('Retry keeps the same request ID after a lost response', async ({ page }) => {
+  await page.route('**/flows/request_pickup', (route) =>
+    route.fulfill({ json: { result: command } }),
+  );
+  const ids: string[] = [];
+  await page.route(`**/pickup/orders/${order}/commands/${command}/retry-unlock`, (route) => {
+    const body = route.request().postDataJSON();
+    expect(route.request().headers()['x-kiosk-key']).toBe('pickup-device-key');
+    expect(body.trackingToken).toBe('ABCD2345');
+    ids.push(body.requestId);
+    if (ids.length === 1) return route.abort();
+    return route.fulfill({
+      json: { requestId: body.requestId, commandId: command, state: 'PENDING' },
+    });
+  });
+  await open(page);
+  await review(page);
+  await page.getByRole('button', { name: 'Yêu cầu mở ô nhận hoa' }).click();
+  const retry = page.getByRole('button', { name: /Cửa vẫn đóng/ });
+  await expect(retry).toBeVisible();
+  expect(ids).toHaveLength(0);
+  await retry.click();
+  await expect(page.getByRole('alert')).toContainText('gửi lại cùng yêu cầu');
+  await retry.click();
+  await expect(page.getByText('Đã tiếp nhận yêu cầu thử mở lại.', { exact: false })).toBeVisible();
+  expect(ids).toHaveLength(2);
+  expect(ids[0]).toBeTruthy();
+  expect(ids[1]).toBe(ids[0]);
+  await expect(retry).toHaveCount(0);
+});
+
 test('Null result rejects code, conflict permits correction, lost response never retries', async ({
   page,
 }) => {

@@ -9,6 +9,7 @@ export class ApiError extends Error {
     public status: number,
     message: string,
     public code?: string,
+    public retryAfterSeconds?: number,
   ) {
     super(message);
   }
@@ -77,6 +78,7 @@ export async function request<T>(
       title?: string;
       message?: string;
     };
+    const retryAfter = Number(response.headers.get('Retry-After'));
     throw new ApiError(
       response.status,
       problem.detail ||
@@ -86,6 +88,7 @@ export async function request<T>(
           ? 'Bạn thử quá nhiều lần. Vui lòng chờ trước khi thử lại.'
           : 'Chưa kết nối được tủ hoa. Bạn vui lòng thử lại.'),
       problem.detail,
+      retryAfter > 0 && Number.isFinite(retryAfter) ? retryAfter : undefined,
     );
   }
   if (response.status === 204) return undefined as T;
