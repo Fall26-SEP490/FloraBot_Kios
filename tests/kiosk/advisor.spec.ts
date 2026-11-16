@@ -39,6 +39,23 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
+test('Walk-in filter uses flower tags and keeps old untagged products in All', async ({ page }) => {
+  await page.route('**/catalog/items', (route) => route.fulfill({ json: [
+    { bouquetId: bouquet, name: 'Bó hồng dịu dàng', price: 250000, slotCode: 'A01',
+      shopName: 'Tiệm Hoa Nhỏ', tags: ['flower:rose', 'color:pink'] },
+    { bouquetId: '50000000-0000-0000-0000-000000000002', name: 'Mẫu cũ', price: 300000,
+      slotCode: 'A02', shopName: 'Tiệm Hoa Nhỏ' },
+  ] }));
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
+  const filter = page.getByRole('combobox', { name: 'Loại hoa' });
+  await filter.selectOption('rose');
+  await expect(page.getByRole('checkbox', { name: 'Chọn Bó hồng dịu dàng tại ô A01' })).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: 'Chọn Mẫu cũ tại ô A02' })).toHaveCount(0);
+  await filter.selectOption('');
+  await expect(page.getByRole('checkbox', { name: 'Chọn Mẫu cũ tại ô A02' })).toBeVisible();
+});
+
 for (const width of [390, 1024])
   test(`Survey selection, keyboard focus and accessibility ${width}`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });

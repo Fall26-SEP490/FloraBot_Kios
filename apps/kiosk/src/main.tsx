@@ -251,6 +251,23 @@ function Setup({ onReady }: { onReady: (device: Device) => void }) {
   );
 }
 
+const flowerLabels: Record<string, [string, string]> = {
+  rose: ['Hoa hồng', 'Rose'],
+  sunflower: ['Hướng dương', 'Sunflower'],
+  tulip: ['Tulip', 'Tulip'],
+  chrysanthemum: ['Hoa cúc', 'Chrysanthemum'],
+  gerbera: ['Đồng tiền', 'Gerbera'],
+  lisianthus: ['Cát tường', 'Lisianthus'],
+  carnation: ['Cẩm chướng', 'Carnation'],
+  hydrangea: ['Cẩm tú cầu', 'Hydrangea'],
+  lily: ['Hoa ly', 'Lily'],
+  orchid: ['Hoa lan', 'Orchid'],
+  peony: ['Mẫu đơn', 'Peony'],
+  'babys-breath': ['Hoa baby', "Baby's breath"],
+  other: ['Loại khác', 'Other'],
+};
+type TaggedKioskFlower = components['schemas']['KioskCatalogResponse'] & { tags?: string[] };
+
 function Shopping({
   device,
   onReset,
@@ -267,6 +284,7 @@ function Shopping({
   const [online, setOnline] = useState(navigator.onLine);
   const basketDialog = React.useRef<HTMLDialogElement>(null);
   const [selected, setSelected] = useState<string[]>([]);
+  const [flowerFilter, setFlowerFilter] = useState('');
   const [accessoriesOpen] = useState(false);
   const [accessoryQuantities] = useState<Record<string, string>>({});
   const [checkoutId, setCheckoutId] = useState<string>();
@@ -329,11 +347,23 @@ function Shopping({
   }, [onReset]);
   const catalog = useQuery({
     queryKey: ['catalog', device.id],
-    queryFn: () =>
-      request<components['schemas']['KioskCatalogResponse'][]>(device, '/catalog/items'),
+    queryFn: () => request<TaggedKioskFlower[]>(device, '/catalog/items'),
     enabled: !checkoutId && online,
     refetchInterval: 15000,
   });
+  const flowerOptions = Array.from(
+    new Set(
+      catalog.data?.flatMap((item) =>
+        (item.tags ?? [])
+          .filter((tag) => tag.startsWith('flower:') && Object.hasOwn(flowerLabels, tag.slice(7)))
+          .map((tag) => tag.slice(7)),
+      ) ?? [],
+    ),
+  );
+  const activeFlower = flowerOptions.includes(flowerFilter) ? flowerFilter : '';
+  const displayedFlowers = activeFlower
+    ? catalog.data?.filter((item) => item.tags?.includes(`flower:${activeFlower}`))
+    : catalog.data;
   const accessories = useQuery({
     queryKey: ['accessories', device.id],
     queryFn: () =>
@@ -585,6 +615,22 @@ function Shopping({
                       </p>
                     </div>
                     <div className="shop-catalog-tools">
+                      {flowerOptions.length > 0 && (
+                        <label>
+                          {tr('Loại hoa', 'Flower type')}{' '}
+                          <select
+                            value={activeFlower}
+                            onChange={(event) => setFlowerFilter(event.target.value)}
+                          >
+                            <option value="">{tr('Tất cả', 'All')}</option>
+                            {flowerOptions.map((type) => (
+                              <option key={type} value={type}>
+                                {tr(...flowerLabels[type])}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
                       {catalog.data && (
                         <span>
                           {catalog.data.length} {tr('bó có sẵn', 'available')}
@@ -631,7 +677,7 @@ function Shopping({
                     )}
                   </div>
                   <ul className="flowers">
-                    {catalog.data?.map((item, idx) => (
+                    {displayedFlowers?.map((item, idx) => (
                       <li
                         key={item.bouquetId}
                         className={selected.includes(item.bouquetId) ? 'is-selected' : undefined}
