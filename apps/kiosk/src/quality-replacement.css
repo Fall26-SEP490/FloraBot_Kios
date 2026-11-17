@@ -1,0 +1,33 @@
+.quality-pickup {
+  max-width: 38rem;
+  padding: 2rem 1.25rem;
+  margin-inline: auto;
+  color: #183e2b;
+}
+.quality-pickup form,
+.quality-pickup-result {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #dce7d8;
+  border-radius: 12px;
+  background: #fff;
+  padding: 1.25rem;
+}
+.quality-pickup label {
+  display: grid;
+  gap: 0.4rem;
+}
+.quality-pickup input {
+  width: 100%;
+  min-height: 48px;
+}
+.quality-pickup button {
+  min-height: 48px;
+}
+.quality-pickup p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.quality-pickup > p[role='alert'] {
+  margin-top: 1rem;
+}
