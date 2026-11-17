@@ -62,12 +62,14 @@ export default function KioskHome({
   device,
   onBuy,
   onPickup,
+  onReplacement,
   preview = false,
   notice = '',
 }: {
   device: Device;
   onBuy: () => void;
   onPickup: () => void;
+  onReplacement?: () => void;
   preview?: boolean;
   notice?: string;
 }) {
@@ -221,6 +223,11 @@ export default function KioskHome({
           <div className="kh-help-intro">
             <span className="fb-eyebrow">{tr('LUÔN SẴN SÀNG HỖ TRỢ', 'WE ARE HERE TO HELP')}</span>
             <h2 id="kh-help-title">{tr('Bạn cần giúp đỡ?', 'Need a hand?')}</h2>
+            {!staffOpen && onReplacement && (
+              <Button type="button" variant="outline" onClick={onReplacement}>
+                {tr('Nhận hoa thay', 'Collect a replacement')}
+              </Button>
+            )}
             <p>
               {tr(
                 'Quét QR bằng điện thoại để gửi yêu cầu riêng tư.',
