@@ -134,8 +134,8 @@ export default function KioskHome({
               <div>
                 <strong>
                   {audience === 'admin'
-                    ? tr('Báo lỗi tủ cho admin', 'Report a kiosk issue')
-                    : tr('Liên hệ cửa hàng hoa', 'Contact the flower shop')}
+                    ? tr('Báo sự cố tủ', 'Report a kiosk issue')
+                    : tr('Hỗ trợ đơn hàng & hoa', 'Order & flower support')}
                 </strong>
                 <p>
                   {audience === 'admin'
