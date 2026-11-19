@@ -76,6 +76,8 @@ body {
   list-style: none;
 }
 .fb-steps li {
+  padding-block: 10px;
+  border-bottom: 3px solid transparent;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -92,6 +94,7 @@ body {
   font-size: 12px;
 }
 .fb-steps li[aria-current] {
+  border-bottom-color: var(--color-ink);
   color: var(--color-ink);
   font-weight: 600;
 }
@@ -398,7 +401,8 @@ body {
 .fb-product-photo .flower-svg-fallback {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   border-radius: 0;
 }
 .fb-slot-label {
@@ -1370,30 +1374,30 @@ body:has(.gift-advisor[open]) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 76px;
+  height: 76px;
   padding: 0;
   border: 1px solid #ffffff80;
   border-radius: 50%;
   color: white;
   background: #244f40;
   font: 600 16px var(--font-body);
-  box-shadow: 0 4px 16px #173d3433;
+  box-shadow: 0 6px 22px #173d3450;
   cursor: pointer;
 }
 .fb-cart-trigger span {
   position: absolute;
   top: -4px;
   right: -4px;
-  font-size: 13px;
-  min-width: 23px;
-  padding: 3px 6px;
+  font-size: 17px;
+  min-width: 30px;
+  padding: 4px 8px;
   border-radius: 99px;
   color: #244f40;
-  background: #fffaf1;
+  background: #f1cf89;
 }
 .fb-main:has(.fb-cart-trigger) {
-  padding-bottom: 90px;
+  padding-bottom: 110px;
 }
 .fb-app dialog.fb-basket {
   position: fixed;

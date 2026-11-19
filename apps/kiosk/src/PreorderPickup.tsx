@@ -7,6 +7,7 @@ import { KioskHeader } from './KioskHome';
 import { useKioskLanguage } from './kiosk-language';
 import CustomerLogin from './CustomerLogin';
 import PickupUnlockRetry from './PickupUnlockRetry';
+import HomeCountdown from './HomeCountdown';
 
 type Opened = components['schemas']['PreorderPickupOtpOpened'];
 type Status = components['schemas']['PreorderPickupOtpStatus'];
@@ -162,6 +163,7 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
         title={tr('NHẬN HOA ĐẶT TRƯỚC', 'COLLECT PREORDER')}
       />
       <main id="main" className={stage === 'entry' ? 'pickup-entry-layout' : 'ko-main'}>
+        {status?.orderStatus === 'COMPLETED' && <HomeCountdown seconds={3} onHome={onHome} />}
         <div className={stage === 'entry' ? 'pickup-ticket' : 'ko-heading'}>
           <p className="fb-eyebrow">
             {tr('FLORABOT   /   ĐIỂM NHẬN HOA', 'FLORABOT   /   FLOWER PICKUP')}
