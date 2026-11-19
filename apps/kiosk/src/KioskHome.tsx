@@ -140,12 +140,12 @@ export default function KioskHome({
                 <p>
                   {audience === 'admin'
                     ? tr(
-                        'Lỗi màn hình, kết nối, cửa không mở.',
-                        'Screen, connection or locker problems.',
+                        'Màn hình lỗi, cửa kẹt, mất kết nối.',
+                        'Screen errors, stuck doors, connection issues.',
                       )
                     : tr(
-                        'Hoa hư, giao nhầm hoặc cần hỗ trợ đơn.',
-                        'Damaged or wrong flowers, order support.',
+                        'Chưa nhận được hoa, hoa hư, sai mẫu, thiếu phụ kiện.',
+                        'Flowers not received, damaged flowers, wrong designs, missing accessories.',
                       )}
                 </p>
               </div>
