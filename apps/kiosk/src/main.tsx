@@ -35,6 +35,7 @@ import BouquetImage, { getBouquetImageUrl } from './BouquetImage';
 import PreviewMode from './PreviewMode';
 import KioskHome, { KioskHeader, portalUrl } from './KioskHome';
 import PreorderPickup from './PreorderPickup';
+import QualityReplacementPickup from './QualityReplacementPickup';
 import DeviceSupport from './DeviceSupport';
 import { useKioskLanguage } from './kiosk-language';
 import { KioskBrand, KioskSteps } from './KioskIdentity';
@@ -1081,7 +1082,7 @@ function App() {
   const [previewOpen, setPreviewOpen] = useState(
     () => new URLSearchParams(window.location.search).get('preview') === '1',
   );
-  const [screen, setScreen] = useState<'home' | 'shop' | 'pickup'>('home');
+  const [screen, setScreen] = useState<'home' | 'shop' | 'pickup' | 'replacement'>('home');
   const [visit, setVisit] = useState(0);
   const [notice, setNotice] = useState('');
   const reset = React.useCallback(() => {
@@ -1135,6 +1136,14 @@ function App() {
         device={activeDevice}
         preview={previewOpen}
         notice={notice}
+        onReplacement={
+          previewOpen
+            ? undefined
+            : () => {
+                setScreen('replacement');
+                window.scrollTo(0, 0);
+              }
+        }
         onBuy={() => {
           setScreen('shop');
           window.scrollTo(0, 0);
@@ -1157,6 +1166,8 @@ function App() {
     );
   if (screen === 'pickup')
     return <PreorderPickup key={visit} device={activeDevice} onHome={reset} />;
+  if (screen === 'replacement')
+    return <QualityReplacementPickup key={visit} device={activeDevice} onHome={reset} />;
   return (
     <Shopping
       key={visit}

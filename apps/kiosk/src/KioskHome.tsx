@@ -51,12 +51,14 @@ export default function KioskHome({
   device,
   onBuy,
   onPickup,
+  onReplacement,
   preview = false,
   notice = '',
 }: {
   device: Device;
   onBuy: () => void;
   onPickup: () => void;
+  onReplacement?: () => void;
   preview?: boolean;
   notice?: string;
 }) {
@@ -119,6 +121,11 @@ export default function KioskHome({
         <section className="kh-help" aria-labelledby="kh-help-title">
           <div className="kh-help-intro">
             <h2 id="kh-help-title">{tr('Bạn cần giúp đỡ?', 'Need a hand?')}</h2>
+            {onReplacement && (
+              <Button type="button" variant="outline" onClick={onReplacement}>
+                {tr('Nhận hoa thay', 'Collect a replacement')}
+              </Button>
+            )}
           </div>
           {(['admin', 'shop'] as const).map((audience) => (
             <article className="kh-help-card" key={audience}>
