@@ -22,11 +22,13 @@ export function KioskHeader({
   onHome,
   title,
   homeDisabled = false,
+  homeLabel,
   children,
 }: {
   onHome?: () => void;
   title?: string;
   homeDisabled?: boolean;
+  homeLabel?: string;
   children?: ReactNode;
 }) {
   const { tr } = useKioskLanguage();
@@ -37,7 +39,7 @@ export function KioskHeader({
       <div className="kh-header-actions">
         {onHome && (
           <Button variant="outline" onClick={onHome} disabled={homeDisabled}>
-            {tr('Trang chủ', 'Home')}
+            {homeLabel ?? tr('Trang chủ', 'Home')}
           </Button>
         )}
         {children}

@@ -40,12 +40,14 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
       last = Date.now();
     };
     const timer = setInterval(() => {
-      if (Date.now() - last >= 180000) onHome();
+      if (Date.now() - last >= 300000) onHome();
     }, 1000);
     window.addEventListener('online', connection);
     window.addEventListener('offline', connection);
     window.addEventListener('pointerdown', touch);
     window.addEventListener('keydown', touch);
+    window.addEventListener('wheel', touch, { passive: true });
+    window.addEventListener('touchmove', touch, { passive: true });
     document.addEventListener('visibilitychange', hide);
     const invalidate = () => {
       epoch.current++;
@@ -57,6 +59,8 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
       window.removeEventListener('offline', connection);
       window.removeEventListener('pointerdown', touch);
       window.removeEventListener('keydown', touch);
+      window.removeEventListener('wheel', touch);
+      window.removeEventListener('touchmove', touch);
       document.removeEventListener('visibilitychange', hide);
     };
   }, [onHome]);
@@ -159,8 +163,8 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
     <div className="kh-shell">
       <KioskHeader
         onHome={onHome}
+        homeLabel={tr('Kết thúc lượt mua', 'End visit')}
         homeDisabled={stage === 'sending'}
-        title={tr('NHẬN HOA ĐẶT TRƯỚC', 'COLLECT PREORDER')}
       />
       <main id="main" className={stage === 'entry' ? 'pickup-entry-layout' : 'ko-main'}>
         {status?.orderStatus === 'COMPLETED' && <HomeCountdown seconds={3} onHome={onHome} />}
@@ -193,9 +197,6 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
         )}
         {stage === 'entry' && (
           <section className="pickup-console">
-            <p className="pickup-step">
-              {tr('01 / 02   ·   XÁC THỰC', '01 / 02   ·   VERIFICATION')}
-            </p>
             <h2>{tr('Nhập mã nhận hoa', 'Enter your pickup code')}</h2>
             <p id="pickup-code-help">
               {tr('Dùng 8 chữ số trong email nhận hoa.', 'Use the 8 digits in your pickup email.')}
