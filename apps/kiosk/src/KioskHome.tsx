@@ -134,18 +134,18 @@ export default function KioskHome({
               <div>
                 <strong>
                   {audience === 'admin'
-                    ? tr('Báo lỗi tủ cho admin', 'Report a kiosk issue')
-                    : tr('Liên hệ cửa hàng hoa', 'Contact the flower shop')}
+                    ? tr('Báo sự cố tủ', 'Report a kiosk issue')
+                    : tr('Hỗ trợ đơn hàng & hoa', 'Order & flower support')}
                 </strong>
                 <p>
                   {audience === 'admin'
                     ? tr(
-                        'Lỗi màn hình, kết nối, cửa không mở.',
-                        'Screen, connection or locker problems.',
+                        'Màn hình lỗi, cửa kẹt, mất kết nối.',
+                        'Screen errors, stuck doors, connection issues.',
                       )
                     : tr(
-                        'Hoa hư, giao nhầm hoặc cần hỗ trợ đơn.',
-                        'Damaged or wrong flowers, order support.',
+                        'Chưa nhận được hoa, hoa hư, sai mẫu, thiếu phụ kiện.',
+                        'Flowers not received, damaged flowers, wrong designs, missing accessories.',
                       )}
                 </p>
               </div>

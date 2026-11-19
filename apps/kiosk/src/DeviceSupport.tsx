@@ -49,7 +49,7 @@ export default function DeviceSupport({ kioskId }: { kioskId: string }) {
       <main id="main" className="ko-main">
         <section className="ko-confirm">
           <p className="fb-eyebrow">FLORABOT SUPPORT</p>
-          <h1>{tr('Báo lỗi tủ cho admin', 'Report a kiosk issue')}</h1>
+          <h1>{tr('Báo sự cố tủ', 'Report a kiosk issue')}</h1>
           <p>
             {tr(
               'Mô tả lỗi màn hình, kết nối hoặc cửa tủ. Không ghi mật khẩu hay thông tin thanh toán vào nội dung.',
@@ -58,7 +58,7 @@ export default function DeviceSupport({ kioskId }: { kioskId: string }) {
           </p>
           {done ? (
             <div role="status">
-              <h2>{tr('Đã gửi đến admin', 'Sent to the admin team')}</h2>
+              <h2>{tr('Đã gửi đến bộ phận vận hành', 'Sent to the operations team')}</h2>
               <p>
                 {tr('Mã yêu cầu:', 'Reference:')} {done}
               </p>
