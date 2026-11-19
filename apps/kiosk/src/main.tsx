@@ -26,10 +26,9 @@ import {
   type Device,
   type PaymentLink,
 } from './api';
-import CustomerLogin from './CustomerLogin';
 import CustomerAccount from './CustomerAccount';
+import HomeCountdown from './HomeCountdown';
 import PointRedemption from './PointRedemption';
-import GiftMessage from './GiftMessage';
 import PickupRecovery from './PickupRecovery';
 import GiftAdvisor from './GiftAdvisor';
 import BouquetImage, { getBouquetImageUrl } from './BouquetImage';
@@ -39,11 +38,15 @@ import PreorderPickup from './PreorderPickup';
 import QualityReplacementPickup from './QualityReplacementPickup';
 import DeviceSupport from './DeviceSupport';
 import { useKioskLanguage } from './kiosk-language';
-import { KioskBrand, KioskSteps, KioskFooter } from './KioskIdentity';
+import { KioskBrand, KioskSteps } from './KioskIdentity';
 import '@fontsource/lora/vietnamese-400.css';
 import '@fontsource/lora/latin-400.css';
 import '@fontsource/lora/vietnamese-400-italic.css';
 import '@fontsource/lora/latin-400-italic.css';
+import '@fontsource/lora/vietnamese-600.css';
+import '@fontsource/lora/latin-600.css';
+import '@fontsource/lora/vietnamese-600-italic.css';
+import '@fontsource/lora/latin-600-italic.css';
 import '@fontsource/nunito/vietnamese-800.css';
 import '@fontsource/nunito/latin-800.css';
 import '@fontsource/be-vietnam-pro/vietnamese-400.css';
@@ -90,7 +93,7 @@ const setupSchema = z.object({
     .trim()
     .regex(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      'Nhập mã kiosk hợp lệ (định dạng UUID, ví dụ: 40000000-0000-0000-0000-000000000001).',
+      'Nhập mã kiosk hợp lệ.',
     ),
   key: z
     .string()
@@ -168,9 +171,6 @@ function Setup({ onReady }: { onReady: (device: Device) => void }) {
           >
             Hoa đẹp, <em>ngay bên bạn.</em>
           </h2>
-          <p className="setup-hero-desc">
-            Chạm để chọn. Trao gửi yêu thương. Khám phá trải nghiệm mua hoa tại tủ FloraBot.
-          </p>
         </section>
 
         {/* Right column: Staff-only Device Setup Form */}
@@ -180,9 +180,6 @@ function Setup({ onReady }: { onReady: (device: Device) => void }) {
             Dành riêng cho nhân viên kỹ thuật
           </div>
           <h1 id="staff-setup-title">Kết nối tủ FloraBot</h1>
-          <p className="setup-staff-subtitle">
-            Nhập thông tin được cấp để đồng bộ kiosk với hệ thống FloraBot.
-          </p>
 
           <form
             noValidate
@@ -193,7 +190,7 @@ function Setup({ onReady }: { onReady: (device: Device) => void }) {
               });
             })}
           >
-            <label htmlFor="device-id">Mã kiosk (UUID / ID)</label>
+            <label htmlFor="device-id">Mã kiosk</label>
             <input
               id="device-id"
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -207,7 +204,7 @@ function Setup({ onReady }: { onReady: (device: Device) => void }) {
               </p>
             )}
 
-            <label htmlFor="device-key">Khóa thiết bị (API key / apiKey)</label>
+            <label htmlFor="device-key">Khóa thiết bị</label>
             <div className="setup-secret-field">
               <input
                 id="device-key"
@@ -241,11 +238,6 @@ function Setup({ onReady }: { onReady: (device: Device) => void }) {
               {connect.isPending ? 'Đang kết nối…' : 'Kết nối tủ'}
             </Button>
           </form>
-
-          <p className="quiet setup-privacy-note">
-            Khóa thiết bị chỉ được lưu trong phiên trình duyệt này. Kết nối thành công sẽ sử dụng dữ
-            liệu thật.
-          </p>
         </section>
       </div>
     </main>
@@ -293,7 +285,7 @@ function Shopping({
   const [now, setNow] = useState(() => Date.now());
   const [idleSoon, setIdleSoon] = useState(false);
   const [uncertain, setUncertain] = useState(false);
-  const [customer, setCustomer] = useState<CustomerSession & { expiresAt: number }>();
+  const [customer] = useState<CustomerSession & { expiresAt: number }>();
   const [accountOpen, setAccountOpen] = useState(false);
   const [pickupOpen, setPickupOpen] = useState(false);
   const [points, setPoints] = useState<number | null>(0);
@@ -322,6 +314,7 @@ function Shopping({
       throw error;
     }
   }
+  const idleEnd = React.useRef<() => void>(() => {});
   useEffect(() => {
     const onOnline = () => setOnline(true);
     const onOffline = () => setOnline(false);
@@ -331,19 +324,23 @@ function Shopping({
     };
     const timer = window.setInterval(() => {
       setNow(Date.now());
-      setIdleSoon(Date.now() - lastAction >= 540000);
-      if (Date.now() - lastAction >= 600000) onReset();
+      setIdleSoon(Date.now() - lastAction >= 240000);
+      if (Date.now() - lastAction >= 300000) idleEnd.current();
     }, 1000);
     window.addEventListener('online', onOnline);
     window.addEventListener('offline', onOffline);
     window.addEventListener('pointerdown', touch);
     window.addEventListener('keydown', touch);
+    window.addEventListener('wheel', touch, { passive: true });
+    window.addEventListener('touchmove', touch, { passive: true });
     return () => {
       clearInterval(timer);
       window.removeEventListener('online', onOnline);
       window.removeEventListener('offline', onOffline);
       window.removeEventListener('pointerdown', touch);
       window.removeEventListener('keydown', touch);
+      window.removeEventListener('wheel', touch);
+      window.removeEventListener('touchmove', touch);
     };
   }, [onReset]);
   const catalog = useQuery({
@@ -447,6 +444,9 @@ function Shopping({
     }
     cancel.mutate(checkoutId);
   }
+  useEffect(() => {
+    idleEnd.current = endVisit;
+  });
   const remaining = current
     ? Math.max(0, Math.ceil((new Date(current.payBefore).getTime() - now) / 1000))
     : 0;
@@ -546,11 +546,7 @@ function Shopping({
     );
   return (
     <div className="fb-app">
-      <KioskHeader
-        onHome={endVisit}
-        homeDisabled={endingDisabled}
-        title={tr('MUA HOA TẠI CHỖ', 'BUY FLOWERS HERE')}
-      />
+      <KioskHeader />
       <div className="ks-progress">
         <KioskSteps
           stage={!checkoutId ? 0 : checkout.data?.paymentStatus === 'SUCCEEDED' ? 2 : 1}
@@ -597,7 +593,7 @@ function Shopping({
               )}
               onClick={() => basketDialog.current?.showModal()}
             >
-              <ShoppingCart size={23} aria-hidden="true" />
+              <ShoppingCart size={34} strokeWidth={2} aria-hidden="true" />
               <span aria-hidden="true">{selected.length}</span>
             </button>
             <div className="fb-shop-grid">
@@ -670,13 +666,6 @@ function Shopping({
                       )}
                     </p>
                   )}
-                  <div className="artificial-flower-pill-notice" role="note">
-                    <Flower2 size={17} aria-hidden="true" />{' '}
-                    {tr(
-                      'Hoa lụa & hoa sáp nghệ thuật · Bền đẹp theo thời gian',
-                      'Silk & wax flowers · Made to last',
-                    )}
-                  </div>
                   <ul className="flowers">
                     {displayedFlowers?.map((item, idx) => (
                       <li
@@ -719,15 +708,15 @@ function Shopping({
                             <span className="shop">
                               {item.shopName} · Ô {item.slotCode}
                             </span>
-                            <span className="illustration-caption">
-                              {item.imageUrl
-                                ? tr('Ảnh từ cửa hàng · Ô', 'Shop photo · Locker')
-                                : tr(
-                                    'Hình ảnh minh họa · Hoa thực tế tại ô',
-                                    'Illustrative image · Actual flowers in locker',
-                                  )}{' '}
-                              {item.slotCode}
-                            </span>
+                            {!item.imageUrl && (
+                              <span className="illustration-caption">
+                                {tr(
+                                  'Hình ảnh minh họa · Hoa thực tế tại ô',
+                                  'Illustrative image · Actual flowers in locker',
+                                )}{' '}
+                                {item.slotCode}
+                              </span>
+                            )}
                           </span>
                           <strong className="price">{money(item.price)}</strong>
                         </label>
@@ -758,19 +747,6 @@ function Shopping({
                     )}
                   </Button>
                   <div className="fb-member-tools">
-                    {!customer && (
-                      <CustomerLogin
-                        device={device}
-                        online={online}
-                        onReady={(session) =>
-                          setCustomer({
-                            ...session,
-                            expiresAt:
-                              Date.now() + Math.min(600, Number(session.expiresInSeconds)) * 1000,
-                          })
-                        }
-                      />
-                    )}
                     {customer && (
                       <Button
                         id="customer-account-open"
@@ -848,12 +824,6 @@ function Shopping({
                     : ''}{' '}
                   · <strong>{money(total)}</strong>
                 </p>
-                <p className="quiet">
-                  {tr(
-                    'Giá và tình trạng hàng sẽ được xác nhận khi giữ giỏ.',
-                    'Price and availability are confirmed when reserving your basket.',
-                  )}
-                </p>
                 {customer && (
                   <PointRedemption
                     device={device}
@@ -864,11 +834,6 @@ function Shopping({
                     onExit={onReset}
                   />
                 )}
-                <GiftMessage
-                  value={ecard}
-                  onChange={setEcard}
-                  disabled={!online || buy.isPending || uncertain}
-                />
                 <Button
                   disabled={
                     !online ||
@@ -897,15 +862,12 @@ function Shopping({
                     giữ sẽ được hệ thống trả lại khi hết hạn.
                   </p>
                 )}
-                <p className="fb-checkout-note">
-                  <ShieldCheck size={15} aria-hidden="true" />{' '}
-                  {tr('Thanh toán an toàn qua payOS', 'Secure payment via payOS')}
-                </p>
               </dialog>
             </div>
           </>
         ) : (
           <section className="checkout fb-checkout" aria-labelledby="checkout-title">
+            {current?.paymentStatus === 'SUCCEEDED' && <HomeCountdown seconds={10} onHome={onReset} />}
             <h1 id="checkout-title">
               {tr('Một chút nữa là hoa đến tay bạn.', 'Your flowers are almost yours.')}
             </h1>
@@ -1102,7 +1064,6 @@ function Shopping({
           </section>
         )}
       </main>
-      <KioskFooter />
     </div>
   );
 }
@@ -1138,6 +1099,21 @@ function App() {
     },
     [reset],
   );
+  useEffect(() => {
+    if (screen === 'home' || (screen === 'shop' && !previewOpen)) return;
+    let timer: number;
+    const restart = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(reset, 5 * 60 * 1000);
+    };
+    const events = ['pointerdown', 'keydown', 'wheel', 'touchmove'] as const;
+    restart();
+    events.forEach((event) => window.addEventListener(event, restart, { passive: true }));
+    return () => {
+      window.clearTimeout(timer);
+      events.forEach((event) => window.removeEventListener(event, restart));
+    };
+  }, [screen, previewOpen, reset]);
 
   const support = new URLSearchParams(window.location.search);
   if (support.get('support') === 'device' && /^[0-9a-f-]{36}$/i.test(support.get('kiosk') || ''))

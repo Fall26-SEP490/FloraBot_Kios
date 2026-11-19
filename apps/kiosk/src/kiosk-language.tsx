@@ -26,7 +26,7 @@ export function LanguagePicker() {
         aria-pressed={language === 'vi'}
         onClick={() => setLanguage('vi')}
       >
-        VI <span>Tiếng Việt</span>
+        <img src={`${import.meta.env.BASE_URL}images/flag-vietnam.png`} alt="" width={36} height={24} />
       </button>
       <button
         type="button"
@@ -34,7 +34,7 @@ export function LanguagePicker() {
         aria-pressed={language === 'en'}
         onClick={() => setLanguage('en')}
       >
-        EN <span>English</span>
+        <img src={`${import.meta.env.BASE_URL}images/flag-uk.png`} alt="" width={36} height={24} />
       </button>
     </div>
   );

@@ -1,21 +1,10 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import {
-  ArrowRight,
-  Button,
-  Flower2,
-  KeyRound,
-  MapPin,
-  PackageCheck,
-  ShieldCheck,
-} from '@florabot/ui';
+import { ArrowRight, Button, Flower2, PackageCheck } from '@florabot/ui';
 import { KioskBrand } from './KioskIdentity';
 import { MaintenanceAccess } from './MaintenanceAccess';
 import { LanguagePicker, useKioskLanguage } from './kiosk-language';
-import { DEMO_SHOP_NAME } from './preview-data';
 import type { Device } from './api';
-import type { components } from '../../../packages/contracts/src/generated/api';
 
 export const portalUrl = (path: string) =>
   new URL(path, import.meta.env.VITE_PORTAL_URL || 'https://florabot-fe.vercel.app').toString();
@@ -33,11 +22,13 @@ export function KioskHeader({
   onHome,
   title,
   homeDisabled = false,
+  homeLabel,
   children,
 }: {
   onHome?: () => void;
   title?: string;
   homeDisabled?: boolean;
+  homeLabel?: string;
   children?: ReactNode;
 }) {
   const { tr } = useKioskLanguage();
@@ -48,7 +39,7 @@ export function KioskHeader({
       <div className="kh-header-actions">
         {onHome && (
           <Button variant="outline" onClick={onHome} disabled={homeDisabled}>
-            {tr('Trang chủ', 'Home')}
+            {homeLabel ?? tr('Trang chủ', 'Home')}
           </Button>
         )}
         {children}
@@ -78,104 +69,28 @@ export default function KioskHome({
   useEffect(() => {
     if (notice) noticeRef.current?.focus();
   }, [notice]);
-  const [staffOpen, setStaffOpen] = useState(false);
-  const info = useQuery({
-    queryKey: ['kiosk-home', device.id],
-    enabled: !preview,
-    queryFn: async () => {
-      const response = await fetch(`/api/kiosk-support/${device.id}`, {
-        credentials: 'omit',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(10000),
-      });
-      if (!response.ok) throw new Error('Kiosk unavailable');
-      return response.json() as Promise<components['schemas']['KioskHomeInfo']>;
-    },
-    refetchInterval: 30000,
-  });
-  const shopName = preview ? DEMO_SHOP_NAME : info.data?.shopName;
   return (
     <div className="kh-shell">
-      <KioskHeader>
-        {!preview && <MaintenanceAccess key={device.id} device={device} />}
-        <button
-          className="kh-staff-toggle"
-          type="button"
-          aria-expanded={staffOpen}
-          aria-controls="kh-staff"
-          onClick={() => setStaffOpen((open) => !open)}
-        >
-          {tr('Tôi là nhân viên', 'I am staff')}
-        </button>
-      </KioskHeader>
+      <KioskHeader>{!preview && <MaintenanceAccess key={device.id} device={device} />}</KioskHeader>
       <main id="main" className="kh-main">
         {notice && (
           <p className="notice" role="status" ref={noticeRef} tabIndex={-1}>
             {notice}
           </p>
         )}
-        <div className="kh-context">
-          <span>
-            <MapPin size={17} aria-hidden="true" />
-            {preview
-              ? tr('Tủ hoa mẫu · Không điều khiển tủ thật', 'Demo kiosk · No real hardware')
-              : info.data?.name || tr('Tủ hoa FloraBot', 'FloraBot flower kiosk')}
-            {info.data?.code && ` · ${info.data.code}`}
-          </span>
-          {shopName && <span>{shopName}</span>}
-        </div>
-        <section id="kh-staff" className="kh-staff" hidden={!staffOpen}>
-          <ShieldCheck size={32} aria-hidden="true" />
-          <div>
-            <h2>{tr('Khu vực dành cho nhân viên', 'Staff workspace')}</h2>
-            <p>
-              {tr(
-                'Đăng nhập bằng tài khoản được cấp để xem công việc, nhập hoa và kiểm tra tủ.',
-                'Sign in with your assigned account to manage tasks, stock flowers and inspect the kiosk.',
-              )}
-            </p>
-            <a
-              className="button button-primary"
-              href={portalUrl('/workspace')}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <KeyRound size={18} aria-hidden="true" />
-              {tr('Đăng nhập nhân viên', 'Staff sign in')}
-            </a>
-          </div>
-        </section>
-        <section className="kh-welcome">
-          <div>
-            <p className="fb-eyebrow">
-              {tr('CHẠM NHẸ, TRAO THƯƠNG', 'A LITTLE TOUCH. A LOT OF LOVE.')}
-            </p>
-            <h1>
-              {tr('Hôm nay, bạn muốn', 'What brings you')}
+        <section className="kh-watercolor-welcome" aria-labelledby="kh-watercolor-title">
+          <div className="kh-watercolor-copy">
+            <h1 id="kh-watercolor-title">
+              {tr('Hôm nay,', 'Who would you')}
               <br />
-              <em>{tr('trao niềm vui nào?', 'a little joy today?')}</em>
+              {tr('bạn muốn trao', 'like to bring')}
+              <br />
+              <em>{tr('niềm vui nào?', 'joy to today?')}</em>
             </h1>
-            <p>
-              {tr(
-                'Chọn hoa tại tủ hoặc nhận món quà đã đặt. FloraBot luôn ở đây cùng bạn.',
-                'Pick a bouquet at the kiosk or collect your order. Your next little joy starts here.',
-              )}
-            </p>
-          </div>
-          <div className="kh-welcome-image">
-            <img
-              src={`${import.meta.env.BASE_URL}images/demo-pastel-bouquet.png`}
-              alt={tr(
-                'Bó hoa nhân tạo pastel minh họa',
-                'Illustration of a pastel artificial bouquet',
-              )}
-              width={500}
-              height={500}
-            />
-            <span>{tr('Một món quà, ngàn lời thương.', 'A little gift, a thousand words.')}</span>
+            <p>{tr('Một món quà, ngàn lời thương.', 'A little gift, a thousand words.')}</p>
           </div>
         </section>
-        {!staffOpen && (
+        {
           <section className="kh-actions" aria-label={tr('Chọn dịch vụ', 'Choose a service')}>
             <button
               className="kh-action kh-action-buy"
@@ -186,14 +101,7 @@ export default function KioskHome({
                 <Flower2 size={35} strokeWidth={1.3} aria-hidden="true" />
               </span>
               <span className="kh-action-copy">
-                <small>01 / {tr('CHỌN & NHẬN NGAY', 'PICK & TAKE HOME')}</small>
                 <strong>{tr('Mua hoa tại chỗ', 'Buy flowers here')}</strong>
-                <span>
-                  {tr(
-                    'Xem hoa trong từng ô · Thanh toán QR payOS',
-                    'Browse bouquets by locker · Pay with payOS QR',
-                  )}
-                </span>
               </span>
               <ArrowRight size={27} aria-hidden="true" />
             </button>
@@ -206,34 +114,20 @@ export default function KioskHome({
                 <PackageCheck size={35} strokeWidth={1.3} aria-hidden="true" />
               </span>
               <span className="kh-action-copy">
-                <small>02 / {tr('MÓN QUÀ ĐANG ĐỢI', 'YOUR GIFT IS WAITING')}</small>
                 <strong>{tr('Nhận đơn đặt trước', 'Collect a preorder')}</strong>
-                <span>
-                  {tr(
-                    'Nhập OTP email · Nhận hoa đặt trước',
-                    'Enter email code · Collect your preorder',
-                  )}
-                </span>
               </span>
               <ArrowRight size={27} aria-hidden="true" />
             </button>
           </section>
-        )}
+        }
         <section className="kh-help" aria-labelledby="kh-help-title">
           <div className="kh-help-intro">
-            <span className="fb-eyebrow">{tr('LUÔN SẴN SÀNG HỖ TRỢ', 'WE ARE HERE TO HELP')}</span>
             <h2 id="kh-help-title">{tr('Bạn cần giúp đỡ?', 'Need a hand?')}</h2>
-            {!staffOpen && onReplacement && (
+            {onReplacement && (
               <Button type="button" variant="outline" onClick={onReplacement}>
                 {tr('Nhận hoa thay', 'Collect a replacement')}
               </Button>
             )}
-            <p>
-              {tr(
-                'Quét QR bằng điện thoại để gửi yêu cầu riêng tư.',
-                'Scan a QR code on your phone for private support.',
-              )}
-            </p>
           </div>
           {(['admin', 'shop'] as const).map((audience) => (
             <article className="kh-help-card" key={audience}>
@@ -254,7 +148,6 @@ export default function KioskHome({
                         'Damaged or wrong flowers, order support.',
                       )}
                 </p>
-                <span>{tr('Dùng camera điện thoại để quét', 'Scan with your phone camera')}</span>
               </div>
               <QRCodeSVG
                 role="img"
@@ -275,16 +168,6 @@ export default function KioskHome({
             </article>
           ))}
         </section>
-        <footer className="kh-footer">
-          <span>
-            FloraBot · {tr('Một chút hoa, một chút thương', 'A little flower, a little love')}
-          </span>
-          {!staffOpen && (
-            <span>
-              {tr('Chọn dịch vụ trên màn hình để bắt đầu', 'Touch a service to get started')}
-            </span>
-          )}
-        </footer>
       </main>
     </div>
   );
