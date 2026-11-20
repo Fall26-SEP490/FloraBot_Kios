@@ -1281,10 +1281,31 @@ body {
   font-size: 13px;
 }
 .gift-advisor-trigger.button {
-  min-height: 44px;
-  padding: 8px 14px;
-  gap: 8px;
-  background: #eaf0e4;
+  min-height: 60px;
+  padding: 12px 20px;
+  gap: 12px;
+  background: #254e3d;
+  color: #fffefa;
+  border: 1px solid #254e3d;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 5px 14px #254e3d26;
+}
+.gift-advisor-trigger.button:hover {
+  background: #183e2b;
+  color: #fffefa;
+}
+.gift-advisor-trigger.button:focus-visible {
+  outline: 3px solid #254e3d;
+  outline-offset: 4px;
+}
+.gift-advisor-ai {
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: #f1cf89;
+  color: #183e2b;
+  font-size: 13px;
+  line-height: 1.4;
 }
 .shop-help {
   margin-top: 30px;
