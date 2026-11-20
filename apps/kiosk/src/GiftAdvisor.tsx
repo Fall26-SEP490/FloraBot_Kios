@@ -171,8 +171,9 @@ export default function GiftAdvisor({
         aria-controls="gift-advisor"
         onClick={() => dialog.current?.showModal()}
       >
-        <Bot size={22} aria-hidden="true" />
+        <Bot size={28} aria-hidden="true" />
         {tr('Gợi ý chọn hoa', 'Flower suggestions')}
+        <span className="gift-advisor-ai">AI</span>
       </Button>
       <dialog
         ref={dialog}

@@ -87,8 +87,10 @@ export default function KioskHome({
               <br />
               <em>{tr('niềm vui nào?', 'joy to today?')}</em>
             </h1>
-            <p>{tr('Một món quà, ngàn lời thương.', 'A little gift, a thousand words.')}</p>
           </div>
+          <p className="kh-watercolor-caption">
+            {tr('Một món quà, ngàn lời thương.', 'A little gift, a thousand words.')}
+          </p>
         </section>
         {
           <section className="kh-actions" aria-label={tr('Chọn dịch vụ', 'Choose a service')}>

@@ -752,16 +752,30 @@
 .kh-watercolor-copy h1 em {
   color: #526d51;
 }
-.kh-watercolor-copy p {
-  display: inline-block;
+.kh-watercolor-caption {
+  position: absolute;
+  right: 5%;
+  bottom: 11%;
+  max-width: 44%;
+  text-align: center;
+  transform: rotate(-4deg);
+  border-radius: 8px;
   color: #254e3d;
-  background: #f1cf89;
+  background: #fffef9ed;
   padding: 0.65em 0.85em;
+  font-family: 'Lora', Georgia, serif;
+  font-style: italic;
   font-size: clamp(12px, 1.6vw, 22px);
   line-height: 1.4;
   margin: 0;
 }
 @media (max-width: 600px) {
+  .kh-watercolor-caption {
+    right: 4%;
+    bottom: 7%;
+    max-width: 42%;
+    font-size: 12px;
+  }
   .kh-watercolor-welcome {
     aspect-ratio: auto;
     min-height: 290px;
