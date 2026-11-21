@@ -14,7 +14,7 @@ import { z } from 'zod';
 import i18n from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
-import { Button, Flower2, ShieldCheck, ShoppingCart, X } from '@florabot/ui';
+import { Button, Flower2, ShieldCheck, X } from '@florabot/ui';
 import type { components } from '../../../packages/contracts/src/generated/api';
 import {
   ApiError,
@@ -588,12 +588,12 @@ function Shopping({
               aria-haspopup="dialog"
               aria-controls="walkin-basket"
               aria-label={tr(
-                `Mở giỏ hoa, ${selected.length} bó`,
-                `Open basket, ${selected.length} bouquets`,
+                `Thanh toán, ${selected.length} bó`,
+                `Checkout, ${selected.length} bouquets`,
               )}
               onClick={() => basketDialog.current?.showModal()}
             >
-              <ShoppingCart size={34} strokeWidth={2} aria-hidden="true" />
+              {tr('Thanh toán', 'Checkout')}
               <span aria-hidden="true">{selected.length}</span>
             </button>
             <div className="fb-shop-grid">

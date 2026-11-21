@@ -161,11 +161,12 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
     ['FAILED', 'EXPIRED', 'REVOKED'].includes(status?.commandStatus ?? '');
   return (
     <div className="kh-shell">
-      <KioskHeader
-        onHome={onHome}
-        homeLabel={tr('Kết thúc lượt mua', 'End visit')}
-        homeDisabled={stage === 'sending'}
-      />
+      <KioskHeader />
+      <div className="pickup-visit-actions">
+        <button type="button" onClick={onHome} disabled={stage === 'sending'}>
+          {tr('Kết thúc lượt mua', 'End visit')}
+        </button>
+      </div>
       <main id="main" className={stage === 'entry' ? 'pickup-entry-layout' : 'ko-main'}>
         {status?.orderStatus === 'COMPLETED' && <HomeCountdown seconds={3} onHome={onHome} />}
         <div className={stage === 'entry' ? 'pickup-ticket' : 'ko-heading'}>
@@ -175,12 +176,6 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
           <h1 ref={heading} tabIndex={-1}>
             {tr('Nhận đơn đặt trước', 'Collect your preorder')}
           </h1>
-          <p>
-            {tr(
-              'Đến đúng kiosk khi hoa đã sẵn sàng. Bạn có thể nhận trước giờ hẹn bằng mã trong email của shop, trước khi mã hết hạn.',
-              'At your chosen kiosk, collect as soon as your flowers are ready, even before your appointment. Use the code in your shop email before it expires.',
-            )}
-          </p>
         </div>
         {!online && (
           <p className="notice" role="alert">
@@ -282,14 +277,7 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
         {(stage === 'review' || stage === 'sending') && (
           <section className="ko-confirm">
             <ShieldCheck size={45} aria-hidden="true" />
-            <p className="pickup-step">{tr('02 / 02 · MỞ Ô NHẬN HOA', '02 / 02 · OPEN LOCKER')}</p>
             <h2>{tr('Sẵn sàng nhận hoa?', 'Ready to collect?')}</h2>
-            <p>
-              {tr(
-                'Đứng trước đúng kiosk đã chọn, kiểm tra cửa đã đóng. Xác nhận sẽ kiểm tra mã và yêu cầu mở ô của đơn tương ứng.',
-                'Stand at your selected kiosk and check that its doors are closed. Confirmation verifies the code and requests the matching locker to open.',
-              )}
-            </p>
             <Button disabled={!online || stage === 'sending'} onClick={() => void openLocker()}>
               {stage === 'sending'
                 ? tr('Đang gửi lệnh…', 'Sending request…')

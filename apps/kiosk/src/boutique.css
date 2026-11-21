@@ -1274,6 +1274,9 @@ body {
 }
 .shop-catalog-tools {
   display: flex;
+  flex: 1 1 auto;
+  margin-left: auto;
+  justify-content: flex-end;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
@@ -1281,6 +1284,7 @@ body {
   font-size: 13px;
 }
 .gift-advisor-trigger.button {
+  margin-left: auto;
   min-height: 60px;
   padding: 12px 20px;
   gap: 12px;
@@ -1395,14 +1399,15 @@ body:has(.gift-advisor[open]) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 76px;
-  height: 76px;
-  padding: 0;
+  min-width: 156px;
+  min-height: 64px;
+  padding: 16px 28px;
   border: 1px solid #ffffff80;
-  border-radius: 50%;
+  border-radius: 18px;
   color: white;
   background: #244f40;
-  font: 600 16px var(--font-body);
+  white-space: nowrap;
+  font: 700 20px var(--font-body);
   box-shadow: 0 6px 22px #173d3450;
   cursor: pointer;
 }

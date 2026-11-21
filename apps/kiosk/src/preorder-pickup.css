@@ -177,3 +177,34 @@
     border-radius: 14px;
   }
 }
+
+.pickup-visit-actions {
+  width: min(1040px, 100%);
+  margin: 0 auto;
+  padding: 8px clamp(16px, 3vw, 40px) 0;
+  display: flex;
+  justify-content: flex-end;
+  box-sizing: border-box;
+}
+.pickup-visit-actions button {
+  min-height: 68px;
+  padding: 16px 32px;
+  border: 1px solid #dfe4da;
+  border-radius: 20px;
+  background: #fffefa;
+  color: #07545b;
+  font: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pickup-visit-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.pickup-visit-actions button:focus-visible {
+  outline: 2px solid #009688;
+  outline-offset: 2px;
+}
