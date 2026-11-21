@@ -634,6 +634,7 @@ function Shopping({
                         </span>
                       )}
                       <GiftAdvisor
+                        catalog={catalog.data}
                         onUseMessage={setEcard}
                         key={customer ? 'customer' : 'guest'}
                         request={shoppingRequest}

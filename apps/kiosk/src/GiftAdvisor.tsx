@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { Bot, Button, X } from '@florabot/ui';
 import type { components } from '../../../packages/contracts/src/generated/api';
 import { ApiError } from './api';
+import { giftTagGroups, matchesGiftTags } from './gift-tags';
 
 const choices = {
   recipient: [
@@ -46,6 +47,9 @@ const choices = {
   ],
 } as const;
 const schema = z.object({
+  flower: z.string(),
+  color: z.string(),
+  material: z.string(),
   recipient: z.enum([
     'MOTHER',
     'FATHER',
@@ -80,6 +84,7 @@ type Values = z.infer<typeof schema>;
 type Suggestion = Omit<components['schemas']['GiftSuggestionResponse'], 'productId'>;
 type DemoBouquet = { id: string; name: string; price: number; description: string };
 type Props = {
+  catalog?: Array<{ bouquetId: string; name: string; price: number | string; tags?: string[] }>;
   online: boolean;
   disabled: boolean;
   available: Set<string>;
@@ -111,6 +116,7 @@ export default function GiftAdvisor({
   onSelect,
   onUseMessage,
   demoBouquets,
+  catalog,
 }: Props) {
   const { tr } = useKioskLanguage();
   const [session] = useState(() => crypto.randomUUID());
@@ -118,10 +124,13 @@ export default function GiftAdvisor({
   const [demoSuggestions, setDemoSuggestions] = useState<Suggestion[]>();
   const [notice, setNotice] = useState('');
   const dialog = useRef<HTMLDialogElement>(null);
-  const heading = useRef<HTMLHeadingElement>(null);
+  const heading = useRef<HTMLElement>(null);
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: {
+      flower: '',
+      color: '',
+      material: '',
       recipient: 'MOTHER',
       age: '41_60',
       occasion: 'BIRTHDAY',
@@ -208,9 +217,33 @@ export default function GiftAdvisor({
         <form
           noValidate
           onSubmit={form.handleSubmit((values) => {
+            setDemoSuggestions(undefined);
             setSurveyId(undefined);
             setNotice('');
-            if (demoBouquets) {
+            if (!demoBouquets && (values.flower || values.color || values.material)) {
+              setDemoSuggestions(
+                (catalog ?? [])
+                  .filter(
+                    (item) =>
+                      available.has(item.bouquetId) &&
+                      Number(item.price) <= values.budget &&
+                      matchesGiftTags(item.tags, {
+                        flower: values.flower,
+                        color: values.color,
+                        material: values.material,
+                      }),
+                  )
+                  .slice(0, 3)
+                  .map((item) => ({
+                    bouquetId: item.bouquetId,
+                    name: item.name,
+                    price: item.price,
+                    reason:
+                      'Khớp các tag loại hoa, màu sắc và chất liệu bạn chọn, trong ngân sách.',
+                    cardMessage: null,
+                  })),
+              );
+            } else if (demoBouquets) {
               setDemoSuggestions(
                 demoBouquets
                   .filter((bouquet) => bouquet.price <= values.budget)
@@ -230,6 +263,23 @@ export default function GiftAdvisor({
           <fieldset disabled={locked}>
             <legend className="sr-only">Sở thích và ngân sách tặng hoa</legend>
             <div className="advisor-fields">
+              {!demoBouquets &&
+                Object.entries(giftTagGroups).map(([group, { label, options }]) => (
+                  <div key={group}>
+                    <label htmlFor={`gift-${group}`}>{label}</label>
+                    <select
+                      id={`gift-${group}`}
+                      {...form.register(group as 'flower' | 'color' | 'material')}
+                    >
+                      <option value="">Không yêu cầu</option>
+                      {Object.entries(options).map(([code, text]) => (
+                        <option key={code} value={code}>
+                          {text}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
               {!demoBouquets &&
                 (Object.keys(choices) as Array<keyof typeof choices>).map((field) => (
                   <div key={field}>
@@ -287,18 +337,7 @@ export default function GiftAdvisor({
           </div>
         )}
         {suggestions && (
-          <section aria-labelledby="gift-result-title">
-            <h2 id="gift-result-title" ref={heading} tabIndex={-1}>
-              Một chút cảm hứng cho món quà
-            </h2>
-            <p className="quiet">
-              {demoBouquets
-                ? tr('Hoa mẫu phù hợp với ngân sách bạn chọn.', 'Demo flowers within your budget.')
-                : survey.data?.source === 'FALLBACK'
-                  ? 'Gợi ý dựa trên dịp tặng và ngân sách bạn chọn.'
-                  : 'Gợi ý có hỗ trợ AI, đã được kiểm tra theo hoa trong tủ.'}
-              {!demoBouquets && ' Hoa chỉ được giữ khi bạn chuyển sang thanh toán.'}
-            </p>
+          <section aria-label="Kết quả gợi ý hoa" ref={heading} tabIndex={-1}>
             {suggestions.length === 0 && (
               <p>
                 Chưa có bó hoa phù hợp lúc này. Bạn thử đổi ngân sách hoặc xem hoa đang có trong tủ
@@ -345,7 +384,7 @@ export default function GiftAdvisor({
                         setNotice(`Đã thêm ${item.name} vào giỏ hoa.`);
                       }}
                     >
-                      {selected.includes(item.bouquetId) ? 'Đã chọn bó này' : `Chọn ${item.name}`}
+                      {selected.includes(item.bouquetId) ? 'Đã chọn bó này' : 'Chọn hoa'}
                     </Button>
                     {!available.has(item.bouquetId) && (
                       <p className="quiet">Bó này hiện không còn sẵn sàng.</p>
