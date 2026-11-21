@@ -77,7 +77,7 @@ test('Network ambiguity never auto-resends; explicit retry uses the same attempt
   await expect.poll(() => attempts.length).toBe(2);
   expect(attempts[0]).toBe(attempts[1]);
 });
-test('Preorder retry uses a kiosk member session, separate from the pickup watch token', async ({
+test('Preorder pickup offers shop support without SMS login or an unauthenticated unlock retry', async ({
   page,
 }) => {
   await page.route('**/preorders/pickup-otp/open', (route) =>
@@ -86,33 +86,27 @@ test('Preorder retry uses a kiosk member session, separate from the pickup watch
   await page.route('**/preorders/pickup-otp/attempts/*', (route) =>
     route.fulfill({ json: { ...result, commandStatus: 'ACKED' } }),
   );
-  await page.route('**/otp/request', (route) => route.fulfill({ status: 204 }));
-  await page.route('**/otp/verify', (route) =>
-    route.fulfill({ json: { accessToken: 'member-session', expiresInSeconds: 600 } }),
-  );
+  let smsRequests = 0;
   let retries = 0;
-  await page.route(
-    `**/pickup/orders/${result.orderId}/commands/${result.commandId}/retry-unlock`,
-    (route) => {
-      retries++;
-      const headers = route.request().headers();
-      expect(headers.authorization).toBe('Bearer member-session');
-      expect(headers['x-pickup-token']).toBeUndefined();
-      expect(route.request().postDataJSON().trackingToken).toBeUndefined();
-      return route.fulfill({ json: { state: 'PENDING' } });
-    },
-  );
+  await page.route('**/otp/request', (route) => {
+    smsRequests++;
+    return route.fulfill({ status: 503 });
+  });
+  await page.route('**/otp/verify', (route) => {
+    smsRequests++;
+    return route.fulfill({ status: 503 });
+  });
+  await page.route('**/retry-unlock', (route) => {
+    retries++;
+    return route.fulfill({ status: 403 });
+  });
   await enterPickup(page);
   await page.getByRole('button', { name: 'Xác nhận mở ô nhận hoa' }).click();
-  await page.getByRole('button', { name: /Đăng nhập để thử mở lại/ }).click();
-  await page.getByLabel('Số điện thoại').fill('0901234567');
-  await page.getByRole('button', { name: 'Gửi mã xác thực' }).click();
-  await page.getByLabel('Mã xác thực', { exact: true }).fill('123456');
-  await page.getByRole('button', { name: 'Xác nhận đăng nhập' }).click();
+  await expect(page.getByText('Nếu cửa vẫn đóng, liên hệ shop để được hỗ trợ.')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Đăng nhập để thử mở lại/ })).toHaveCount(0);
+  await expect(page.getByLabel('Số điện thoại', { exact: true })).toHaveCount(0);
+  expect(smsRequests).toBe(0);
   expect(retries).toBe(0);
-  await page.getByRole('button', { name: /Cửa vẫn đóng/ }).click();
-  await expect(page.getByText(/Đã tiếp nhận yêu cầu thử mở lại/)).toBeVisible();
-  expect(retries).toBe(1);
 });
 test('Invalid code and offline kiosk never claim collection or fall back to receipt', async ({
   page,

@@ -5,8 +5,6 @@ import type { components } from '../../../packages/contracts/src/generated/picku
 import './preorder-pickup.css';
 import { KioskHeader } from './KioskHome';
 import { useKioskLanguage } from './kiosk-language';
-import CustomerLogin from './CustomerLogin';
-import PickupUnlockRetry from './PickupUnlockRetry';
 import HomeCountdown from './HomeCountdown';
 
 type Opened = components['schemas']['PreorderPickupOtpOpened'];
@@ -21,8 +19,6 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
   const [opened, setOpened] = useState<Opened>();
   const [status, setStatus] = useState<Status>();
   const [online, setOnline] = useState(navigator.onLine);
-  const [retryAccessToken, setRetryAccessToken] = useState<string>();
-  const [showRetryLogin, setShowRetryLogin] = useState(false);
   const attempt = useRef<string | undefined>(undefined);
   const epoch = useRef(0);
   const sending = useRef(false);
@@ -322,36 +318,14 @@ export default function PreorderPickup({ device, onHome }: { device: Device; onH
                     'Collect your flowers and close the door. Completion is confirmed only from the actual device status.',
                   )}
             </p>
-            {status?.orderStatus === 'DISPENSING' &&
-              status.commandStatus === 'ACKED' &&
-              (retryAccessToken ? (
-                <PickupUnlockRetry
-                  device={device}
-                  online={online}
-                  orderId={opened.orderId}
-                  commandId={opened.commandId}
-                  accessToken={retryAccessToken}
-                />
-              ) : showRetryLogin ? (
-                <CustomerLogin
-                  device={device}
-                  online={online}
-                  pickupRetry
-                  onReady={(session) => setRetryAccessToken(session.accessToken)}
-                />
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={!online}
-                  onClick={() => setShowRetryLogin(true)}
-                >
-                  {tr(
-                    'Cửa vẫn đóng? Đăng nhập để thử mở lại',
-                    'Door still closed? Sign in to retry',
-                  )}
-                </Button>
-              ))}
+            {status?.orderStatus === 'DISPENSING' && status.commandStatus === 'ACKED' && (
+              <p>
+                {tr(
+                  'Nếu cửa vẫn đóng, liên hệ shop để được hỗ trợ.',
+                  'If the door stays closed, contact the shop for help.',
+                )}
+              </p>
+            )}
           </section>
         )}
         {stage === 'uncertain' && (

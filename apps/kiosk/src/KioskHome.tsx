@@ -2,7 +2,6 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { ArrowRight, Button, Flower2, PackageCheck } from '@florabot/ui';
 import { KioskBrand } from './KioskIdentity';
-import { MaintenanceAccess } from './MaintenanceAccess';
 import { LanguagePicker, useKioskLanguage } from './kiosk-language';
 import type { Device } from './api';
 
@@ -54,7 +53,6 @@ export default function KioskHome({
   onBuy,
   onPickup,
   onReplacement,
-  preview = false,
   notice = '',
 }: {
   device: Device;
@@ -71,7 +69,7 @@ export default function KioskHome({
   }, [notice]);
   return (
     <div className="kh-shell">
-      <KioskHeader>{!preview && <MaintenanceAccess key={device.id} device={device} />}</KioskHeader>
+      <KioskHeader />
       <main id="main" className="kh-main">
         {notice && (
           <p className="notice" role="status" ref={noticeRef} tabIndex={-1}>
