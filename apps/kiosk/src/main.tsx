@@ -1000,12 +1000,6 @@ function Shopping({
                     </div>
                   )}
                 <h2>{tr('Biên nhận của bạn', 'Your receipt')}</h2>
-                <p className="quiet">
-                  {tr(
-                    'Giữ mã đơn và mã biên nhận để tra cứu hoặc báo sự cố. Hãy lưu biên nhận trước khi rời tủ.',
-                    'Keep your order and receipt codes for support. Save your receipt before leaving the kiosk.',
-                  )}
-                </p>
                 <ul className="receipts">
                   {current.orders.map((order) => (
                     <li key={order.id}>
@@ -1027,11 +1021,15 @@ function Shopping({
                               } as Record<string, string>
                             )[order.status] || 'Updating status'}
                       </p>
-                      <p>
-                        {tr('Mã biên nhận:', 'Receipt code:')}{' '}
-                        <strong>{order.trackingToken}</strong>
-                      </p>
-                      <p>{money(order.amount)}</p>
+                      <div className="receipt-identifiers">
+                        <p>
+                          {tr('ID biên nhận:', 'Receipt ID:')} <strong>{order.id}</strong>
+                        </p>
+                        <p>
+                          {tr('Mã biên nhận:', 'Receipt code:')}{' '}
+                          <strong>{order.trackingToken}</strong>
+                        </p>
+                      </div>
                       {Number(order.pointsRedeemed) > 0 && (
                         <p>
                           Đã dùng {Number(order.pointsRedeemed).toLocaleString('vi-VN')} điểm · Giảm{' '}
@@ -1061,7 +1059,6 @@ function Shopping({
                           nhận và chọn lưu vào lịch sử để xem lại mà không cần tài khoản.
                         </p>
                       )}
-                      <p className="receipt-id">ID biên nhận: {order.id}</p>
                       {current.paymentStatus === 'SUCCEEDED' &&
                         ['PAID', 'DISPENSING'].includes(order.status) && (
                           <PickupRecovery
@@ -1072,13 +1069,6 @@ function Shopping({
                             onExit={onReset}
                           />
                         )}
-                      <a
-                        href={receiptUrl(order.id, order.trackingToken)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {tr('Xem biên nhận (tab mới)', 'View receipt (new tab)')}
-                      </a>
                     </li>
                   ))}
                 </ul>

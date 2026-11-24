@@ -100,13 +100,10 @@ for (const width of [390, 1024])
       0,
     );
     await expect(page.getByText('ABCD2345')).toBeVisible();
-    const receiptLink = new URL(
-      (await page.getByRole('link', { name: 'Xem biên nhận (tab mới)' }).getAttribute('href'))!,
-    );
-    expect(receiptLink.pathname).toBe('/receipt');
-    expect(receiptLink.search).toBe('');
-    expect(new URLSearchParams(receiptLink.hash.slice(1)).get('order')).toBe(orderId);
-    expect(new URLSearchParams(receiptLink.hash.slice(1)).get('token')).toBe('ABCD2345');
+    const identifiers = page.locator('.receipt-identifiers');
+    await expect(identifiers).toContainText(orderId);
+    await expect(identifiers).toContainText('ABCD2345');
+    await expect(page.getByRole('img', { name: 'QR lưu biên nhận' })).toBeVisible();
     expect(
       (
         await new AxeBuilder({ page })

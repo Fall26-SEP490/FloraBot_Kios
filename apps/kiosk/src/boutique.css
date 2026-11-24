@@ -1484,3 +1484,16 @@ body:has(#walkin-basket[open]) {
 .receipt-save p {
   margin: 0;
 }
+
+.receipt-identifiers {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  margin-block: 12px;
+}
+
+.receipt-identifiers p {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
