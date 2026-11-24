@@ -112,7 +112,7 @@ function receiptUrl(id: string, token: string) {
 const stateNames: Record<string, string> = {
   AWAITING_PAYMENT: 'Chờ thanh toán',
   PAID: 'Đã nhận tiền, chờ mở tủ',
-  DISPENSING: 'Tủ đang mở, mời bạn nhận hoa',
+  DISPENSING: 'Đang chờ cửa mở. Lấy hoa khi cửa mở.',
   COMPLETED: 'Đã nhận hoa',
   CANCELLED: 'Đã hủy',
   EXPIRED: 'Hết thời gian giữ hoa',
@@ -1011,7 +1011,7 @@ function Shopping({
                               {
                                 AWAITING_PAYMENT: 'Awaiting payment',
                                 PAID: 'Payment received · Waiting for locker',
-                                DISPENSING: 'Locker opening · Please collect your flowers',
+                                DISPENSING: 'Waiting for the locker door to open',
                                 COMPLETED: 'Flowers collected',
                                 DISPENSE_FAILED: 'Locker issue · Please keep your receipt',
                                 REFUNDED: 'Refunded',
@@ -1066,6 +1066,7 @@ function Shopping({
                             online={online}
                             accessToken={customer?.accessToken}
                             receipt={{ id: order.id, trackingToken: order.trackingToken }}
+                            onReceiptAttempt={() => void checkout.refetch()}
                             onExit={onReset}
                           />
                         )}

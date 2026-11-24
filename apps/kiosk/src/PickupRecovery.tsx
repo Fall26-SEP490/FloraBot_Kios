@@ -10,6 +10,7 @@ export default function PickupRecovery({
   online,
   accessToken,
   receipt,
+  onReceiptAttempt,
   onBack,
   onExit,
 }: {
@@ -17,6 +18,7 @@ export default function PickupRecovery({
   online: boolean;
   accessToken?: string;
   receipt?: { id: string; trackingToken: string };
+  onReceiptAttempt?: () => void;
   onBack?: () => void;
   onExit: () => void;
 }) {
@@ -123,7 +125,11 @@ export default function PickupRecovery({
       if (attempt !== epoch.current) return;
       if (cause instanceof ApiError && [400, 401, 403, 404, 409, 422, 429].includes(cause.status)) {
         setStage(receipt ? 'review' : 'entry');
-        setError(cause.message);
+        setError(
+          cause.message.includes('(DISPENSE_FAILED)')
+            ? 'Tủ chưa mở được ô. Hãy lưu biên nhận và liên hệ shop để được hỗ trợ.'
+            : cause.message,
+        );
         requestAnimationFrame(() => document.getElementById('pickup-order')?.focus());
       } else {
         setOrder('');
@@ -132,6 +138,7 @@ export default function PickupRecovery({
       }
     } finally {
       sending.current = false;
+      if (attempt === epoch.current) onReceiptAttempt?.();
     }
   }
   return (
@@ -245,8 +252,7 @@ export default function PickupRecovery({
       {stage === 'accepted' && (
         <>
           <p ref={outcome} tabIndex={-1} role="status">
-            Đã tiếp nhận yêu cầu mở ô. Hãy quan sát tủ và nhận hoa khi cửa mở. Nếu cửa vẫn không mở,
-            giữ biên nhận để báo sự cố; trạng thái này chưa xác nhận bạn đã nhận hoa.
+            Đã tiếp nhận yêu cầu mở ô. Hãy quan sát tủ và nhận hoa khi cửa mở.
           </p>
           {retryCommand && !receipt && (
             <PickupUnlockRetry
