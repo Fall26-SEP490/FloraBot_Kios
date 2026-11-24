@@ -123,7 +123,9 @@ for (const width of [390, 1024])
     });
     if (width === 390) {
       const commandId = '60000000-0000-0000-0000-000000000001';
+      let attempts = 0;
       await page.route('**/flows/request_pickup', (route) => {
+        attempts++;
         expect(route.request().postDataJSON()).toEqual({
           p_order: orderId,
           p_tracking: 'ABCD2345',
@@ -136,9 +138,14 @@ for (const width of [390, 1024])
       await page.clock.runFor(11000);
       await expect(page.getByText('ABCD2345')).toBeVisible();
       await reopen.click();
-      await page.getByRole('button', { name: 'Yêu cầu mở ô nhận hoa' }).click();
       await expect(page.getByText(/^Đã tiếp nhận yêu cầu mở ô/)).toBeVisible();
-      await page.getByRole('button', { name: 'Trở lại biên nhận' }).click();
+      expect(attempts).toBe(1);
+      await expect(page.getByText('Quét QR để lưu biên nhận')).toBeVisible();
+      await expect(reopen).toHaveCount(0);
+      await page.clock.runFor(25000);
+      await reopen.click();
+      await expect(page.getByText(/^Đã tiếp nhận yêu cầu mở ô/)).toBeVisible();
+      expect(attempts).toBe(2);
     }
     orderStatus = 'COMPLETED';
     await expect(page.getByText('Đã nhận hoa', { exact: true })).toBeVisible({ timeout: 7000 });

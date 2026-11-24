@@ -155,10 +155,7 @@ body {
 }
 .fb-hero h1 {
   margin: 0 0 18px;
-  font:
-    400 clamp(38px, 4vw, 54px)/1.15 'Lora',
-    Georgia,
-    serif;
+  font: 400 clamp(38px, 4vw, 54px)/1.15 'Lora', Georgia, serif;
   letter-spacing: -2px;
   color: var(--color-ink);
 }
@@ -319,10 +316,7 @@ body {
 }
 .fb-section-heading h2 {
   margin: 0;
-  font:
-    400 30px/1.2 'Lora',
-    Georgia,
-    serif;
+  font: 400 30px/1.2 'Lora', Georgia, serif;
   letter-spacing: -0.8px;
 }
 .fb-section-heading > span {
@@ -577,10 +571,7 @@ body {
 }
 .fb-checkout h1,
 .fb-task-main h1 {
-  font:
-    400 clamp(30px, 4vw, 44px)/1.2 'Lora',
-    Georgia,
-    serif;
+  font: 400 clamp(30px, 4vw, 44px)/1.2 'Lora', Georgia, serif;
   letter-spacing: -1px;
 }
 .fb-checkout h2 {
@@ -666,10 +657,7 @@ body {
     serif;
 }
 .fb-setup .setup-hero-title {
-  font:
-    400 clamp(32px, 3.2vw, 46px)/1.2 'Lora',
-    Georgia,
-    serif;
+  font: 400 clamp(32px, 3.2vw, 46px)/1.2 'Lora', Georgia, serif;
   letter-spacing: -1px;
   margin: 0 0 13px;
 }
@@ -698,10 +686,7 @@ body {
   margin-bottom: 24px;
 }
 .fb-setup .setup-form-col h1 {
-  font:
-    400 32px/1.2 'Lora',
-    Georgia,
-    serif;
+  font: 400 32px/1.2 'Lora', Georgia, serif;
   letter-spacing: -1px;
   margin: 0 0 10px;
 }
@@ -825,10 +810,7 @@ body {
   margin-bottom: 10px;
 }
 .preview-simulator .preview-compact-title {
-  font:
-    400 29px/1.2 'Lora',
-    Georgia,
-    serif;
+  font: 400 29px/1.2 'Lora', Georgia, serif;
   margin: 4px 0;
   letter-spacing: -0.6px;
 }
@@ -950,10 +932,7 @@ body {
   box-shadow: none;
 }
 .preview-simulator .task-screen-header h1 {
-  font:
-    400 36px/1.2 'Lora',
-    Georgia,
-    serif;
+  font: 400 36px/1.2 'Lora', Georgia, serif;
   letter-spacing: -0.8px;
 }
 
@@ -1378,10 +1357,7 @@ body:has(.gift-advisor[open]) {
   gap: 10px;
 }
 .preview-simulator .virtual-cabinet h2 {
-  font:
-    400 23px/1.3 'Lora',
-    Georgia,
-    serif;
+  font: 400 23px/1.3 'Lora', Georgia, serif;
 }
 .preview-simulator .virtual-cabinet__eyebrow {
   font-size: 9px;
@@ -1477,10 +1453,7 @@ body:has(#walkin-basket[open]) {
   margin: 0 0 6px;
 }
 .fb-cart-heading h2 {
-  font:
-    400 30px 'Lora',
-    Georgia,
-    serif;
+  font: 400 30px 'Lora', Georgia, serif;
   margin: 0;
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -1495,4 +1468,19 @@ body:has(#walkin-basket[open]) {
   to {
     transform: translateX(0);
   }
+}
+
+.receipt-save {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #e2c681;
+  border-radius: 16px;
+  background: #fff6dc;
+  color: #244f40;
+  text-align: center;
+}
+.receipt-save p {
+  margin: 0;
 }
