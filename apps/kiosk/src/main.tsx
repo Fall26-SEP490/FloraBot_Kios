@@ -288,7 +288,6 @@ function Shopping({
   const [customer] = useState<CustomerSession & { expiresAt: number }>();
   const [accountOpen, setAccountOpen] = useState(false);
   const [pickupOpen, setPickupOpen] = useState(false);
-  const [pickupReceipt, setPickupReceipt] = useState<{ id: string; trackingToken: string }>();
   const [points, setPoints] = useState<number | null>(0);
   const [ecard, setEcard] = useState('');
   useEffect(() => {
@@ -430,6 +429,9 @@ function Shopping({
     onError: () => void checkout.refetch(),
   });
   const current = checkout.data;
+  const awaitingPickup =
+    current?.paymentStatus === 'SUCCEEDED' &&
+    current.orders.some((order) => ['PAID', 'DISPENSING'].includes(order.status));
   const cancel = useMutation({
     networkMode: 'always',
     mutationFn: (id: string) => shoppingRequest<void>(`/checkouts/${id}/cancel`, {}),
@@ -446,7 +448,7 @@ function Shopping({
     cancel.mutate(checkoutId);
   }
   useEffect(() => {
-    idleEnd.current = endVisit;
+    idleEnd.current = awaitingPickup ? () => {} : endVisit;
   });
   const remaining = current
     ? Math.max(0, Math.ceil((new Date(current.payBefore).getTime() - now) / 1000))
@@ -515,9 +517,7 @@ function Shopping({
             online={online}
             accessToken={customer?.accessToken}
             onExit={onReset}
-            receipt={pickupReceipt}
             onBack={() => {
-              setPickupReceipt(undefined);
               setPickupOpen(false);
               requestAnimationFrame(() => document.getElementById('pickup-open')?.focus());
             }}
@@ -569,7 +569,7 @@ function Shopping({
             {t('offline')}
           </p>
         )}
-        {idleSoon && (
+        {idleSoon && !awaitingPickup && (
           <p role="alert" className="notice">
             Lượt mua sẽ kết thúc trong một phút nếu bạn không thao tác. Chạm hoặc nhấn phím bất kỳ
             để tiếp tục.
@@ -874,7 +874,7 @@ function Shopping({
             {current?.paymentStatus === 'SUCCEEDED' &&
               current.orders.length > 0 &&
               current.orders.every((order) => order.status === 'COMPLETED') && (
-                <HomeCountdown seconds={10} onHome={onReset} />
+                <HomeCountdown seconds={20} onHome={onReset} />
               )}
             <h1 id="checkout-title">
               {tr('Một chút nữa là hoa đến tay bạn.', 'Your flowers are almost yours.')}
@@ -1038,18 +1038,23 @@ function Shopping({
                           {money(order.discountAmount)}
                         </p>
                       )}
-                      <QRCodeSVG
-                        value={receiptUrl(order.id, order.trackingToken)}
-                        size={180}
-                        marginSize={4}
-                        title={`QR tra cứu đơn ${order.orderCode}`}
-                      />
-                      <p>
-                        {tr(
-                          'Quét QR để giữ biên nhận trên điện thoại.',
-                          'Scan to save your receipt on your phone.',
-                        )}
-                      </p>
+                      <div className="receipt-save">
+                        <strong>
+                          {tr('Quét QR để lưu biên nhận', 'Scan to save your receipt')}
+                        </strong>
+                        <QRCodeSVG
+                          value={receiptUrl(order.id, order.trackingToken)}
+                          size={180}
+                          marginSize={4}
+                          title={tr('QR lưu biên nhận', 'Receipt QR code')}
+                        />
+                        <p>
+                          {tr(
+                            'Nếu tủ đã về trang chủ, mở biên nhận đã lưu. Chọn Nhận lại hoa tại tủ rồi nhập ID biên nhận và mã biên nhận.',
+                            'If the kiosk returns home, open your saved receipt. Select Collect flowers again and enter the receipt ID and receipt code.',
+                          )}
+                        </p>
+                      </div>
                       {!customer && order.status === 'COMPLETED' && (
                         <p>
                           Đã lưu giao dịch mua thành công. Quét QR bằng điện thoại riêng, mở biên
@@ -1059,23 +1064,13 @@ function Shopping({
                       <p className="receipt-id">ID biên nhận: {order.id}</p>
                       {current.paymentStatus === 'SUCCEEDED' &&
                         ['PAID', 'DISPENSING'].includes(order.status) && (
-                          <div className="pickup-actions">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              disabled={!online}
-                              onClick={() => {
-                                setPickupReceipt({
-                                  id: order.id,
-                                  trackingToken: order.trackingToken,
-                                });
-                                setPickupOpen(true);
-                                window.scrollTo(0, 0);
-                              }}
-                            >
-                              {tr('Cửa vẫn đóng? Thử mở lại', 'Door still closed? Retry opening')}
-                            </Button>
-                          </div>
+                          <PickupRecovery
+                            device={device}
+                            online={online}
+                            accessToken={customer?.accessToken}
+                            receipt={{ id: order.id, trackingToken: order.trackingToken }}
+                            onExit={onReset}
+                          />
                         )}
                       <a
                         href={receiptUrl(order.id, order.trackingToken)}

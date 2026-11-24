@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Button } from '@florabot/ui';
 import type { components } from '../../../packages/contracts/src/generated/api';
 import { ApiError, request, type Device } from './api';
@@ -17,7 +17,7 @@ export default function PickupRecovery({
   online: boolean;
   accessToken?: string;
   receipt?: { id: string; trackingToken: string };
-  onBack: () => void;
+  onBack?: () => void;
   onExit: () => void;
 }) {
   const [order, setOrder] = useState(receipt?.id ?? '');
@@ -31,8 +31,11 @@ export default function PickupRecovery({
     receipt ? 'review' : 'entry',
   );
   const [error, setError] = useState('');
+  const [canRequestAgain, setCanRequestAgain] = useState(false);
   const [invalid, setInvalid] = useState<'order' | 'tracking'>();
   const epoch = useRef(0);
+  const sending = useRef(false);
+  const titleId = useId();
   const title = useRef<HTMLHeadingElement>(null);
   const review = useRef<HTMLHeadingElement>(null);
   const outcome = useRef<HTMLParagraphElement>(null);
@@ -57,6 +60,12 @@ export default function PickupRecovery({
     if (stage === 'review') review.current?.focus();
     if (stage === 'accepted' || stage === 'uncertain') outcome.current?.focus();
   }, [stage]);
+  const receiptId = receipt?.id;
+  useEffect(() => {
+    if (!receiptId || (stage !== 'accepted' && stage !== 'uncertain')) return;
+    const timer = window.setTimeout(() => setCanRequestAgain(true), 25000);
+    return () => window.clearTimeout(timer);
+  }, [receiptId, stage]);
   function check() {
     const id = order.trim();
     const token = tracking.trim().toUpperCase();
@@ -79,25 +88,31 @@ export default function PickupRecovery({
     setStage('review');
   }
   async function send() {
+    const orderId = receipt?.id ?? order;
+    const trackingToken = receipt?.trackingToken ?? tracking;
+    if (sending.current || !online) return;
+    sending.current = true;
     const attempt = ++epoch.current;
     setStage('sending');
+    setCanRequestAgain(false);
+    setRetryCommand(undefined);
     setError('');
     try {
       const result = await request<components['schemas']['FlowResult']>(
         device,
         '/flows/request_pickup',
-        { p_order: order, p_tracking: tracking },
+        { p_order: orderId, p_tracking: trackingToken },
       );
       if (attempt !== epoch.current) return;
       if (result.result === null) {
-        setStage('entry');
+        setStage(receipt ? 'review' : 'entry');
         setInvalid('tracking');
         setError('Mã biên nhận chưa đúng. Kiểm tra mã rồi thử lại.');
         requestAnimationFrame(() => document.getElementById('pickup-tracking')?.focus());
         return;
       }
       if (typeof result.result === 'string' && uuid.test(result.result)) {
-        setRetryCommand({ orderId: order, commandId: result.result, trackingToken: tracking });
+        setRetryCommand({ orderId, commandId: result.result, trackingToken });
       }
       setOrder('');
       setTracking('');
@@ -106,8 +121,8 @@ export default function PickupRecovery({
       );
     } catch (cause) {
       if (attempt !== epoch.current) return;
-      if (cause instanceof ApiError && [400, 403, 404, 409, 429].includes(cause.status)) {
-        setStage('entry');
+      if (cause instanceof ApiError && [400, 401, 403, 404, 409, 422, 429].includes(cause.status)) {
+        setStage(receipt ? 'review' : 'entry');
         setError(cause.message);
         requestAnimationFrame(() => document.getElementById('pickup-order')?.focus());
       } else {
@@ -115,17 +130,27 @@ export default function PickupRecovery({
         setTracking('');
         setStage('uncertain');
       }
+    } finally {
+      sending.current = false;
     }
   }
   return (
-    <section className="pickup-recovery" aria-labelledby="pickup-title">
-      <h1 id="pickup-title" ref={title} tabIndex={-1}>
-        Nhận tiếp bó hoa của bạn
-      </h1>
-      <p>
-        Dành cho đơn đã thanh toán nhưng bạn chưa nhận được hoa. Hãy thao tác tại đúng tủ trên biên
-        nhận, khi các cửa đã đóng.
-      </p>
+    <section
+      className="pickup-recovery"
+      aria-label={receipt ? 'Thử mở lại cửa' : undefined}
+      aria-labelledby={receipt ? undefined : titleId}
+    >
+      {!receipt && (
+        <>
+          <h1 id={titleId} ref={title} tabIndex={-1}>
+            Nhận tiếp bó hoa của bạn
+          </h1>
+          <p>
+            Dành cho đơn đã thanh toán nhưng bạn chưa nhận được hoa. Hãy thao tác tại đúng tủ trên
+            biên nhận, khi các cửa đã đóng.
+          </p>
+        </>
+      )}
       {!online && (
         <p role="alert" className="notice">
           Tủ đang mất kết nối. Chờ kết nối lại để gửi yêu cầu.
@@ -177,28 +202,43 @@ export default function PickupRecovery({
       )}
       {(stage === 'review' || stage === 'sending') && (
         <div>
-          <h2 ref={review} tabIndex={-1}>
-            Yêu cầu mở lại ô nhận hoa?
-          </h2>
-          <p className="receipt-id">ID biên nhận: {order}</p>
-          <p>
-            Hệ thống sẽ kiểm tra đơn, thời gian giữ hoa và tình trạng tủ. Yêu cầu này không thu thêm
-            tiền. Sau khi gửi, hãy quan sát cửa tủ.
-          </p>
+          {!receipt && (
+            <>
+              <h2 ref={review} tabIndex={-1}>
+                Yêu cầu mở lại ô nhận hoa?
+              </h2>
+              <p className="receipt-id">ID biên nhận: {order}</p>
+              <p>
+                Hệ thống sẽ kiểm tra đơn, thời gian giữ hoa và tình trạng tủ. Yêu cầu này không thu
+                thêm tiền. Sau khi gửi, hãy quan sát cửa tủ.
+              </p>
+            </>
+          )}
+          {receipt && error && (
+            <p role="alert" className="error">
+              {error}
+            </p>
+          )}
           <div className="pickup-actions">
             <Button disabled={!online || stage === 'sending'} onClick={() => void send()}>
-              {stage === 'sending' ? 'Đang gửi yêu cầu…' : 'Yêu cầu mở ô nhận hoa'}
+              {stage === 'sending'
+                ? 'Đang gửi yêu cầu…'
+                : receipt
+                  ? 'Cửa vẫn đóng? Thử mở lại'
+                  : 'Yêu cầu mở ô nhận hoa'}
             </Button>
-            <Button
-              variant="outline"
-              disabled={stage === 'sending'}
-              onClick={() => {
-                setStage('entry');
-                requestAnimationFrame(() => document.getElementById('pickup-order')?.focus());
-              }}
-            >
-              Sửa thông tin
-            </Button>
+            {!receipt && (
+              <Button
+                variant="outline"
+                disabled={stage === 'sending'}
+                onClick={() => {
+                  setStage('entry');
+                  requestAnimationFrame(() => document.getElementById('pickup-order')?.focus());
+                }}
+              >
+                Sửa thông tin
+              </Button>
+            )}
           </div>
         </div>
       )}
@@ -208,7 +248,7 @@ export default function PickupRecovery({
             Đã tiếp nhận yêu cầu mở ô. Hãy quan sát tủ và nhận hoa khi cửa mở. Nếu cửa vẫn không mở,
             giữ biên nhận để báo sự cố; trạng thái này chưa xác nhận bạn đã nhận hoa.
           </p>
-          {retryCommand && (
+          {retryCommand && !receipt && (
             <PickupUnlockRetry
               device={device}
               online={online}
@@ -224,9 +264,16 @@ export default function PickupRecovery({
           tự gửi lại lệnh mở cửa.
         </p>
       )}
-      <Button variant="outline" disabled={stage === 'sending'} onClick={onBack}>
-        {receipt ? 'Trở lại biên nhận' : 'Trở lại chọn hoa'}
-      </Button>
+      {receipt && canRequestAgain && (stage === 'accepted' || stage === 'uncertain') && (
+        <Button type="button" variant="outline" disabled={!online} onClick={() => void send()}>
+          Cửa vẫn đóng? Thử mở lại
+        </Button>
+      )}
+      {onBack && (
+        <Button variant="outline" disabled={stage === 'sending'} onClick={onBack}>
+          Trở lại chọn hoa
+        </Button>
+      )}
     </section>
   );
 }
