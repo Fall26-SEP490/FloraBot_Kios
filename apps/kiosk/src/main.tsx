@@ -288,6 +288,7 @@ function Shopping({
   const [customer] = useState<CustomerSession & { expiresAt: number }>();
   const [accountOpen, setAccountOpen] = useState(false);
   const [pickupOpen, setPickupOpen] = useState(false);
+  const [pickupReceipt, setPickupReceipt] = useState<{ id: string; trackingToken: string }>();
   const [points, setPoints] = useState<number | null>(0);
   const [ecard, setEcard] = useState('');
   useEffect(() => {
@@ -514,7 +515,9 @@ function Shopping({
             online={online}
             accessToken={customer?.accessToken}
             onExit={onReset}
+            receipt={pickupReceipt}
             onBack={() => {
+              setPickupReceipt(undefined);
               setPickupOpen(false);
               requestAnimationFrame(() => document.getElementById('pickup-open')?.focus());
             }}
@@ -868,7 +871,11 @@ function Shopping({
           </>
         ) : (
           <section className="checkout fb-checkout" aria-labelledby="checkout-title">
-            {current?.paymentStatus === 'SUCCEEDED' && <HomeCountdown seconds={10} onHome={onReset} />}
+            {current?.paymentStatus === 'SUCCEEDED' &&
+              current.orders.length > 0 &&
+              current.orders.every((order) => order.status === 'COMPLETED') && (
+                <HomeCountdown seconds={10} onHome={onReset} />
+              )}
             <h1 id="checkout-title">
               {tr('Một chút nữa là hoa đến tay bạn.', 'Your flowers are almost yours.')}
             </h1>
@@ -995,8 +1002,8 @@ function Shopping({
                 <h2>{tr('Biên nhận của bạn', 'Your receipt')}</h2>
                 <p className="quiet">
                   {tr(
-                    'Giữ mã đơn và mã biên nhận để tra cứu hoặc báo sự cố. Màn hình sẽ xóa thông tin sau 10 phút không thao tác.',
-                    'Keep your order and receipt codes for support. This screen clears after 10 minutes of inactivity.',
+                    'Giữ mã đơn và mã biên nhận để tra cứu hoặc báo sự cố. Hãy lưu biên nhận trước khi rời tủ.',
+                    'Keep your order and receipt codes for support. Save your receipt before leaving the kiosk.',
                   )}
                 </p>
                 <ul className="receipts">
@@ -1050,6 +1057,26 @@ function Shopping({
                         </p>
                       )}
                       <p className="receipt-id">ID biên nhận: {order.id}</p>
+                      {current.paymentStatus === 'SUCCEEDED' &&
+                        ['PAID', 'DISPENSING'].includes(order.status) && (
+                          <div className="pickup-actions">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              disabled={!online}
+                              onClick={() => {
+                                setPickupReceipt({
+                                  id: order.id,
+                                  trackingToken: order.trackingToken,
+                                });
+                                setPickupOpen(true);
+                                window.scrollTo(0, 0);
+                              }}
+                            >
+                              {tr('Cửa vẫn đóng? Thử mở lại', 'Door still closed? Retry opening')}
+                            </Button>
+                          </div>
+                        )}
                       <a
                         href={receiptUrl(order.id, order.trackingToken)}
                         target="_blank"

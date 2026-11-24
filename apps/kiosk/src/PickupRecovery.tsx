@@ -9,24 +9,26 @@ export default function PickupRecovery({
   device,
   online,
   accessToken,
+  receipt,
   onBack,
   onExit,
 }: {
   device: Device;
   online: boolean;
   accessToken?: string;
+  receipt?: { id: string; trackingToken: string };
   onBack: () => void;
   onExit: () => void;
 }) {
-  const [order, setOrder] = useState('');
-  const [tracking, setTracking] = useState('');
+  const [order, setOrder] = useState(receipt?.id ?? '');
+  const [tracking, setTracking] = useState(receipt?.trackingToken ?? '');
   const [retryCommand, setRetryCommand] = useState<{
     orderId: string;
     commandId: string;
     trackingToken: string;
   }>();
   const [stage, setStage] = useState<'entry' | 'review' | 'sending' | 'accepted' | 'uncertain'>(
-    'entry',
+    receipt ? 'review' : 'entry',
   );
   const [error, setError] = useState('');
   const [invalid, setInvalid] = useState<'order' | 'tracking'>();
@@ -223,7 +225,7 @@ export default function PickupRecovery({
         </p>
       )}
       <Button variant="outline" disabled={stage === 'sending'} onClick={onBack}>
-        Trở lại chọn hoa
+        {receipt ? 'Trở lại biên nhận' : 'Trở lại chọn hoa'}
       </Button>
     </section>
   );

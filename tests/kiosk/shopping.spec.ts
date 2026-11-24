@@ -65,6 +65,7 @@ for (const width of [390, 1024])
         },
       }),
     );
+    if (width === 390) await page.clock.install();
     await page.goto('/');
     await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Hoa đang đợi bạn' })).toBeVisible();
@@ -72,7 +73,7 @@ for (const width of [390, 1024])
       path: `.impeccable/review/kiosk-catalog-${width}.png`,
       fullPage: true,
     });
-    const cart = page.getByRole('button', { name: /^Mở giỏ hoa/ });
+    const cart = page.getByRole('button', { name: /^Thanh toán,/ });
     await expect(cart).toBeInViewport();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await cart.click();
@@ -80,10 +81,10 @@ for (const width of [390, 1024])
     await page.keyboard.press('Escape');
     await expect(cart).toBeFocused();
     await page.getByRole('checkbox').check();
-    await expect(cart).toHaveAccessibleName('Mở giỏ hoa, 1 bó');
+    await expect(cart).toHaveAccessibleName('Thanh toán, 1 bó');
     await expect(cart).toBeInViewport();
     await expect(page.locator('#walkin-basket')).toBeHidden();
-    await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
+    await page.getByRole('button', { name: /^Thanh toán,/ }).click();
     await expect(page.getByRole('dialog')).toContainText('350.000');
     await expect
       .poll(() =>
@@ -120,8 +121,28 @@ for (const width of [390, 1024])
       path: `.impeccable/review/kiosk-payment-${width}.png`,
       fullPage: true,
     });
+    if (width === 390) {
+      const commandId = '60000000-0000-0000-0000-000000000001';
+      await page.route('**/flows/request_pickup', (route) => {
+        expect(route.request().postDataJSON()).toEqual({
+          p_order: orderId,
+          p_tracking: 'ABCD2345',
+        });
+        return route.fulfill({ json: { result: commandId } });
+      });
+      orderStatus = 'DISPENSING';
+      const reopen = page.getByRole('button', { name: 'Cửa vẫn đóng? Thử mở lại' });
+      await expect(reopen).toBeVisible({ timeout: 7000 });
+      await page.clock.runFor(11000);
+      await expect(page.getByText('ABCD2345')).toBeVisible();
+      await reopen.click();
+      await page.getByRole('button', { name: 'Yêu cầu mở ô nhận hoa' }).click();
+      await expect(page.getByText(/^Đã tiếp nhận yêu cầu mở ô/)).toBeVisible();
+      await page.getByRole('button', { name: 'Trở lại biên nhận' }).click();
+    }
     orderStatus = 'COMPLETED';
     await expect(page.getByText('Đã nhận hoa', { exact: true })).toBeVisible({ timeout: 7000 });
+    await expect(page.getByText(/^Tự về trang chủ sau/)).toBeVisible();
     await expect(page.getByRole('link', { name: 'Mở liên kết thanh toán (tab mới)' })).toHaveCount(
       0,
     );
@@ -182,7 +203,7 @@ for (const paymentWins of [false, true]) {
     const shop = page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true });
     await shop.click();
     await page.getByRole('checkbox').check();
-    await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
+    await page.getByRole('button', { name: /^Thanh toán,/ }).click();
     await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
     await expect(page.getByText('ABCD2345')).toBeVisible();
     const end = page.getByRole('button', { name: 'Kết thúc lượt mua' });
@@ -215,12 +236,12 @@ test('No automatic checkout retry after response loss and idle clears selection'
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await page.clock.install();
   await page.getByRole('checkbox').check();
-  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
+  await page.getByRole('button', { name: /^Thanh toán,/ }).click();
   await page.getByRole('button', { name: 'Giữ hoa và thanh toán' }).click();
   await expect(page.getByRole('alert')).toContainText('tránh tạo giỏ trùng');
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
   await page.getByRole('button', { name: 'Đóng giỏ hoa' }).click();
-  await page.clock.fastForward(540000);
+  await page.clock.fastForward(245000);
   await expect(page.getByText('Lượt mua sẽ kết thúc', { exact: false })).toBeVisible();
   await page.clock.fastForward(61000);
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
@@ -245,7 +266,7 @@ test('Installed offline shell does not cache checkout or enable purchase', async
   await page.getByRole('button', { name: 'Mua hoa tại chỗ', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Hoa đang đợi bạn' })).toBeVisible();
   await expect(page.getByRole('alert')).toContainText('mất kết nối');
-  await page.getByRole('button', { name: /^Mở giỏ hoa/ }).click();
+  await page.getByRole('button', { name: /^Thanh toán,/ }).click();
   await expect(page.getByRole('button', { name: 'Giữ hoa và thanh toán' })).toBeDisabled();
   const cached = await page.evaluate(async () =>
     (
