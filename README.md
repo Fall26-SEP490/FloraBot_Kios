@@ -39,6 +39,14 @@ Build-time kiosk configuration:
 
 `vercel.json` builds from the repository root into `apps/kiosk/dist` and proxies `/api/*` to `https://api.florabot.site/api/*` before SPA navigation fallback. Vercel uses the root `/` base path; the Docker image continues to use `/kiosk/`. Do not set `VITE_BASE_PATH=/kiosk/` for the standalone Vercel domain. No device key belongs in a `VITE_*` variable or a committed environment file.
 
+## Install on iPhone or iPad
+
+1. Open the kiosk URL in Safari.
+2. Tap **Share** → **Add to Home Screen**. Enable **Open as Web App** if Safari shows that option, then tap **Add**.
+3. Launch **FloraBot** from the Home Screen icon. The installed app opens without Safari's address bar and navigation toolbar. iOS can still show system indicators.
+
+If the device was configured in a Safari tab, check the kiosk setup again from the installed app. Home Screen apps can use separate browser storage. On the kiosk tablet, use the normal device provisioning flow if setup appears.
+
 ## UI preview without IoT
 
 Open `/?preview=1` to view the Home screen and isolated simulator. The simulator uses sample codes and operates without device credentials, payments, or hardware commands. The connected kiosk uses the email pickup flow above. Exiting preview returns to the provisioned Home, or setup if no device is connected.

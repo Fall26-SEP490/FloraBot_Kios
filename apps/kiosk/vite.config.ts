@@ -15,12 +15,14 @@ export default defineConfig(({ mode }) => {
       tailwind(),
       VitePWA({
         registerType: 'prompt',
+        includeAssets: ['apple-touch-icon.png'],
         scope: base,
         manifest: {
           name: 'FloraBot — Tủ hoa',
           short_name: 'FloraBot',
           lang: 'vi',
-          display: 'fullscreen',
+          display: 'standalone',
+          display_override: ['fullscreen'],
           start_url: base,
           scope: base,
           theme_color: '#204b2e',
